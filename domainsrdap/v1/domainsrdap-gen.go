@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package domainsrdap provides access to the Domains RDAP API.
 //
 // For product documentation, see: https://developers.google.com/domains/rdap/
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,24 +28,26 @@
 //	ctx := context.Background()
 //	domainsrdapService, err := domainsrdap.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	domainsrdapService, err := domainsrdap.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	domainsrdapService, err := domainsrdap.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package domainsrdap // import "google.golang.org/api/domainsrdap/v1"
 
 import (
@@ -71,17 +84,21 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "domainsrdap:v1"
 const apiName = "domainsrdap"
 const apiVersion = "v1"
 const basePath = "https://domainsrdap.googleapis.com/"
+const basePathTemplate = "https://domainsrdap.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://domainsrdap.mtls.googleapis.com/"
 
 // NewService creates a new Service.
 func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, error) {
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -194,61 +211,51 @@ type V1Service struct {
 	s *Service
 }
 
-// HttpBody: Message that represents an arbitrary HTTP body. It should
-// only be used for payload formats that can't be represented as JSON,
-// such as raw binary or an HTML page. This message can be used both in
-// streaming and non-streaming API methods in the request as well as the
-// response. It can be used as a top-level request field, which is
-// convenient if one wants to extract parameters from either the URL or
-// HTTP template into the request fields and also want access to the raw
-// HTTP body. Example: message GetResourceRequest { // A unique request
-// id. string request_id = 1; // The raw HTTP body is bound to this
-// field. google.api.HttpBody http_body = 2; } service ResourceService {
-// rpc GetResource(GetResourceRequest) returns (google.api.HttpBody);
-// rpc UpdateResource(google.api.HttpBody) returns
+// HttpBody: Message that represents an arbitrary HTTP body. It should only be
+// used for payload formats that can't be represented as JSON, such as raw
+// binary or an HTML page. This message can be used both in streaming and
+// non-streaming API methods in the request as well as the response. It can be
+// used as a top-level request field, which is convenient if one wants to
+// extract parameters from either the URL or HTTP template into the request
+// fields and also want access to the raw HTTP body. Example: message
+// GetResourceRequest { // A unique request id. string request_id = 1; // The
+// raw HTTP body is bound to this field. google.api.HttpBody http_body = 2; }
+// service ResourceService { rpc GetResource(GetResourceRequest) returns
+// (google.api.HttpBody); rpc UpdateResource(google.api.HttpBody) returns
 // (google.protobuf.Empty); } Example with streaming methods: service
-// CaldavService { rpc GetCalendar(stream google.api.HttpBody) returns
-// (stream google.api.HttpBody); rpc UpdateCalendar(stream
-// google.api.HttpBody) returns (stream google.api.HttpBody); } Use of
-// this type only changes how the request and response bodies are
-// handled, all other features will continue to work unchanged.
+// CaldavService { rpc GetCalendar(stream google.api.HttpBody) returns (stream
+// google.api.HttpBody); rpc UpdateCalendar(stream google.api.HttpBody) returns
+// (stream google.api.HttpBody); } Use of this type only changes how the
+// request and response bodies are handled, all other features will continue to
+// work unchanged.
 type HttpBody struct {
-	// ContentType: The HTTP Content-Type header value specifying the
-	// content type of the body.
+	// ContentType: The HTTP Content-Type header value specifying the content type
+	// of the body.
 	ContentType string `json:"contentType,omitempty"`
-
 	// Data: The HTTP request/response body as raw binary.
 	Data string `json:"data,omitempty"`
-
-	// Extensions: Application specific response metadata. Must be set in
-	// the first response for streaming APIs.
+	// Extensions: Application specific response metadata. Must be set in the first
+	// response for streaming APIs.
 	Extensions []googleapi.RawMessage `json:"extensions,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "ContentType") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ContentType") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ContentType") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *HttpBody) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpBody
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Link: Links object defined in section 4.2 of RFC 7483
@@ -256,47 +263,35 @@ func (s *HttpBody) MarshalJSON() ([]byte, error) {
 type Link struct {
 	// Href: Target URL of a link. Example: "http://example.com/previous".
 	Href string `json:"href,omitempty"`
-
 	// Hreflang: Language code of a link. Example: "en".
 	Hreflang string `json:"hreflang,omitempty"`
-
 	// Media: Media type of the link destination. Example: "screen".
 	Media string `json:"media,omitempty"`
-
 	// Rel: Relation type of a link. Example: "previous".
 	Rel string `json:"rel,omitempty"`
-
 	// Title: Title of this link. Example: "title".
 	Title string `json:"title,omitempty"`
-
 	// Type: Content type of the link. Example: "application/json".
 	Type string `json:"type,omitempty"`
-
 	// Value: URL giving context for the link. Example:
 	// "http://example.com/current".
 	Value string `json:"value,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Href") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Href") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Href") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Href") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Link) MarshalJSON() ([]byte, error) {
 	type NoMethod Link
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Notice: Notices object defined in section 4.3 of RFC 7483
@@ -304,97 +299,71 @@ func (s *Link) MarshalJSON() ([]byte, error) {
 type Notice struct {
 	// Description: Description of the notice.
 	Description []string `json:"description,omitempty"`
-
 	// Links: Link to a document containing more information.
 	Links []*Link `json:"links,omitempty"`
-
 	// Title: Title of a notice. Example: "Terms of Service".
 	Title string `json:"title,omitempty"`
-
 	// Type: Type values defined in section 10.2.1 of RFC 7483
-	// (https://tools.ietf.org/html/rfc7483#section-10.2.1) specific to a
-	// whole response: "result set truncated due to authorization", "result
-	// set truncated due to excessive load", "result set truncated due to
-	// unexplainable reasons".
+	// (https://tools.ietf.org/html/rfc7483#section-10.2.1) specific to a whole
+	// response: "result set truncated due to authorization", "result set truncated
+	// due to excessive load", "result set truncated due to unexplainable reasons".
 	Type string `json:"type,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Description") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Description") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Description") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Notice) MarshalJSON() ([]byte, error) {
 	type NoMethod Notice
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // RdapResponse: Response to a general RDAP query.
 type RdapResponse struct {
 	// Description: Error description.
 	Description []string `json:"description,omitempty"`
-
 	// ErrorCode: Error HTTP code. Example: "501".
 	ErrorCode int64 `json:"errorCode,omitempty"`
-
 	// JsonResponse: HTTP response with content type set to
 	// "application/json+rdap".
 	JsonResponse *HttpBody `json:"jsonResponse,omitempty"`
-
-	// Lang: Error language code. Error response info fields are defined in
-	// section 6 of RFC 7483
-	// (https://tools.ietf.org/html/rfc7483#section-6).
+	// Lang: Error language code. Error response info fields are defined in section
+	// 6 of RFC 7483 (https://tools.ietf.org/html/rfc7483#section-6).
 	Lang string `json:"lang,omitempty"`
-
 	// Notices: Notices applying to this response.
 	Notices []*Notice `json:"notices,omitempty"`
-
 	// RdapConformance: RDAP conformance level.
 	RdapConformance []string `json:"rdapConformance,omitempty"`
-
 	// Title: Error title.
 	Title string `json:"title,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Description") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Description") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Description") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *RdapResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod RdapResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
-
-// method id "domainsrdap.autnum.get":
 
 type AutnumGetCall struct {
 	s            *Service
@@ -405,8 +374,8 @@ type AutnumGetCall struct {
 	header_      http.Header
 }
 
-// Get: The RDAP API recognizes this command from the RDAP specification
-// but does not support it. The response is a formatted 501 error.
+// Get: The RDAP API recognizes this command from the RDAP specification but
+// does not support it. The response is a formatted 501 error.
 //
 // - autnumId: .
 func (r *AutnumService) Get(autnumId string) *AutnumGetCall {
@@ -416,33 +385,29 @@ func (r *AutnumService) Get(autnumId string) *AutnumGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *AutnumGetCall) Fields(s ...googleapi.Field) *AutnumGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *AutnumGetCall) IfNoneMatch(entityTag string) *AutnumGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *AutnumGetCall) Context(ctx context.Context) *AutnumGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *AutnumGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -451,12 +416,7 @@ func (c *AutnumGetCall) Header() http.Header {
 }
 
 func (c *AutnumGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -477,12 +437,10 @@ func (c *AutnumGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.autnum.get" call.
-// Exactly one of *RdapResponse or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *RdapResponse.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *RdapResponse.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *AutnumGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -490,17 +448,17 @@ func (c *AutnumGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &RdapResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -513,30 +471,7 @@ func (c *AutnumGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "The RDAP API recognizes this command from the RDAP specification but does not support it. The response is a formatted 501 error.",
-	//   "flatPath": "v1/autnum/{autnumId}",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.autnum.get",
-	//   "parameterOrder": [
-	//     "autnumId"
-	//   ],
-	//   "parameters": {
-	//     "autnumId": {
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/autnum/{autnumId}",
-	//   "response": {
-	//     "$ref": "RdapResponse"
-	//   }
-	// }
-
 }
-
-// method id "domainsrdap.domain.get":
 
 type DomainGetCall struct {
 	s            *Service
@@ -557,33 +492,29 @@ func (r *DomainService) Get(domainName string) *DomainGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *DomainGetCall) Fields(s ...googleapi.Field) *DomainGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *DomainGetCall) IfNoneMatch(entityTag string) *DomainGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *DomainGetCall) Context(ctx context.Context) *DomainGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *DomainGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -592,12 +523,7 @@ func (c *DomainGetCall) Header() http.Header {
 }
 
 func (c *DomainGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -618,12 +544,10 @@ func (c *DomainGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.domain.get" call.
-// Exactly one of *HttpBody or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *HttpBody.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *HttpBody.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *DomainGetCall) Do(opts ...googleapi.CallOption) (*HttpBody, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -631,17 +555,17 @@ func (c *DomainGetCall) Do(opts ...googleapi.CallOption) (*HttpBody, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &HttpBody{
 		ServerResponse: googleapi.ServerResponse{
@@ -654,32 +578,7 @@ func (c *DomainGetCall) Do(opts ...googleapi.CallOption) (*HttpBody, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Look up RDAP information for a domain by name.",
-	//   "flatPath": "v1/domain/{domainId}",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.domain.get",
-	//   "parameterOrder": [
-	//     "domainName"
-	//   ],
-	//   "parameters": {
-	//     "domainName": {
-	//       "description": "Full domain name to look up. Example: \"example.com\"",
-	//       "location": "path",
-	//       "pattern": "^[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/domain/{+domainName}",
-	//   "response": {
-	//     "$ref": "HttpBody"
-	//   }
-	// }
-
 }
-
-// method id "domainsrdap.entity.get":
 
 type EntityGetCall struct {
 	s            *Service
@@ -690,8 +589,8 @@ type EntityGetCall struct {
 	header_      http.Header
 }
 
-// Get: The RDAP API recognizes this command from the RDAP specification
-// but does not support it. The response is a formatted 501 error.
+// Get: The RDAP API recognizes this command from the RDAP specification but
+// does not support it. The response is a formatted 501 error.
 //
 // - entityId: .
 func (r *EntityService) Get(entityId string) *EntityGetCall {
@@ -701,33 +600,29 @@ func (r *EntityService) Get(entityId string) *EntityGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *EntityGetCall) Fields(s ...googleapi.Field) *EntityGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *EntityGetCall) IfNoneMatch(entityTag string) *EntityGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *EntityGetCall) Context(ctx context.Context) *EntityGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *EntityGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -736,12 +631,7 @@ func (c *EntityGetCall) Header() http.Header {
 }
 
 func (c *EntityGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -762,12 +652,10 @@ func (c *EntityGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.entity.get" call.
-// Exactly one of *RdapResponse or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *RdapResponse.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *RdapResponse.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *EntityGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -775,17 +663,17 @@ func (c *EntityGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &RdapResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -798,30 +686,7 @@ func (c *EntityGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "The RDAP API recognizes this command from the RDAP specification but does not support it. The response is a formatted 501 error.",
-	//   "flatPath": "v1/entity/{entityId}",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.entity.get",
-	//   "parameterOrder": [
-	//     "entityId"
-	//   ],
-	//   "parameters": {
-	//     "entityId": {
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/entity/{entityId}",
-	//   "response": {
-	//     "$ref": "RdapResponse"
-	//   }
-	// }
-
 }
-
-// method id "domainsrdap.ip.get":
 
 type IpGetCall struct {
 	s            *Service
@@ -833,8 +698,8 @@ type IpGetCall struct {
 	header_      http.Header
 }
 
-// Get: The RDAP API recognizes this command from the RDAP specification
-// but does not support it. The response is a formatted 501 error.
+// Get: The RDAP API recognizes this command from the RDAP specification but
+// does not support it. The response is a formatted 501 error.
 //
 // - ipId: .
 // - ipId1: .
@@ -846,33 +711,29 @@ func (r *IpService) Get(ipId string, ipId1 string) *IpGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *IpGetCall) Fields(s ...googleapi.Field) *IpGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *IpGetCall) IfNoneMatch(entityTag string) *IpGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *IpGetCall) Context(ctx context.Context) *IpGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *IpGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -881,12 +742,7 @@ func (c *IpGetCall) Header() http.Header {
 }
 
 func (c *IpGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -908,12 +764,10 @@ func (c *IpGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.ip.get" call.
-// Exactly one of *RdapResponse or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *RdapResponse.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *RdapResponse.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *IpGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -921,17 +775,17 @@ func (c *IpGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &RdapResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -944,36 +798,7 @@ func (c *IpGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "The RDAP API recognizes this command from the RDAP specification but does not support it. The response is a formatted 501 error.",
-	//   "flatPath": "v1/ip/{ipId}/{ipId1}",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.ip.get",
-	//   "parameterOrder": [
-	//     "ipId",
-	//     "ipId1"
-	//   ],
-	//   "parameters": {
-	//     "ipId": {
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "ipId1": {
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/ip/{ipId}/{ipId1}",
-	//   "response": {
-	//     "$ref": "RdapResponse"
-	//   }
-	// }
-
 }
-
-// method id "domainsrdap.nameserver.get":
 
 type NameserverGetCall struct {
 	s            *Service
@@ -984,8 +809,8 @@ type NameserverGetCall struct {
 	header_      http.Header
 }
 
-// Get: The RDAP API recognizes this command from the RDAP specification
-// but does not support it. The response is a formatted 501 error.
+// Get: The RDAP API recognizes this command from the RDAP specification but
+// does not support it. The response is a formatted 501 error.
 //
 // - nameserverId: .
 func (r *NameserverService) Get(nameserverId string) *NameserverGetCall {
@@ -995,33 +820,29 @@ func (r *NameserverService) Get(nameserverId string) *NameserverGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NameserverGetCall) Fields(s ...googleapi.Field) *NameserverGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NameserverGetCall) IfNoneMatch(entityTag string) *NameserverGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NameserverGetCall) Context(ctx context.Context) *NameserverGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NameserverGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1030,12 +851,7 @@ func (c *NameserverGetCall) Header() http.Header {
 }
 
 func (c *NameserverGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1056,12 +872,10 @@ func (c *NameserverGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.nameserver.get" call.
-// Exactly one of *RdapResponse or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *RdapResponse.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *RdapResponse.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NameserverGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1069,17 +883,17 @@ func (c *NameserverGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, err
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &RdapResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1092,30 +906,7 @@ func (c *NameserverGetCall) Do(opts ...googleapi.CallOption) (*RdapResponse, err
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "The RDAP API recognizes this command from the RDAP specification but does not support it. The response is a formatted 501 error.",
-	//   "flatPath": "v1/nameserver/{nameserverId}",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.nameserver.get",
-	//   "parameterOrder": [
-	//     "nameserverId"
-	//   ],
-	//   "parameters": {
-	//     "nameserverId": {
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/nameserver/{nameserverId}",
-	//   "response": {
-	//     "$ref": "RdapResponse"
-	//   }
-	// }
-
 }
-
-// method id "domainsrdap.getDomains":
 
 type V1GetDomainsCall struct {
 	s            *Service
@@ -1125,42 +916,37 @@ type V1GetDomainsCall struct {
 	header_      http.Header
 }
 
-// GetDomains: The RDAP API recognizes this command from the RDAP
-// specification but does not support it. The response is a formatted
-// 501 error.
+// GetDomains: The RDAP API recognizes this command from the RDAP specification
+// but does not support it. The response is a formatted 501 error.
 func (r *V1Service) GetDomains() *V1GetDomainsCall {
 	c := &V1GetDomainsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *V1GetDomainsCall) Fields(s ...googleapi.Field) *V1GetDomainsCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *V1GetDomainsCall) IfNoneMatch(entityTag string) *V1GetDomainsCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *V1GetDomainsCall) Context(ctx context.Context) *V1GetDomainsCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *V1GetDomainsCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1169,12 +955,7 @@ func (c *V1GetDomainsCall) Header() http.Header {
 }
 
 func (c *V1GetDomainsCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1192,12 +973,10 @@ func (c *V1GetDomainsCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.getDomains" call.
-// Exactly one of *RdapResponse or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *RdapResponse.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *RdapResponse.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *V1GetDomainsCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1205,17 +984,17 @@ func (c *V1GetDomainsCall) Do(opts ...googleapi.CallOption) (*RdapResponse, erro
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &RdapResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1228,22 +1007,7 @@ func (c *V1GetDomainsCall) Do(opts ...googleapi.CallOption) (*RdapResponse, erro
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "The RDAP API recognizes this command from the RDAP specification but does not support it. The response is a formatted 501 error.",
-	//   "flatPath": "v1/domains",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.getDomains",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1/domains",
-	//   "response": {
-	//     "$ref": "RdapResponse"
-	//   }
-	// }
-
 }
-
-// method id "domainsrdap.getEntities":
 
 type V1GetEntitiesCall struct {
 	s            *Service
@@ -1254,41 +1018,37 @@ type V1GetEntitiesCall struct {
 }
 
 // GetEntities: The RDAP API recognizes this command from the RDAP
-// specification but does not support it. The response is a formatted
-// 501 error.
+// specification but does not support it. The response is a formatted 501
+// error.
 func (r *V1Service) GetEntities() *V1GetEntitiesCall {
 	c := &V1GetEntitiesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *V1GetEntitiesCall) Fields(s ...googleapi.Field) *V1GetEntitiesCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *V1GetEntitiesCall) IfNoneMatch(entityTag string) *V1GetEntitiesCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *V1GetEntitiesCall) Context(ctx context.Context) *V1GetEntitiesCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *V1GetEntitiesCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1297,12 +1057,7 @@ func (c *V1GetEntitiesCall) Header() http.Header {
 }
 
 func (c *V1GetEntitiesCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1320,12 +1075,10 @@ func (c *V1GetEntitiesCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.getEntities" call.
-// Exactly one of *RdapResponse or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *RdapResponse.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *RdapResponse.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *V1GetEntitiesCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1333,17 +1086,17 @@ func (c *V1GetEntitiesCall) Do(opts ...googleapi.CallOption) (*RdapResponse, err
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &RdapResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1356,22 +1109,7 @@ func (c *V1GetEntitiesCall) Do(opts ...googleapi.CallOption) (*RdapResponse, err
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "The RDAP API recognizes this command from the RDAP specification but does not support it. The response is a formatted 501 error.",
-	//   "flatPath": "v1/entities",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.getEntities",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1/entities",
-	//   "response": {
-	//     "$ref": "RdapResponse"
-	//   }
-	// }
-
 }
-
-// method id "domainsrdap.getHelp":
 
 type V1GetHelpCall struct {
 	s            *Service
@@ -1389,33 +1127,29 @@ func (r *V1Service) GetHelp() *V1GetHelpCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *V1GetHelpCall) Fields(s ...googleapi.Field) *V1GetHelpCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *V1GetHelpCall) IfNoneMatch(entityTag string) *V1GetHelpCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *V1GetHelpCall) Context(ctx context.Context) *V1GetHelpCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *V1GetHelpCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1424,12 +1158,7 @@ func (c *V1GetHelpCall) Header() http.Header {
 }
 
 func (c *V1GetHelpCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1447,12 +1176,10 @@ func (c *V1GetHelpCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.getHelp" call.
-// Exactly one of *HttpBody or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *HttpBody.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *HttpBody.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *V1GetHelpCall) Do(opts ...googleapi.CallOption) (*HttpBody, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1460,17 +1187,17 @@ func (c *V1GetHelpCall) Do(opts ...googleapi.CallOption) (*HttpBody, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &HttpBody{
 		ServerResponse: googleapi.ServerResponse{
@@ -1483,22 +1210,7 @@ func (c *V1GetHelpCall) Do(opts ...googleapi.CallOption) (*HttpBody, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Get help information for the RDAP API, including links to documentation.",
-	//   "flatPath": "v1/help",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.getHelp",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1/help",
-	//   "response": {
-	//     "$ref": "HttpBody"
-	//   }
-	// }
-
 }
-
-// method id "domainsrdap.getIp":
 
 type V1GetIpCall struct {
 	s            *Service
@@ -1508,42 +1220,37 @@ type V1GetIpCall struct {
 	header_      http.Header
 }
 
-// GetIp: The RDAP API recognizes this command from the RDAP
-// specification but does not support it. The response is a formatted
-// 501 error.
+// GetIp: The RDAP API recognizes this command from the RDAP specification but
+// does not support it. The response is a formatted 501 error.
 func (r *V1Service) GetIp() *V1GetIpCall {
 	c := &V1GetIpCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *V1GetIpCall) Fields(s ...googleapi.Field) *V1GetIpCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *V1GetIpCall) IfNoneMatch(entityTag string) *V1GetIpCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *V1GetIpCall) Context(ctx context.Context) *V1GetIpCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *V1GetIpCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1552,12 +1259,7 @@ func (c *V1GetIpCall) Header() http.Header {
 }
 
 func (c *V1GetIpCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1575,12 +1277,10 @@ func (c *V1GetIpCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.getIp" call.
-// Exactly one of *HttpBody or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *HttpBody.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *HttpBody.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *V1GetIpCall) Do(opts ...googleapi.CallOption) (*HttpBody, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1588,17 +1288,17 @@ func (c *V1GetIpCall) Do(opts ...googleapi.CallOption) (*HttpBody, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &HttpBody{
 		ServerResponse: googleapi.ServerResponse{
@@ -1611,22 +1311,7 @@ func (c *V1GetIpCall) Do(opts ...googleapi.CallOption) (*HttpBody, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "The RDAP API recognizes this command from the RDAP specification but does not support it. The response is a formatted 501 error.",
-	//   "flatPath": "v1/ip",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.getIp",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1/ip",
-	//   "response": {
-	//     "$ref": "HttpBody"
-	//   }
-	// }
-
 }
-
-// method id "domainsrdap.getNameservers":
 
 type V1GetNameserversCall struct {
 	s            *Service
@@ -1637,41 +1322,37 @@ type V1GetNameserversCall struct {
 }
 
 // GetNameservers: The RDAP API recognizes this command from the RDAP
-// specification but does not support it. The response is a formatted
-// 501 error.
+// specification but does not support it. The response is a formatted 501
+// error.
 func (r *V1Service) GetNameservers() *V1GetNameserversCall {
 	c := &V1GetNameserversCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *V1GetNameserversCall) Fields(s ...googleapi.Field) *V1GetNameserversCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *V1GetNameserversCall) IfNoneMatch(entityTag string) *V1GetNameserversCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *V1GetNameserversCall) Context(ctx context.Context) *V1GetNameserversCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *V1GetNameserversCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1680,12 +1361,7 @@ func (c *V1GetNameserversCall) Header() http.Header {
 }
 
 func (c *V1GetNameserversCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1703,12 +1379,10 @@ func (c *V1GetNameserversCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "domainsrdap.getNameservers" call.
-// Exactly one of *RdapResponse or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *RdapResponse.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *RdapResponse.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *V1GetNameserversCall) Do(opts ...googleapi.CallOption) (*RdapResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1716,17 +1390,17 @@ func (c *V1GetNameserversCall) Do(opts ...googleapi.CallOption) (*RdapResponse, 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &RdapResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1739,17 +1413,4 @@ func (c *V1GetNameserversCall) Do(opts ...googleapi.CallOption) (*RdapResponse, 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "The RDAP API recognizes this command from the RDAP specification but does not support it. The response is a formatted 501 error.",
-	//   "flatPath": "v1/nameservers",
-	//   "httpMethod": "GET",
-	//   "id": "domainsrdap.getNameservers",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1/nameservers",
-	//   "response": {
-	//     "$ref": "RdapResponse"
-	//   }
-	// }
-
 }

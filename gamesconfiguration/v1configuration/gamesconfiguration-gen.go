@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package gamesconfiguration provides access to the Google Play Game Services Publishing API.
 //
 // For product documentation, see: https://developers.google.com/games/
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,24 +28,26 @@
 //	ctx := context.Background()
 //	gamesconfigurationService, err := gamesconfiguration.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	gamesconfigurationService, err := gamesconfiguration.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	gamesconfigurationService, err := gamesconfiguration.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package gamesconfiguration // import "google.golang.org/api/gamesconfiguration/v1configuration"
 
 import (
@@ -71,11 +84,13 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "gamesConfiguration:v1configuration"
 const apiName = "gamesConfiguration"
 const apiVersion = "v1configuration"
 const basePath = "https://gamesconfiguration.googleapis.com/"
+const basePathTemplate = "https://gamesconfiguration.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://gamesconfiguration.mtls.googleapis.com/"
 
 // OAuth2 scopes used by this API.
@@ -92,7 +107,9 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -118,7 +135,6 @@ func New(client *http.Client) (*Service, error) {
 	}
 	s := &Service{client: client, BasePath: basePath}
 	s.AchievementConfigurations = NewAchievementConfigurationsService(s)
-	s.ImageConfigurations = NewImageConfigurationsService(s)
 	s.LeaderboardConfigurations = NewLeaderboardConfigurationsService(s)
 	return s, nil
 }
@@ -129,8 +145,6 @@ type Service struct {
 	UserAgent string // optional additional User-Agent fragment
 
 	AchievementConfigurations *AchievementConfigurationsService
-
-	ImageConfigurations *ImageConfigurationsService
 
 	LeaderboardConfigurations *LeaderboardConfigurationsService
 }
@@ -151,15 +165,6 @@ type AchievementConfigurationsService struct {
 	s *Service
 }
 
-func NewImageConfigurationsService(s *Service) *ImageConfigurationsService {
-	rs := &ImageConfigurationsService{s: s}
-	return rs
-}
-
-type ImageConfigurationsService struct {
-	s *Service
-}
-
 func NewLeaderboardConfigurationsService(s *Service) *LeaderboardConfigurationsService {
 	rs := &LeaderboardConfigurationsService{s: s}
 	return rs
@@ -174,18 +179,14 @@ type AchievementConfiguration struct {
 	// AchievementType: The type of the achievement.
 	//
 	// Possible values:
-	//   "ACHIEVEMENT_TYPE_UNSPECIFIED" - Default value. This value is
-	// unused.
+	//   "ACHIEVEMENT_TYPE_UNSPECIFIED" - Default value. This value is unused.
 	//   "STANDARD" - Achievement is either locked or unlocked.
 	//   "INCREMENTAL" - Achievement is incremental.
 	AchievementType string `json:"achievementType,omitempty"`
-
 	// Draft: The draft data of the achievement.
 	Draft *AchievementConfigurationDetail `json:"draft,omitempty"`
-
 	// Id: The ID of the achievement.
 	Id string `json:"id,omitempty"`
-
 	// InitialState: The initial state of the achievement.
 	//
 	// Possible values:
@@ -193,492 +194,334 @@ type AchievementConfiguration struct {
 	//   "HIDDEN" - Achievement is hidden.
 	//   "REVEALED" - Achievement is revealed.
 	InitialState string `json:"initialState,omitempty"`
-
-	// Kind: Uniquely identifies the type of this resource. Value is always
-	// the fixed string `gamesConfiguration#achievementConfiguration`.
+	// Kind: Uniquely identifies the type of this resource. Value is always the
+	// fixed string `gamesConfiguration#achievementConfiguration`.
 	Kind string `json:"kind,omitempty"`
-
 	// Published: The read-only published data of the achievement.
 	Published *AchievementConfigurationDetail `json:"published,omitempty"`
-
-	// StepsToUnlock: Steps to unlock. Only applicable to incremental
-	// achievements.
+	// StepsToUnlock: Steps to unlock. Only applicable to incremental achievements.
 	StepsToUnlock int64 `json:"stepsToUnlock,omitempty"`
-
 	// Token: The token for this resource.
 	Token string `json:"token,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "AchievementType") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AchievementType") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AchievementType") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AchievementConfiguration) MarshalJSON() ([]byte, error) {
 	type NoMethod AchievementConfiguration
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // AchievementConfigurationDetail: An achievement configuration detail.
 type AchievementConfigurationDetail struct {
 	// Description: Localized strings for the achievement description.
 	Description *LocalizedStringBundle `json:"description,omitempty"`
-
-	// IconUrl: The icon url of this achievement. Writes to this field are
-	// ignored.
+	// IconUrl: The icon url of this achievement. Writes to this field are ignored.
 	IconUrl string `json:"iconUrl,omitempty"`
-
-	// Kind: Uniquely identifies the type of this resource. Value is always
-	// the fixed string `gamesConfiguration#achievementConfigurationDetail`.
+	// Kind: Uniquely identifies the type of this resource. Value is always the
+	// fixed string `gamesConfiguration#achievementConfigurationDetail`.
 	Kind string `json:"kind,omitempty"`
-
 	// Name: Localized strings for the achievement name.
 	Name *LocalizedStringBundle `json:"name,omitempty"`
-
 	// PointValue: Point value for the achievement.
 	PointValue int64 `json:"pointValue,omitempty"`
-
 	// SortRank: The sort rank of this achievement. Writes to this field are
 	// ignored.
 	SortRank int64 `json:"sortRank,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Description") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Description") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Description") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AchievementConfigurationDetail) MarshalJSON() ([]byte, error) {
 	type NoMethod AchievementConfigurationDetail
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // AchievementConfigurationListResponse: A ListConfigurations response.
 type AchievementConfigurationListResponse struct {
 	// Items: The achievement configurations.
 	Items []*AchievementConfiguration `json:"items,omitempty"`
-
-	// Kind: Uniquely identifies the type of this resource. Value is always
-	// the fixed string
-	// `gamesConfiguration#achievementConfigurationListResponse`.
+	// Kind: Uniquely identifies the type of this resource. Value is always the
+	// fixed string `gamesConfiguration#achievementConfigurationListResponse`.
 	Kind string `json:"kind,omitempty"`
-
 	// NextPageToken: The pagination token for the next page of results.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Items") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Items") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Items") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AchievementConfigurationListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod AchievementConfigurationListResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GamesNumberAffixConfiguration: A number affix resource.
 type GamesNumberAffixConfiguration struct {
-	// Few: When the language requires special treatment of "small" numbers
-	// (as with 2, 3, and 4 in Czech; or numbers ending 2, 3, or 4 but not
-	// 12, 13, or 14 in Polish).
+	// Few: When the language requires special treatment of "small" numbers (as
+	// with 2, 3, and 4 in Czech; or numbers ending 2, 3, or 4 but not 12, 13, or
+	// 14 in Polish).
 	Few *LocalizedStringBundle `json:"few,omitempty"`
-
-	// Many: When the language requires special treatment of "large" numbers
-	// (as with numbers ending 11-99 in Maltese).
+	// Many: When the language requires special treatment of "large" numbers (as
+	// with numbers ending 11-99 in Maltese).
 	Many *LocalizedStringBundle `json:"many,omitempty"`
-
-	// One: When the language requires special treatment of numbers like one
-	// (as with the number 1 in English and most other languages; in
-	// Russian, any number ending in 1 but not ending in 11 is in this
-	// class).
+	// One: When the language requires special treatment of numbers like one (as
+	// with the number 1 in English and most other languages; in Russian, any
+	// number ending in 1 but not ending in 11 is in this class).
 	One *LocalizedStringBundle `json:"one,omitempty"`
-
-	// Other: When the language does not require special treatment of the
-	// given quantity (as with all numbers in Chinese, or 42 in English).
+	// Other: When the language does not require special treatment of the given
+	// quantity (as with all numbers in Chinese, or 42 in English).
 	Other *LocalizedStringBundle `json:"other,omitempty"`
-
-	// Two: When the language requires special treatment of numbers like two
-	// (as with 2 in Welsh, or 102 in Slovenian).
+	// Two: When the language requires special treatment of numbers like two (as
+	// with 2 in Welsh, or 102 in Slovenian).
 	Two *LocalizedStringBundle `json:"two,omitempty"`
-
-	// Zero: When the language requires special treatment of the number 0
-	// (as in Arabic).
+	// Zero: When the language requires special treatment of the number 0 (as in
+	// Arabic).
 	Zero *LocalizedStringBundle `json:"zero,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Few") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Few") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Few") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Few") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GamesNumberAffixConfiguration) MarshalJSON() ([]byte, error) {
 	type NoMethod GamesNumberAffixConfiguration
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GamesNumberFormatConfiguration: A number format resource.
 type GamesNumberFormatConfiguration struct {
-	// CurrencyCode: The curreny code string. Only used for CURRENCY format
-	// type.
+	// CurrencyCode: The curreny code string. Only used for CURRENCY format type.
 	CurrencyCode string `json:"currencyCode,omitempty"`
-
-	// NumDecimalPlaces: The number of decimal places for number. Only used
-	// for NUMERIC format type.
+	// NumDecimalPlaces: The number of decimal places for number. Only used for
+	// NUMERIC format type.
 	NumDecimalPlaces int64 `json:"numDecimalPlaces,omitempty"`
-
 	// NumberFormatType: The formatting for the number.
 	//
 	// Possible values:
-	//   "NUMBER_FORMAT_TYPE_UNSPECIFIED" - Default value. This value is
-	// unused.
-	//   "NUMERIC" - Numbers are formatted to have no digits or fixed number
-	// of digits after the decimal point according to locale. An optional
-	// custom unit can be added.
-	//   "TIME_DURATION" - Numbers are formatted to hours, minutes and
-	// seconds.
+	//   "NUMBER_FORMAT_TYPE_UNSPECIFIED" - Default value. This value is unused.
+	//   "NUMERIC" - Numbers are formatted to have no digits or fixed number of
+	// digits after the decimal point according to locale. An optional custom unit
+	// can be added.
+	//   "TIME_DURATION" - Numbers are formatted to hours, minutes and seconds.
 	//   "CURRENCY" - Numbers are formatted to currency according to locale.
 	NumberFormatType string `json:"numberFormatType,omitempty"`
-
-	// Suffix: An optional suffix for the NUMERIC format type. These strings
-	// follow the same plural rules as all Android string resources.
+	// Suffix: An optional suffix for the NUMERIC format type. These strings follow
+	// the same plural rules as all Android string resources.
 	Suffix *GamesNumberAffixConfiguration `json:"suffix,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "CurrencyCode") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "CurrencyCode") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "CurrencyCode") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GamesNumberFormatConfiguration) MarshalJSON() ([]byte, error) {
 	type NoMethod GamesNumberFormatConfiguration
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// ImageConfiguration: An image configuration resource.
-type ImageConfiguration struct {
-	// ImageType: The image type for the image.
-	//
-	// Possible values:
-	//   "IMAGE_TYPE_UNSPECIFIED" - Default value. This value is unused.
-	//   "ACHIEVEMENT_ICON" - The icon image for an achievement resource.
-	//   "LEADERBOARD_ICON" - The icon image for a leaderboard resource.
-	ImageType string `json:"imageType,omitempty"`
-
-	// Kind: Uniquely identifies the type of this resource. Value is always
-	// the fixed string `gamesConfiguration#imageConfiguration`.
-	Kind string `json:"kind,omitempty"`
-
-	// ResourceId: The resource ID of resource which the image belongs to.
-	ResourceId string `json:"resourceId,omitempty"`
-
-	// Url: The url for this image.
-	Url string `json:"url,omitempty"`
-
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
-	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "ImageType") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ImageType") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *ImageConfiguration) MarshalJSON() ([]byte, error) {
-	type NoMethod ImageConfiguration
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // LeaderboardConfiguration: An leaderboard configuration resource.
 type LeaderboardConfiguration struct {
 	// Draft: The draft data of the leaderboard.
 	Draft *LeaderboardConfigurationDetail `json:"draft,omitempty"`
-
 	// Id: The ID of the leaderboard.
 	Id string `json:"id,omitempty"`
-
-	// Kind: Uniquely identifies the type of this resource. Value is always
-	// the fixed string `gamesConfiguration#leaderboardConfiguration`.
+	// Kind: Uniquely identifies the type of this resource. Value is always the
+	// fixed string `gamesConfiguration#leaderboardConfiguration`.
 	Kind string `json:"kind,omitempty"`
-
 	// Published: The read-only published data of the leaderboard.
 	Published *LeaderboardConfigurationDetail `json:"published,omitempty"`
-
 	// ScoreMax: Maximum score that can be posted to this leaderboard.
 	ScoreMax int64 `json:"scoreMax,omitempty,string"`
-
 	// ScoreMin: Minimum score that can be posted to this leaderboard.
 	ScoreMin int64 `json:"scoreMin,omitempty,string"`
-
 	// Possible values:
 	//   "SCORE_ORDER_UNSPECIFIED" - Default value. This value is unused.
 	//   "LARGER_IS_BETTER" - Larger scores posted are ranked higher.
 	//   "SMALLER_IS_BETTER" - Smaller scores posted are ranked higher.
 	ScoreOrder string `json:"scoreOrder,omitempty"`
-
 	// Token: The token for this resource.
 	Token string `json:"token,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Draft") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Draft") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Draft") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LeaderboardConfiguration) MarshalJSON() ([]byte, error) {
 	type NoMethod LeaderboardConfiguration
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // LeaderboardConfigurationDetail: A leaderboard configuration detail.
 type LeaderboardConfigurationDetail struct {
-	// IconUrl: The icon url of this leaderboard. Writes to this field are
-	// ignored.
+	// IconUrl: The icon url of this leaderboard. Writes to this field are ignored.
 	IconUrl string `json:"iconUrl,omitempty"`
-
-	// Kind: Uniquely identifies the type of this resource. Value is always
-	// the fixed string `gamesConfiguration#leaderboardConfigurationDetail`.
+	// Kind: Uniquely identifies the type of this resource. Value is always the
+	// fixed string `gamesConfiguration#leaderboardConfigurationDetail`.
 	Kind string `json:"kind,omitempty"`
-
 	// Name: Localized strings for the leaderboard name.
 	Name *LocalizedStringBundle `json:"name,omitempty"`
-
 	// ScoreFormat: The score formatting for the leaderboard.
 	ScoreFormat *GamesNumberFormatConfiguration `json:"scoreFormat,omitempty"`
-
 	// SortRank: The sort rank of this leaderboard. Writes to this field are
 	// ignored.
 	SortRank int64 `json:"sortRank,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "IconUrl") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "IconUrl") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "IconUrl") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "IconUrl") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LeaderboardConfigurationDetail) MarshalJSON() ([]byte, error) {
 	type NoMethod LeaderboardConfigurationDetail
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // LeaderboardConfigurationListResponse: A ListConfigurations response.
 type LeaderboardConfigurationListResponse struct {
 	// Items: The leaderboard configurations.
 	Items []*LeaderboardConfiguration `json:"items,omitempty"`
-
-	// Kind: Uniquely identifies the type of this resource. Value is always
-	// the fixed string
-	// `gamesConfiguration#leaderboardConfigurationListResponse`.
+	// Kind: Uniquely identifies the type of this resource. Value is always the
+	// fixed string `gamesConfiguration#leaderboardConfigurationListResponse`.
 	Kind string `json:"kind,omitempty"`
-
 	// NextPageToken: The pagination token for the next page of results.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Items") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Items") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Items") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LeaderboardConfigurationListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod LeaderboardConfigurationListResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // LocalizedString: A localized string resource.
 type LocalizedString struct {
-	// Kind: Uniquely identifies the type of this resource. Value is always
-	// the fixed string `gamesConfiguration#localizedString`.
+	// Kind: Uniquely identifies the type of this resource. Value is always the
+	// fixed string `gamesConfiguration#localizedString`.
 	Kind string `json:"kind,omitempty"`
-
 	// Locale: The locale string.
 	Locale string `json:"locale,omitempty"`
-
 	// Value: The string value.
 	Value string `json:"value,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Kind") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Kind") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Kind") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Kind") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LocalizedString) MarshalJSON() ([]byte, error) {
 	type NoMethod LocalizedString
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // LocalizedStringBundle: A localized string bundle resource.
 type LocalizedStringBundle struct {
-	// Kind: Uniquely identifies the type of this resource. Value is always
-	// the fixed string `gamesConfiguration#localizedStringBundle`.
+	// Kind: Uniquely identifies the type of this resource. Value is always the
+	// fixed string `gamesConfiguration#localizedStringBundle`.
 	Kind string `json:"kind,omitempty"`
-
 	// Translations: The locale strings.
 	Translations []*LocalizedString `json:"translations,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Kind") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Kind") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Kind") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Kind") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LocalizedStringBundle) MarshalJSON() ([]byte, error) {
 	type NoMethod LocalizedStringBundle
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
-
-// method id "gamesConfiguration.achievementConfigurations.delete":
 
 type AchievementConfigurationsDeleteCall struct {
 	s             *Service
@@ -698,23 +541,21 @@ func (r *AchievementConfigurationsService) Delete(achievementId string) *Achieve
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *AchievementConfigurationsDeleteCall) Fields(s ...googleapi.Field) *AchievementConfigurationsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *AchievementConfigurationsDeleteCall) Context(ctx context.Context) *AchievementConfigurationsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *AchievementConfigurationsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -723,12 +564,7 @@ func (c *AchievementConfigurationsDeleteCall) Header() http.Header {
 }
 
 func (c *AchievementConfigurationsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -754,34 +590,10 @@ func (c *AchievementConfigurationsDeleteCall) Do(opts ...googleapi.CallOption) e
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Delete the achievement configuration with the given ID.",
-	//   "flatPath": "games/v1configuration/achievements/{achievementId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gamesConfiguration.achievementConfigurations.delete",
-	//   "parameterOrder": [
-	//     "achievementId"
-	//   ],
-	//   "parameters": {
-	//     "achievementId": {
-	//       "description": "The ID of the achievement used by this method.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/achievements/{achievementId}",
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }
-
-// method id "gamesConfiguration.achievementConfigurations.get":
 
 type AchievementConfigurationsGetCall struct {
 	s             *Service
@@ -792,8 +604,8 @@ type AchievementConfigurationsGetCall struct {
 	header_       http.Header
 }
 
-// Get: Retrieves the metadata of the achievement configuration with the
-// given ID.
+// Get: Retrieves the metadata of the achievement configuration with the given
+// ID.
 //
 // - achievementId: The ID of the achievement used by this method.
 func (r *AchievementConfigurationsService) Get(achievementId string) *AchievementConfigurationsGetCall {
@@ -803,33 +615,29 @@ func (r *AchievementConfigurationsService) Get(achievementId string) *Achievemen
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *AchievementConfigurationsGetCall) Fields(s ...googleapi.Field) *AchievementConfigurationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *AchievementConfigurationsGetCall) IfNoneMatch(entityTag string) *AchievementConfigurationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *AchievementConfigurationsGetCall) Context(ctx context.Context) *AchievementConfigurationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *AchievementConfigurationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -838,12 +646,7 @@ func (c *AchievementConfigurationsGetCall) Header() http.Header {
 }
 
 func (c *AchievementConfigurationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -864,12 +667,11 @@ func (c *AchievementConfigurationsGetCall) doRequest(alt string) (*http.Response
 }
 
 // Do executes the "gamesConfiguration.achievementConfigurations.get" call.
-// Exactly one of *AchievementConfiguration or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
 // *AchievementConfiguration.ServerResponse.Header or (if a response was
 // returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *AchievementConfigurationsGetCall) Do(opts ...googleapi.CallOption) (*AchievementConfiguration, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -877,17 +679,17 @@ func (c *AchievementConfigurationsGetCall) Do(opts ...googleapi.CallOption) (*Ac
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AchievementConfiguration{
 		ServerResponse: googleapi.ServerResponse{
@@ -900,34 +702,7 @@ func (c *AchievementConfigurationsGetCall) Do(opts ...googleapi.CallOption) (*Ac
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Retrieves the metadata of the achievement configuration with the given ID.",
-	//   "flatPath": "games/v1configuration/achievements/{achievementId}",
-	//   "httpMethod": "GET",
-	//   "id": "gamesConfiguration.achievementConfigurations.get",
-	//   "parameterOrder": [
-	//     "achievementId"
-	//   ],
-	//   "parameters": {
-	//     "achievementId": {
-	//       "description": "The ID of the achievement used by this method.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/achievements/{achievementId}",
-	//   "response": {
-	//     "$ref": "AchievementConfiguration"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }
-
-// method id "gamesConfiguration.achievementConfigurations.insert":
 
 type AchievementConfigurationsInsertCall struct {
 	s                        *Service
@@ -940,8 +715,7 @@ type AchievementConfigurationsInsertCall struct {
 
 // Insert: Insert a new achievement configuration in this application.
 //
-//   - applicationId: The application ID from the Google Play developer
-//     console.
+// - applicationId: The application ID from the Google Play developer console.
 func (r *AchievementConfigurationsService) Insert(applicationId string, achievementconfiguration *AchievementConfiguration) *AchievementConfigurationsInsertCall {
 	c := &AchievementConfigurationsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.applicationId = applicationId
@@ -950,23 +724,21 @@ func (r *AchievementConfigurationsService) Insert(applicationId string, achievem
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *AchievementConfigurationsInsertCall) Fields(s ...googleapi.Field) *AchievementConfigurationsInsertCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *AchievementConfigurationsInsertCall) Context(ctx context.Context) *AchievementConfigurationsInsertCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *AchievementConfigurationsInsertCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -975,18 +747,12 @@ func (c *AchievementConfigurationsInsertCall) Header() http.Header {
 }
 
 func (c *AchievementConfigurationsInsertCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.achievementconfiguration)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "games/v1configuration/applications/{applicationId}/achievements")
@@ -1003,12 +769,11 @@ func (c *AchievementConfigurationsInsertCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "gamesConfiguration.achievementConfigurations.insert" call.
-// Exactly one of *AchievementConfiguration or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
 // *AchievementConfiguration.ServerResponse.Header or (if a response was
 // returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *AchievementConfigurationsInsertCall) Do(opts ...googleapi.CallOption) (*AchievementConfiguration, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1016,17 +781,17 @@ func (c *AchievementConfigurationsInsertCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AchievementConfiguration{
 		ServerResponse: googleapi.ServerResponse{
@@ -1039,37 +804,7 @@ func (c *AchievementConfigurationsInsertCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Insert a new achievement configuration in this application.",
-	//   "flatPath": "games/v1configuration/applications/{applicationId}/achievements",
-	//   "httpMethod": "POST",
-	//   "id": "gamesConfiguration.achievementConfigurations.insert",
-	//   "parameterOrder": [
-	//     "applicationId"
-	//   ],
-	//   "parameters": {
-	//     "applicationId": {
-	//       "description": "The application ID from the Google Play developer console.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/applications/{applicationId}/achievements",
-	//   "request": {
-	//     "$ref": "AchievementConfiguration"
-	//   },
-	//   "response": {
-	//     "$ref": "AchievementConfiguration"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }
-
-// method id "gamesConfiguration.achievementConfigurations.list":
 
 type AchievementConfigurationsListCall struct {
 	s             *Service
@@ -1080,61 +815,55 @@ type AchievementConfigurationsListCall struct {
 	header_       http.Header
 }
 
-// List: Returns a list of the achievement configurations in this
-// application.
+// List: Returns a list of the achievement configurations in this application.
 //
-//   - applicationId: The application ID from the Google Play developer
-//     console.
+// - applicationId: The application ID from the Google Play developer console.
 func (r *AchievementConfigurationsService) List(applicationId string) *AchievementConfigurationsListCall {
 	c := &AchievementConfigurationsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.applicationId = applicationId
 	return c
 }
 
-// MaxResults sets the optional parameter "maxResults": The maximum
-// number of resource configurations to return in the response, used for
-// paging. For any response, the actual number of resources returned may
-// be less than the specified `maxResults`.
+// MaxResults sets the optional parameter "maxResults": The maximum number of
+// resource configurations to return in the response, used for paging. For any
+// response, the actual number of resources returned may be less than the
+// specified `maxResults`.
 func (c *AchievementConfigurationsListCall) MaxResults(maxResults int64) *AchievementConfigurationsListCall {
 	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": The token returned
-// by the previous request.
+// PageToken sets the optional parameter "pageToken": The token returned by the
+// previous request.
 func (c *AchievementConfigurationsListCall) PageToken(pageToken string) *AchievementConfigurationsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *AchievementConfigurationsListCall) Fields(s ...googleapi.Field) *AchievementConfigurationsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *AchievementConfigurationsListCall) IfNoneMatch(entityTag string) *AchievementConfigurationsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *AchievementConfigurationsListCall) Context(ctx context.Context) *AchievementConfigurationsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *AchievementConfigurationsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1143,12 +872,7 @@ func (c *AchievementConfigurationsListCall) Header() http.Header {
 }
 
 func (c *AchievementConfigurationsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1169,13 +893,11 @@ func (c *AchievementConfigurationsListCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "gamesConfiguration.achievementConfigurations.list" call.
-// Exactly one of *AchievementConfigurationListResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *AchievementConfigurationListResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *AchievementConfigurationListResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *AchievementConfigurationsListCall) Do(opts ...googleapi.CallOption) (*AchievementConfigurationListResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1183,17 +905,17 @@ func (c *AchievementConfigurationsListCall) Do(opts ...googleapi.CallOption) (*A
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AchievementConfigurationListResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1206,42 +928,6 @@ func (c *AchievementConfigurationsListCall) Do(opts ...googleapi.CallOption) (*A
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a list of the achievement configurations in this application.",
-	//   "flatPath": "games/v1configuration/applications/{applicationId}/achievements",
-	//   "httpMethod": "GET",
-	//   "id": "gamesConfiguration.achievementConfigurations.list",
-	//   "parameterOrder": [
-	//     "applicationId"
-	//   ],
-	//   "parameters": {
-	//     "applicationId": {
-	//       "description": "The application ID from the Google Play developer console.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "maxResults": {
-	//       "description": "The maximum number of resource configurations to return in the response, used for paging. For any response, the actual number of resources returned may be less than the specified `maxResults`.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "The token returned by the previous request.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/applications/{applicationId}/achievements",
-	//   "response": {
-	//     "$ref": "AchievementConfigurationListResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -1249,7 +935,7 @@ func (c *AchievementConfigurationsListCall) Do(opts ...googleapi.CallOption) (*A
 // The provided context supersedes any context provided to the Context method.
 func (c *AchievementConfigurationsListCall) Pages(ctx context.Context, f func(*AchievementConfigurationListResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -1265,8 +951,6 @@ func (c *AchievementConfigurationsListCall) Pages(ctx context.Context, f func(*A
 	}
 }
 
-// method id "gamesConfiguration.achievementConfigurations.update":
-
 type AchievementConfigurationsUpdateCall struct {
 	s                        *Service
 	achievementId            string
@@ -1276,8 +960,8 @@ type AchievementConfigurationsUpdateCall struct {
 	header_                  http.Header
 }
 
-// Update: Update the metadata of the achievement configuration with the
-// given ID.
+// Update: Update the metadata of the achievement configuration with the given
+// ID.
 //
 // - achievementId: The ID of the achievement used by this method.
 func (r *AchievementConfigurationsService) Update(achievementId string, achievementconfiguration *AchievementConfiguration) *AchievementConfigurationsUpdateCall {
@@ -1288,23 +972,21 @@ func (r *AchievementConfigurationsService) Update(achievementId string, achievem
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *AchievementConfigurationsUpdateCall) Fields(s ...googleapi.Field) *AchievementConfigurationsUpdateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *AchievementConfigurationsUpdateCall) Context(ctx context.Context) *AchievementConfigurationsUpdateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *AchievementConfigurationsUpdateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1313,18 +995,12 @@ func (c *AchievementConfigurationsUpdateCall) Header() http.Header {
 }
 
 func (c *AchievementConfigurationsUpdateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.achievementconfiguration)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "games/v1configuration/achievements/{achievementId}")
@@ -1341,12 +1017,11 @@ func (c *AchievementConfigurationsUpdateCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "gamesConfiguration.achievementConfigurations.update" call.
-// Exactly one of *AchievementConfiguration or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
 // *AchievementConfiguration.ServerResponse.Header or (if a response was
 // returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *AchievementConfigurationsUpdateCall) Do(opts ...googleapi.CallOption) (*AchievementConfiguration, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1354,17 +1029,17 @@ func (c *AchievementConfigurationsUpdateCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AchievementConfiguration{
 		ServerResponse: googleapi.ServerResponse{
@@ -1377,271 +1052,7 @@ func (c *AchievementConfigurationsUpdateCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Update the metadata of the achievement configuration with the given ID.",
-	//   "flatPath": "games/v1configuration/achievements/{achievementId}",
-	//   "httpMethod": "PUT",
-	//   "id": "gamesConfiguration.achievementConfigurations.update",
-	//   "parameterOrder": [
-	//     "achievementId"
-	//   ],
-	//   "parameters": {
-	//     "achievementId": {
-	//       "description": "The ID of the achievement used by this method.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/achievements/{achievementId}",
-	//   "request": {
-	//     "$ref": "AchievementConfiguration"
-	//   },
-	//   "response": {
-	//     "$ref": "AchievementConfiguration"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }
-
-// method id "gamesConfiguration.imageConfigurations.upload":
-
-type ImageConfigurationsUploadCall struct {
-	s          *Service
-	resourceId string
-	imageType  string
-	urlParams_ gensupport.URLParams
-	mediaInfo_ *gensupport.MediaInfo
-	ctx_       context.Context
-	header_    http.Header
-}
-
-// Upload: Uploads an image for a resource with the given ID and image
-// type.
-//
-// - imageType: Selects which image in a resource for this method.
-// - resourceId: The ID of the resource used by this method.
-func (r *ImageConfigurationsService) Upload(resourceId string, imageType string) *ImageConfigurationsUploadCall {
-	c := &ImageConfigurationsUploadCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.resourceId = resourceId
-	c.imageType = imageType
-	return c
-}
-
-// Media specifies the media to upload in one or more chunks. The chunk
-// size may be controlled by supplying a MediaOption generated by
-// googleapi.ChunkSize. The chunk size defaults to
-// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
-// upload request will be determined by sniffing the contents of r,
-// unless a MediaOption generated by googleapi.ContentType is
-// supplied.
-// At most one of Media and ResumableMedia may be set.
-func (c *ImageConfigurationsUploadCall) Media(r io.Reader, options ...googleapi.MediaOption) *ImageConfigurationsUploadCall {
-	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
-	return c
-}
-
-// ResumableMedia specifies the media to upload in chunks and can be
-// canceled with ctx.
-//
-// Deprecated: use Media instead.
-//
-// At most one of Media and ResumableMedia may be set. mediaType
-// identifies the MIME media type of the upload, such as "image/png". If
-// mediaType is "", it will be auto-detected. The provided ctx will
-// supersede any context previously provided to the Context method.
-func (c *ImageConfigurationsUploadCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *ImageConfigurationsUploadCall {
-	c.ctx_ = ctx
-	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
-	return c
-}
-
-// ProgressUpdater provides a callback function that will be called
-// after every chunk. It should be a low-latency function in order to
-// not slow down the upload operation. This should only be called when
-// using ResumableMedia (as opposed to Media).
-func (c *ImageConfigurationsUploadCall) ProgressUpdater(pu googleapi.ProgressUpdater) *ImageConfigurationsUploadCall {
-	c.mediaInfo_.SetProgressUpdater(pu)
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ImageConfigurationsUploadCall) Fields(s ...googleapi.Field) *ImageConfigurationsUploadCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-// This context will supersede any context previously provided to the
-// ResumableMedia method.
-func (c *ImageConfigurationsUploadCall) Context(ctx context.Context) *ImageConfigurationsUploadCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ImageConfigurationsUploadCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ImageConfigurationsUploadCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	var body io.Reader = nil
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "games/v1configuration/images/{resourceId}/imageType/{imageType}")
-	if c.mediaInfo_ != nil {
-		urls = googleapi.ResolveRelative(c.s.BasePath, "/upload/games/v1configuration/images/{resourceId}/imageType/{imageType}")
-		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
-	}
-	if body == nil {
-		body = new(bytes.Buffer)
-		reqHeaders.Set("Content-Type", "application/json")
-	}
-	body, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
-	defer cleanup()
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	req.GetBody = getBody
-	googleapi.Expand(req.URL, map[string]string{
-		"resourceId": c.resourceId,
-		"imageType":  c.imageType,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "gamesConfiguration.imageConfigurations.upload" call.
-// Exactly one of *ImageConfiguration or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ImageConfiguration.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
-func (c *ImageConfigurationsUploadCall) Do(opts ...googleapi.CallOption) (*ImageConfiguration, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
-	if rx != nil {
-		rx.Client = c.s.client
-		rx.UserAgent = c.s.userAgent()
-		ctx := c.ctx_
-		if ctx == nil {
-			ctx = context.TODO()
-		}
-		res, err = rx.Upload(ctx)
-		if err != nil {
-			return nil, err
-		}
-		defer res.Body.Close()
-		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
-		}
-	}
-	ret := &ImageConfiguration{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Uploads an image for a resource with the given ID and image type.",
-	//   "flatPath": "games/v1configuration/images/{resourceId}/imageType/{imageType}",
-	//   "httpMethod": "POST",
-	//   "id": "gamesConfiguration.imageConfigurations.upload",
-	//   "mediaUpload": {
-	//     "accept": [
-	//       "image/*"
-	//     ],
-	//     "maxSize": "15728640",
-	//     "protocols": {
-	//       "simple": {
-	//         "multipart": true,
-	//         "path": "/upload/games/v1configuration/images/{resourceId}/imageType/{imageType}"
-	//       }
-	//     }
-	//   },
-	//   "parameterOrder": [
-	//     "resourceId",
-	//     "imageType"
-	//   ],
-	//   "parameters": {
-	//     "imageType": {
-	//       "description": "Selects which image in a resource for this method.",
-	//       "enum": [
-	//         "IMAGE_TYPE_UNSPECIFIED",
-	//         "ACHIEVEMENT_ICON",
-	//         "LEADERBOARD_ICON"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Default value. This value is unused.",
-	//         "The icon image for an achievement resource.",
-	//         "The icon image for a leaderboard resource."
-	//       ],
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "resourceId": {
-	//       "description": "The ID of the resource used by this method.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/images/{resourceId}/imageType/{imageType}",
-	//   "response": {
-	//     "$ref": "ImageConfiguration"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ],
-	//   "supportsMediaUpload": true
-	// }
-
-}
-
-// method id "gamesConfiguration.leaderboardConfigurations.delete":
 
 type LeaderboardConfigurationsDeleteCall struct {
 	s             *Service
@@ -1661,23 +1072,21 @@ func (r *LeaderboardConfigurationsService) Delete(leaderboardId string) *Leaderb
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LeaderboardConfigurationsDeleteCall) Fields(s ...googleapi.Field) *LeaderboardConfigurationsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LeaderboardConfigurationsDeleteCall) Context(ctx context.Context) *LeaderboardConfigurationsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LeaderboardConfigurationsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1686,12 +1095,7 @@ func (c *LeaderboardConfigurationsDeleteCall) Header() http.Header {
 }
 
 func (c *LeaderboardConfigurationsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -1717,34 +1121,10 @@ func (c *LeaderboardConfigurationsDeleteCall) Do(opts ...googleapi.CallOption) e
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Delete the leaderboard configuration with the given ID.",
-	//   "flatPath": "games/v1configuration/leaderboards/{leaderboardId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gamesConfiguration.leaderboardConfigurations.delete",
-	//   "parameterOrder": [
-	//     "leaderboardId"
-	//   ],
-	//   "parameters": {
-	//     "leaderboardId": {
-	//       "description": "The ID of the leaderboard.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/leaderboards/{leaderboardId}",
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }
-
-// method id "gamesConfiguration.leaderboardConfigurations.get":
 
 type LeaderboardConfigurationsGetCall struct {
 	s             *Service
@@ -1755,8 +1135,8 @@ type LeaderboardConfigurationsGetCall struct {
 	header_       http.Header
 }
 
-// Get: Retrieves the metadata of the leaderboard configuration with the
-// given ID.
+// Get: Retrieves the metadata of the leaderboard configuration with the given
+// ID.
 //
 // - leaderboardId: The ID of the leaderboard.
 func (r *LeaderboardConfigurationsService) Get(leaderboardId string) *LeaderboardConfigurationsGetCall {
@@ -1766,33 +1146,29 @@ func (r *LeaderboardConfigurationsService) Get(leaderboardId string) *Leaderboar
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LeaderboardConfigurationsGetCall) Fields(s ...googleapi.Field) *LeaderboardConfigurationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LeaderboardConfigurationsGetCall) IfNoneMatch(entityTag string) *LeaderboardConfigurationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LeaderboardConfigurationsGetCall) Context(ctx context.Context) *LeaderboardConfigurationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LeaderboardConfigurationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1801,12 +1177,7 @@ func (c *LeaderboardConfigurationsGetCall) Header() http.Header {
 }
 
 func (c *LeaderboardConfigurationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1827,12 +1198,11 @@ func (c *LeaderboardConfigurationsGetCall) doRequest(alt string) (*http.Response
 }
 
 // Do executes the "gamesConfiguration.leaderboardConfigurations.get" call.
-// Exactly one of *LeaderboardConfiguration or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
 // *LeaderboardConfiguration.ServerResponse.Header or (if a response was
 // returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *LeaderboardConfigurationsGetCall) Do(opts ...googleapi.CallOption) (*LeaderboardConfiguration, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1840,17 +1210,17 @@ func (c *LeaderboardConfigurationsGetCall) Do(opts ...googleapi.CallOption) (*Le
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LeaderboardConfiguration{
 		ServerResponse: googleapi.ServerResponse{
@@ -1863,34 +1233,7 @@ func (c *LeaderboardConfigurationsGetCall) Do(opts ...googleapi.CallOption) (*Le
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Retrieves the metadata of the leaderboard configuration with the given ID.",
-	//   "flatPath": "games/v1configuration/leaderboards/{leaderboardId}",
-	//   "httpMethod": "GET",
-	//   "id": "gamesConfiguration.leaderboardConfigurations.get",
-	//   "parameterOrder": [
-	//     "leaderboardId"
-	//   ],
-	//   "parameters": {
-	//     "leaderboardId": {
-	//       "description": "The ID of the leaderboard.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/leaderboards/{leaderboardId}",
-	//   "response": {
-	//     "$ref": "LeaderboardConfiguration"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }
-
-// method id "gamesConfiguration.leaderboardConfigurations.insert":
 
 type LeaderboardConfigurationsInsertCall struct {
 	s                        *Service
@@ -1903,8 +1246,7 @@ type LeaderboardConfigurationsInsertCall struct {
 
 // Insert: Insert a new leaderboard configuration in this application.
 //
-//   - applicationId: The application ID from the Google Play developer
-//     console.
+// - applicationId: The application ID from the Google Play developer console.
 func (r *LeaderboardConfigurationsService) Insert(applicationId string, leaderboardconfiguration *LeaderboardConfiguration) *LeaderboardConfigurationsInsertCall {
 	c := &LeaderboardConfigurationsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.applicationId = applicationId
@@ -1913,23 +1255,21 @@ func (r *LeaderboardConfigurationsService) Insert(applicationId string, leaderbo
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LeaderboardConfigurationsInsertCall) Fields(s ...googleapi.Field) *LeaderboardConfigurationsInsertCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LeaderboardConfigurationsInsertCall) Context(ctx context.Context) *LeaderboardConfigurationsInsertCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LeaderboardConfigurationsInsertCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1938,18 +1278,12 @@ func (c *LeaderboardConfigurationsInsertCall) Header() http.Header {
 }
 
 func (c *LeaderboardConfigurationsInsertCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.leaderboardconfiguration)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "games/v1configuration/applications/{applicationId}/leaderboards")
@@ -1966,12 +1300,11 @@ func (c *LeaderboardConfigurationsInsertCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "gamesConfiguration.leaderboardConfigurations.insert" call.
-// Exactly one of *LeaderboardConfiguration or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
 // *LeaderboardConfiguration.ServerResponse.Header or (if a response was
 // returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *LeaderboardConfigurationsInsertCall) Do(opts ...googleapi.CallOption) (*LeaderboardConfiguration, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1979,17 +1312,17 @@ func (c *LeaderboardConfigurationsInsertCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LeaderboardConfiguration{
 		ServerResponse: googleapi.ServerResponse{
@@ -2002,37 +1335,7 @@ func (c *LeaderboardConfigurationsInsertCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Insert a new leaderboard configuration in this application.",
-	//   "flatPath": "games/v1configuration/applications/{applicationId}/leaderboards",
-	//   "httpMethod": "POST",
-	//   "id": "gamesConfiguration.leaderboardConfigurations.insert",
-	//   "parameterOrder": [
-	//     "applicationId"
-	//   ],
-	//   "parameters": {
-	//     "applicationId": {
-	//       "description": "The application ID from the Google Play developer console.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/applications/{applicationId}/leaderboards",
-	//   "request": {
-	//     "$ref": "LeaderboardConfiguration"
-	//   },
-	//   "response": {
-	//     "$ref": "LeaderboardConfiguration"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }
-
-// method id "gamesConfiguration.leaderboardConfigurations.list":
 
 type LeaderboardConfigurationsListCall struct {
 	s             *Service
@@ -2043,61 +1346,55 @@ type LeaderboardConfigurationsListCall struct {
 	header_       http.Header
 }
 
-// List: Returns a list of the leaderboard configurations in this
-// application.
+// List: Returns a list of the leaderboard configurations in this application.
 //
-//   - applicationId: The application ID from the Google Play developer
-//     console.
+// - applicationId: The application ID from the Google Play developer console.
 func (r *LeaderboardConfigurationsService) List(applicationId string) *LeaderboardConfigurationsListCall {
 	c := &LeaderboardConfigurationsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.applicationId = applicationId
 	return c
 }
 
-// MaxResults sets the optional parameter "maxResults": The maximum
-// number of resource configurations to return in the response, used for
-// paging. For any response, the actual number of resources returned may
-// be less than the specified `maxResults`.
+// MaxResults sets the optional parameter "maxResults": The maximum number of
+// resource configurations to return in the response, used for paging. For any
+// response, the actual number of resources returned may be less than the
+// specified `maxResults`.
 func (c *LeaderboardConfigurationsListCall) MaxResults(maxResults int64) *LeaderboardConfigurationsListCall {
 	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": The token returned
-// by the previous request.
+// PageToken sets the optional parameter "pageToken": The token returned by the
+// previous request.
 func (c *LeaderboardConfigurationsListCall) PageToken(pageToken string) *LeaderboardConfigurationsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LeaderboardConfigurationsListCall) Fields(s ...googleapi.Field) *LeaderboardConfigurationsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LeaderboardConfigurationsListCall) IfNoneMatch(entityTag string) *LeaderboardConfigurationsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LeaderboardConfigurationsListCall) Context(ctx context.Context) *LeaderboardConfigurationsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LeaderboardConfigurationsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2106,12 +1403,7 @@ func (c *LeaderboardConfigurationsListCall) Header() http.Header {
 }
 
 func (c *LeaderboardConfigurationsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -2132,13 +1424,11 @@ func (c *LeaderboardConfigurationsListCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "gamesConfiguration.leaderboardConfigurations.list" call.
-// Exactly one of *LeaderboardConfigurationListResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *LeaderboardConfigurationListResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *LeaderboardConfigurationListResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *LeaderboardConfigurationsListCall) Do(opts ...googleapi.CallOption) (*LeaderboardConfigurationListResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2146,17 +1436,17 @@ func (c *LeaderboardConfigurationsListCall) Do(opts ...googleapi.CallOption) (*L
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LeaderboardConfigurationListResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -2169,42 +1459,6 @@ func (c *LeaderboardConfigurationsListCall) Do(opts ...googleapi.CallOption) (*L
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a list of the leaderboard configurations in this application.",
-	//   "flatPath": "games/v1configuration/applications/{applicationId}/leaderboards",
-	//   "httpMethod": "GET",
-	//   "id": "gamesConfiguration.leaderboardConfigurations.list",
-	//   "parameterOrder": [
-	//     "applicationId"
-	//   ],
-	//   "parameters": {
-	//     "applicationId": {
-	//       "description": "The application ID from the Google Play developer console.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "maxResults": {
-	//       "description": "The maximum number of resource configurations to return in the response, used for paging. For any response, the actual number of resources returned may be less than the specified `maxResults`.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "The token returned by the previous request.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/applications/{applicationId}/leaderboards",
-	//   "response": {
-	//     "$ref": "LeaderboardConfigurationListResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -2212,7 +1466,7 @@ func (c *LeaderboardConfigurationsListCall) Do(opts ...googleapi.CallOption) (*L
 // The provided context supersedes any context provided to the Context method.
 func (c *LeaderboardConfigurationsListCall) Pages(ctx context.Context, f func(*LeaderboardConfigurationListResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -2228,8 +1482,6 @@ func (c *LeaderboardConfigurationsListCall) Pages(ctx context.Context, f func(*L
 	}
 }
 
-// method id "gamesConfiguration.leaderboardConfigurations.update":
-
 type LeaderboardConfigurationsUpdateCall struct {
 	s                        *Service
 	leaderboardId            string
@@ -2239,8 +1491,8 @@ type LeaderboardConfigurationsUpdateCall struct {
 	header_                  http.Header
 }
 
-// Update: Update the metadata of the leaderboard configuration with the
-// given ID.
+// Update: Update the metadata of the leaderboard configuration with the given
+// ID.
 //
 // - leaderboardId: The ID of the leaderboard.
 func (r *LeaderboardConfigurationsService) Update(leaderboardId string, leaderboardconfiguration *LeaderboardConfiguration) *LeaderboardConfigurationsUpdateCall {
@@ -2251,23 +1503,21 @@ func (r *LeaderboardConfigurationsService) Update(leaderboardId string, leaderbo
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LeaderboardConfigurationsUpdateCall) Fields(s ...googleapi.Field) *LeaderboardConfigurationsUpdateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LeaderboardConfigurationsUpdateCall) Context(ctx context.Context) *LeaderboardConfigurationsUpdateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LeaderboardConfigurationsUpdateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2276,18 +1526,12 @@ func (c *LeaderboardConfigurationsUpdateCall) Header() http.Header {
 }
 
 func (c *LeaderboardConfigurationsUpdateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.leaderboardconfiguration)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "games/v1configuration/leaderboards/{leaderboardId}")
@@ -2304,12 +1548,11 @@ func (c *LeaderboardConfigurationsUpdateCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "gamesConfiguration.leaderboardConfigurations.update" call.
-// Exactly one of *LeaderboardConfiguration or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
 // *LeaderboardConfiguration.ServerResponse.Header or (if a response was
 // returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *LeaderboardConfigurationsUpdateCall) Do(opts ...googleapi.CallOption) (*LeaderboardConfiguration, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2317,17 +1560,17 @@ func (c *LeaderboardConfigurationsUpdateCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LeaderboardConfiguration{
 		ServerResponse: googleapi.ServerResponse{
@@ -2340,32 +1583,4 @@ func (c *LeaderboardConfigurationsUpdateCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Update the metadata of the leaderboard configuration with the given ID.",
-	//   "flatPath": "games/v1configuration/leaderboards/{leaderboardId}",
-	//   "httpMethod": "PUT",
-	//   "id": "gamesConfiguration.leaderboardConfigurations.update",
-	//   "parameterOrder": [
-	//     "leaderboardId"
-	//   ],
-	//   "parameters": {
-	//     "leaderboardId": {
-	//       "description": "The ID of the leaderboard.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "games/v1configuration/leaderboards/{leaderboardId}",
-	//   "request": {
-	//     "$ref": "LeaderboardConfiguration"
-	//   },
-	//   "response": {
-	//     "$ref": "LeaderboardConfiguration"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/androidpublisher"
-	//   ]
-	// }
-
 }

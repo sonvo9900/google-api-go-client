@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -26,6 +26,7 @@ func TestTokenSource_user(t *testing.T) {
 		lifetime        time.Duration
 		subject         string
 		wantErr         bool
+		universeDomain  string
 	}{
 		{
 			name:    "missing targetPrincipal",
@@ -50,6 +51,16 @@ func TestTokenSource_user(t *testing.T) {
 			subject:         "admin@example.com",
 			wantErr:         false,
 		},
+		{
+			name:            "universeDomain",
+			targetPrincipal: "foo@project-id.iam.gserviceaccount.com",
+			scopes:          []string{"scope"},
+			subject:         "admin@example.com",
+			wantErr:         true,
+			// Non-GDU Universe Domain should result in error if
+			// CredentialsConfig.Subject is present for domain-wide delegation.
+			universeDomain: "example.com",
+		},
 	}
 
 	for _, tt := range tests {
@@ -69,7 +80,7 @@ func TestTokenSource_user(t *testing.T) {
 						}
 						return &http.Response{
 							StatusCode: 200,
-							Body:       ioutil.NopCloser(bytes.NewReader(b)),
+							Body:       io.NopCloser(bytes.NewReader(b)),
 							Header:     make(http.Header),
 						}
 					}
@@ -85,19 +96,22 @@ func TestTokenSource_user(t *testing.T) {
 						}
 						return &http.Response{
 							StatusCode: 200,
-							Body:       ioutil.NopCloser(bytes.NewReader(b)),
+							Body:       io.NopCloser(bytes.NewReader(b)),
 							Header:     make(http.Header),
 						}
 					}
 					return nil
 				}),
 			}
-			ts, err := CredentialsTokenSource(ctx, CredentialsConfig{
-				TargetPrincipal: tt.targetPrincipal,
-				Scopes:          tt.scopes,
-				Lifetime:        tt.lifetime,
-				Subject:         tt.subject,
-			}, option.WithHTTPClient(client))
+			ts, err := CredentialsTokenSource(ctx,
+				CredentialsConfig{
+					TargetPrincipal: tt.targetPrincipal,
+					Scopes:          tt.scopes,
+					Lifetime:        tt.lifetime,
+					Subject:         tt.subject,
+				},
+				option.WithHTTPClient(client),
+				option.WithUniverseDomain(tt.universeDomain))
 			if tt.wantErr && err != nil {
 				return
 			}

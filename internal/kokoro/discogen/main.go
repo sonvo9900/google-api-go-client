@@ -17,7 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v61/github"
 	"golang.org/x/oauth2"
 )
 

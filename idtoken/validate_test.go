@@ -14,7 +14,7 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"math/big"
 	"net/http"
 	"testing"
@@ -97,7 +97,7 @@ func TestValidateRS256(t *testing.T) {
 					}
 					return &http.Response{
 						StatusCode: 200,
-						Body:       ioutil.NopCloser(bytes.NewReader(b)),
+						Body:       io.NopCloser(bytes.NewReader(b)),
 						Header:     make(http.Header),
 					}
 				}),
@@ -207,7 +207,7 @@ func TestValidateES256(t *testing.T) {
 					}
 					return &http.Response{
 						StatusCode: 200,
-						Body:       ioutil.NopCloser(bytes.NewReader(b)),
+						Body:       io.NopCloser(bytes.NewReader(b)),
 						Header:     make(http.Header),
 					}
 				}),
@@ -226,6 +226,39 @@ func TestValidateES256(t *testing.T) {
 			}
 			if !tt.wantErr && payload.Audience != testAudience {
 				t.Fatalf("got %v, want %v", payload.Audience, testAudience)
+			}
+		})
+	}
+}
+
+func TestParsePayload(t *testing.T) {
+	idToken, _ := createRS256JWT(t)
+	tests := []struct {
+		name                string
+		token               string
+		wantPayloadAudience string
+		wantErr             bool
+	}{{
+		name:                "valid token",
+		token:               idToken,
+		wantPayloadAudience: testAudience,
+	}, {
+		name:    "unparseable token",
+		token:   "aaa.bbb.ccc",
+		wantErr: true,
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			payload, err := ParsePayload(tt.token)
+			gotErr := err != nil
+			if gotErr != tt.wantErr {
+				t.Errorf("ParsePayload(%q) got error %v, wantErr = %v", tt.token, err, tt.wantErr)
+			}
+			if tt.wantPayloadAudience != "" {
+				if payload == nil || payload.Audience != tt.wantPayloadAudience {
+					t.Errorf("ParsePayload(%q) got payload %+v, want payload with audience = %q", tt.token, payload, tt.wantPayloadAudience)
+				}
 			}
 		})
 	}

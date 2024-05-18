@@ -73,6 +73,7 @@ func TestApply(t *testing.T) {
 		WithQuotaProject("user-project"),
 		WithRequestReason("Request Reason"),
 		WithTelemetryDisabled(),
+		WithUniverseDomain("universe.com"),
 	}
 	var got internal.DialSettings
 	for _, opt := range opts {
@@ -91,9 +92,14 @@ func TestApply(t *testing.T) {
 		QuotaProject:      "user-project",
 		RequestReason:     "Request Reason",
 		TelemetryDisabled: true,
+		UniverseDomain:    "universe.com",
 	}
-	if !cmp.Equal(got, want, cmpopts.IgnoreUnexported(grpc.ClientConn{})) {
-		t.Errorf(cmp.Diff(got, want, cmpopts.IgnoreUnexported(grpc.ClientConn{})))
+	ignore := []cmp.Option{
+		cmpopts.IgnoreUnexported(grpc.ClientConn{}),
+		cmpopts.IgnoreFields(google.Credentials{}, "udMu", "universeDomain"),
+	}
+	if !cmp.Equal(got, want, ignore...) {
+		t.Errorf(cmp.Diff(got, want, ignore...))
 	}
 }
 

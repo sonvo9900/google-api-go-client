@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package smartdevicemanagement provides access to the Smart Device Management API.
 //
 // For product documentation, see: https://developers.google.com/nest/device-access
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,24 +28,26 @@
 //	ctx := context.Background()
 //	smartdevicemanagementService, err := smartdevicemanagement.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	smartdevicemanagementService, err := smartdevicemanagement.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	smartdevicemanagementService, err := smartdevicemanagement.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package smartdevicemanagement // import "google.golang.org/api/smartdevicemanagement/v1"
 
 import (
@@ -71,11 +84,13 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "smartdevicemanagement:v1"
 const apiName = "smartdevicemanagement"
 const apiVersion = "v1"
 const basePath = "https://smartdevicemanagement.googleapis.com/"
+const basePathTemplate = "https://smartdevicemanagement.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://smartdevicemanagement.mtls.googleapis.com/"
 
 // OAuth2 scopes used by this API.
@@ -92,7 +107,9 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -181,116 +198,92 @@ type EnterprisesStructuresRoomsService struct {
 	s *Service
 }
 
-// GoogleHomeEnterpriseSdmV1Device: Device resource represents an
-// instance of enterprise managed device in the property.
+// GoogleHomeEnterpriseSdmV1Device: Device resource represents an instance of
+// enterprise managed device in the property.
 type GoogleHomeEnterpriseSdmV1Device struct {
 	// Name: Required. The resource name of the device. For example:
 	// "enterprises/XYZ/devices/123".
 	Name string `json:"name,omitempty"`
-
 	// ParentRelations: Assignee details of the device.
 	ParentRelations []*GoogleHomeEnterpriseSdmV1ParentRelation `json:"parentRelations,omitempty"`
-
 	// Traits: Output only. Device traits.
 	Traits googleapi.RawMessage `json:"traits,omitempty"`
-
-	// Type: Output only. Type of the device for general display purposes.
-	// For example: "THERMOSTAT". The device type should not be used to
-	// deduce or infer functionality of the actual device it is assigned to.
-	// Instead, use the returned traits for the device.
+	// Type: Output only. Type of the device for general display purposes. For
+	// example: "THERMOSTAT". The device type should not be used to deduce or infer
+	// functionality of the actual device it is assigned to. Instead, use the
+	// returned traits for the device.
 	Type string `json:"type,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Name") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Name") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Name") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Name") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleHomeEnterpriseSdmV1Device) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleHomeEnterpriseSdmV1Device
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandRequest: Request message
-// for SmartDeviceManagementService.ExecuteDeviceCommand
+// GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandRequest: Request message for
+// SmartDeviceManagementService.ExecuteDeviceCommand
 type GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandRequest struct {
-	// Command: The command name to execute, represented by the fully
-	// qualified protobuf message name.
+	// Command: The command name to execute, represented by the fully qualified
+	// protobuf message name.
 	Command string `json:"command,omitempty"`
-
 	// Params: The command message to execute, represented as a Struct.
 	Params googleapi.RawMessage `json:"params,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Command") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Command") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Command") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Command") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse: Response
-// message for SmartDeviceManagementService.ExecuteDeviceCommand
+// GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse: Response message for
+// SmartDeviceManagementService.ExecuteDeviceCommand
 type GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse struct {
 	// Results: The results of executing the command.
 	Results googleapi.RawMessage `json:"results,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Results") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Results") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Results") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Results") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleHomeEnterpriseSdmV1ListDevicesResponse: Response message for
@@ -299,184 +292,134 @@ type GoogleHomeEnterpriseSdmV1ListDevicesResponse struct {
 	// Devices: The list of devices.
 	Devices []*GoogleHomeEnterpriseSdmV1Device `json:"devices,omitempty"`
 
-	// NextPageToken: The pagination token to retrieve the next page of
-	// results.
-	NextPageToken string `json:"nextPageToken,omitempty"`
-
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Devices") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Devices") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Devices") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Devices") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleHomeEnterpriseSdmV1ListDevicesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleHomeEnterpriseSdmV1ListDevicesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleHomeEnterpriseSdmV1ListRoomsResponse: Response message for
 // SmartDeviceManagementService.ListRooms
 type GoogleHomeEnterpriseSdmV1ListRoomsResponse struct {
-	// NextPageToken: The pagination token to retrieve the next page of
-	// results. If this field is omitted, there are no subsequent pages.
-	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Rooms: The list of rooms.
 	Rooms []*GoogleHomeEnterpriseSdmV1Room `json:"rooms,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Rooms") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Rooms") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleHomeEnterpriseSdmV1ListRoomsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleHomeEnterpriseSdmV1ListRoomsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleHomeEnterpriseSdmV1ListStructuresResponse: Response message for
 // SmartDeviceManagementService.ListStructures
 type GoogleHomeEnterpriseSdmV1ListStructuresResponse struct {
-	// NextPageToken: The pagination token to retrieve the next page of
-	// results. If this field is omitted, there are no subsequent pages.
-	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Structures: The list of structures.
 	Structures []*GoogleHomeEnterpriseSdmV1Structure `json:"structures,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Structures") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Structures") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleHomeEnterpriseSdmV1ListStructuresResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleHomeEnterpriseSdmV1ListStructuresResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleHomeEnterpriseSdmV1ParentRelation: Represents device
-// relationships, for instance, structure/room to which the device is
-// assigned to.
+// GoogleHomeEnterpriseSdmV1ParentRelation: Represents device relationships,
+// for instance, structure/room to which the device is assigned to.
 type GoogleHomeEnterpriseSdmV1ParentRelation struct {
 	// DisplayName: Output only. The custom name of the relation -- e.g.,
 	// structure/room where the device is assigned to.
 	DisplayName string `json:"displayName,omitempty"`
-
-	// Parent: Output only. The name of the relation -- e.g., structure/room
-	// where the device is assigned to. For example:
-	// "enterprises/XYZ/structures/ABC" or
+	// Parent: Output only. The name of the relation -- e.g., structure/room where
+	// the device is assigned to. For example: "enterprises/XYZ/structures/ABC" or
 	// "enterprises/XYZ/structures/ABC/rooms/123"
 	Parent string `json:"parent,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "DisplayName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DisplayName") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "DisplayName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleHomeEnterpriseSdmV1ParentRelation) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleHomeEnterpriseSdmV1ParentRelation
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleHomeEnterpriseSdmV1Room: Room resource represents an instance
-// of sub-space within a structure such as rooms in a hotel suite or
-// rental apartment.
+// GoogleHomeEnterpriseSdmV1Room: Room resource represents an instance of
+// sub-space within a structure such as rooms in a hotel suite or rental
+// apartment.
 type GoogleHomeEnterpriseSdmV1Room struct {
 	// Name: Output only. The resource name of the room. For example:
 	// "enterprises/XYZ/structures/ABC/rooms/123".
 	Name string `json:"name,omitempty"`
-
 	// Traits: Room traits.
 	Traits googleapi.RawMessage `json:"traits,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Name") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Name") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Name") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Name") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleHomeEnterpriseSdmV1Room) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleHomeEnterpriseSdmV1Room
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleHomeEnterpriseSdmV1Structure: Structure resource represents an
@@ -485,38 +428,28 @@ type GoogleHomeEnterpriseSdmV1Structure struct {
 	// Name: Output only. The resource name of the structure. For example:
 	// "enterprises/XYZ/structures/ABC".
 	Name string `json:"name,omitempty"`
-
 	// Traits: Structure traits.
 	Traits googleapi.RawMessage `json:"traits,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Name") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Name") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Name") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Name") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleHomeEnterpriseSdmV1Structure) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleHomeEnterpriseSdmV1Structure
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
-
-// method id "smartdevicemanagement.enterprises.devices.executeCommand":
 
 type EnterprisesDevicesExecuteCommandCall struct {
 	s                                                    *Service
@@ -527,8 +460,7 @@ type EnterprisesDevicesExecuteCommandCall struct {
 	header_                                              http.Header
 }
 
-// ExecuteCommand: Executes a command to device managed by the
-// enterprise.
+// ExecuteCommand: Executes a command to device managed by the enterprise.
 //
 //   - name: The name of the device requested. For example:
 //     "enterprises/XYZ/devices/123".
@@ -540,23 +472,21 @@ func (r *EnterprisesDevicesService) ExecuteCommand(name string, googlehomeenterp
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *EnterprisesDevicesExecuteCommandCall) Fields(s ...googleapi.Field) *EnterprisesDevicesExecuteCommandCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *EnterprisesDevicesExecuteCommandCall) Context(ctx context.Context) *EnterprisesDevicesExecuteCommandCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *EnterprisesDevicesExecuteCommandCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -565,18 +495,12 @@ func (c *EnterprisesDevicesExecuteCommandCall) Header() http.Header {
 }
 
 func (c *EnterprisesDevicesExecuteCommandCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlehomeenterprisesdmv1executedevicecommandrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:executeCommand")
@@ -593,14 +517,11 @@ func (c *EnterprisesDevicesExecuteCommandCall) doRequest(alt string) (*http.Resp
 }
 
 // Do executes the "smartdevicemanagement.enterprises.devices.executeCommand" call.
-// Exactly one of *GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse
-// or error will be non-nil. Any non-2xx status code is an error.
-// Response headers are in either
-// *GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse.ServerResponse.
-// Header or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse.ServerResponse.Header
+// or (if a response was returned at all) in error.(*googleapi.Error).Header.
+// Use googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *EnterprisesDevicesExecuteCommandCall) Do(opts ...googleapi.CallOption) (*GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -608,17 +529,17 @@ func (c *EnterprisesDevicesExecuteCommandCall) Do(opts ...googleapi.CallOption) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -631,38 +552,7 @@ func (c *EnterprisesDevicesExecuteCommandCall) Do(opts ...googleapi.CallOption) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Executes a command to device managed by the enterprise.",
-	//   "flatPath": "v1/enterprises/{enterprisesId}/devices/{devicesId}:executeCommand",
-	//   "httpMethod": "POST",
-	//   "id": "smartdevicemanagement.enterprises.devices.executeCommand",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the device requested. For example: \"enterprises/XYZ/devices/123\"",
-	//       "location": "path",
-	//       "pattern": "^enterprises/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:executeCommand",
-	//   "request": {
-	//     "$ref": "GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleHomeEnterpriseSdmV1ExecuteDeviceCommandResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sdm.service"
-	//   ]
-	// }
-
 }
-
-// method id "smartdevicemanagement.enterprises.devices.get":
 
 type EnterprisesDevicesGetCall struct {
 	s            *Service
@@ -684,33 +574,29 @@ func (r *EnterprisesDevicesService) Get(name string) *EnterprisesDevicesGetCall 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *EnterprisesDevicesGetCall) Fields(s ...googleapi.Field) *EnterprisesDevicesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *EnterprisesDevicesGetCall) IfNoneMatch(entityTag string) *EnterprisesDevicesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *EnterprisesDevicesGetCall) Context(ctx context.Context) *EnterprisesDevicesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *EnterprisesDevicesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -719,12 +605,7 @@ func (c *EnterprisesDevicesGetCall) Header() http.Header {
 }
 
 func (c *EnterprisesDevicesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -745,12 +626,11 @@ func (c *EnterprisesDevicesGetCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "smartdevicemanagement.enterprises.devices.get" call.
-// Exactly one of *GoogleHomeEnterpriseSdmV1Device or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *GoogleHomeEnterpriseSdmV1Device.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleHomeEnterpriseSdmV1Device.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *EnterprisesDevicesGetCall) Do(opts ...googleapi.CallOption) (*GoogleHomeEnterpriseSdmV1Device, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -758,17 +638,17 @@ func (c *EnterprisesDevicesGetCall) Do(opts ...googleapi.CallOption) (*GoogleHom
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleHomeEnterpriseSdmV1Device{
 		ServerResponse: googleapi.ServerResponse{
@@ -781,35 +661,7 @@ func (c *EnterprisesDevicesGetCall) Do(opts ...googleapi.CallOption) (*GoogleHom
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a device managed by the enterprise.",
-	//   "flatPath": "v1/enterprises/{enterprisesId}/devices/{devicesId}",
-	//   "httpMethod": "GET",
-	//   "id": "smartdevicemanagement.enterprises.devices.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the device requested. For example: \"enterprises/XYZ/devices/123\"",
-	//       "location": "path",
-	//       "pattern": "^enterprises/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleHomeEnterpriseSdmV1Device"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sdm.service"
-	//   ]
-	// }
-
 }
-
-// method id "smartdevicemanagement.enterprises.devices.list":
 
 type EnterprisesDevicesListCall struct {
 	s            *Service
@@ -831,56 +683,37 @@ func (r *EnterprisesDevicesService) List(parent string) *EnterprisesDevicesListC
 }
 
 // Filter sets the optional parameter "filter": Optional filter to list
-// devices. Filters can be done on: Device custom name (substring
-// match): 'customName=wing'
+// devices. Filters can be done on: Device custom name (substring match):
+// 'customName=wing'
 func (c *EnterprisesDevicesListCall) Filter(filter string) *EnterprisesDevicesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": Optional requested
-// page size. Server may return fewer devices than requested. If
-// unspecified, server will pick an appropriate default.
-func (c *EnterprisesDevicesListCall) PageSize(pageSize int64) *EnterprisesDevicesListCall {
-	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
-	return c
-}
-
-// PageToken sets the optional parameter "pageToken": Optional token of
-// the page to retrieve.
-func (c *EnterprisesDevicesListCall) PageToken(pageToken string) *EnterprisesDevicesListCall {
-	c.urlParams_.Set("pageToken", pageToken)
-	return c
-}
-
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *EnterprisesDevicesListCall) Fields(s ...googleapi.Field) *EnterprisesDevicesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *EnterprisesDevicesListCall) IfNoneMatch(entityTag string) *EnterprisesDevicesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *EnterprisesDevicesListCall) Context(ctx context.Context) *EnterprisesDevicesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *EnterprisesDevicesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -889,12 +722,7 @@ func (c *EnterprisesDevicesListCall) Header() http.Header {
 }
 
 func (c *EnterprisesDevicesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -915,14 +743,11 @@ func (c *EnterprisesDevicesListCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "smartdevicemanagement.enterprises.devices.list" call.
-// Exactly one of *GoogleHomeEnterpriseSdmV1ListDevicesResponse or error
-// will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleHomeEnterpriseSdmV1ListDevicesResponse.ServerResponse.Header
-// or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleHomeEnterpriseSdmV1ListDevicesResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *EnterprisesDevicesListCall) Do(opts ...googleapi.CallOption) (*GoogleHomeEnterpriseSdmV1ListDevicesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -930,17 +755,17 @@ func (c *EnterprisesDevicesListCall) Do(opts ...googleapi.CallOption) (*GoogleHo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleHomeEnterpriseSdmV1ListDevicesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -953,72 +778,7 @@ func (c *EnterprisesDevicesListCall) Do(opts ...googleapi.CallOption) (*GoogleHo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists devices managed by the enterprise.",
-	//   "flatPath": "v1/enterprises/{enterprisesId}/devices",
-	//   "httpMethod": "GET",
-	//   "id": "smartdevicemanagement.enterprises.devices.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "Optional filter to list devices. Filters can be done on: Device custom name (substring match): 'customName=wing'",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional requested page size. Server may return fewer devices than requested. If unspecified, server will pick an appropriate default.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional token of the page to retrieve.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "The parent enterprise to list devices under. E.g. \"enterprises/XYZ\".",
-	//       "location": "path",
-	//       "pattern": "^enterprises/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/devices",
-	//   "response": {
-	//     "$ref": "GoogleHomeEnterpriseSdmV1ListDevicesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sdm.service"
-	//   ]
-	// }
-
 }
-
-// Pages invokes f for each page of results.
-// A non-nil error returned from f will halt the iteration.
-// The provided context supersedes any context provided to the Context method.
-func (c *EnterprisesDevicesListCall) Pages(ctx context.Context, f func(*GoogleHomeEnterpriseSdmV1ListDevicesResponse) error) error {
-	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
-	for {
-		x, err := c.Do()
-		if err != nil {
-			return err
-		}
-		if err := f(x); err != nil {
-			return err
-		}
-		if x.NextPageToken == "" {
-			return nil
-		}
-		c.PageToken(x.NextPageToken)
-	}
-}
-
-// method id "smartdevicemanagement.enterprises.structures.get":
 
 type EnterprisesStructuresGetCall struct {
 	s            *Service
@@ -1040,33 +800,29 @@ func (r *EnterprisesStructuresService) Get(name string) *EnterprisesStructuresGe
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *EnterprisesStructuresGetCall) Fields(s ...googleapi.Field) *EnterprisesStructuresGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *EnterprisesStructuresGetCall) IfNoneMatch(entityTag string) *EnterprisesStructuresGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *EnterprisesStructuresGetCall) Context(ctx context.Context) *EnterprisesStructuresGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *EnterprisesStructuresGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1075,12 +831,7 @@ func (c *EnterprisesStructuresGetCall) Header() http.Header {
 }
 
 func (c *EnterprisesStructuresGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1101,13 +852,11 @@ func (c *EnterprisesStructuresGetCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "smartdevicemanagement.enterprises.structures.get" call.
-// Exactly one of *GoogleHomeEnterpriseSdmV1Structure or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *GoogleHomeEnterpriseSdmV1Structure.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleHomeEnterpriseSdmV1Structure.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *EnterprisesStructuresGetCall) Do(opts ...googleapi.CallOption) (*GoogleHomeEnterpriseSdmV1Structure, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1115,17 +864,17 @@ func (c *EnterprisesStructuresGetCall) Do(opts ...googleapi.CallOption) (*Google
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleHomeEnterpriseSdmV1Structure{
 		ServerResponse: googleapi.ServerResponse{
@@ -1138,35 +887,7 @@ func (c *EnterprisesStructuresGetCall) Do(opts ...googleapi.CallOption) (*Google
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a structure managed by the enterprise.",
-	//   "flatPath": "v1/enterprises/{enterprisesId}/structures/{structuresId}",
-	//   "httpMethod": "GET",
-	//   "id": "smartdevicemanagement.enterprises.structures.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the structure requested. For example: \"enterprises/XYZ/structures/ABC\".",
-	//       "location": "path",
-	//       "pattern": "^enterprises/[^/]+/structures/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleHomeEnterpriseSdmV1Structure"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sdm.service"
-	//   ]
-	// }
-
 }
-
-// method id "smartdevicemanagement.enterprises.structures.list":
 
 type EnterprisesStructuresListCall struct {
 	s            *Service
@@ -1194,49 +915,30 @@ func (c *EnterprisesStructuresListCall) Filter(filter string) *EnterprisesStruct
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": Requested page size.
-// Server may return fewer structures than requested. If unspecified,
-// server will pick an appropriate default.
-func (c *EnterprisesStructuresListCall) PageSize(pageSize int64) *EnterprisesStructuresListCall {
-	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
-	return c
-}
-
-// PageToken sets the optional parameter "pageToken": The token of the
-// page to retrieve.
-func (c *EnterprisesStructuresListCall) PageToken(pageToken string) *EnterprisesStructuresListCall {
-	c.urlParams_.Set("pageToken", pageToken)
-	return c
-}
-
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *EnterprisesStructuresListCall) Fields(s ...googleapi.Field) *EnterprisesStructuresListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *EnterprisesStructuresListCall) IfNoneMatch(entityTag string) *EnterprisesStructuresListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *EnterprisesStructuresListCall) Context(ctx context.Context) *EnterprisesStructuresListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *EnterprisesStructuresListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1245,12 +947,7 @@ func (c *EnterprisesStructuresListCall) Header() http.Header {
 }
 
 func (c *EnterprisesStructuresListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1271,16 +968,11 @@ func (c *EnterprisesStructuresListCall) doRequest(alt string) (*http.Response, e
 }
 
 // Do executes the "smartdevicemanagement.enterprises.structures.list" call.
-// Exactly one of *GoogleHomeEnterpriseSdmV1ListStructuresResponse or
-// error will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleHomeEnterpriseSdmV1ListStructuresResponse.ServerResponse.Header
-//
-//	or (if a response was returned at all) in
-//
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleHomeEnterpriseSdmV1ListStructuresResponse.ServerResponse.Header or
+// (if a response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *EnterprisesStructuresListCall) Do(opts ...googleapi.CallOption) (*GoogleHomeEnterpriseSdmV1ListStructuresResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1288,17 +980,17 @@ func (c *EnterprisesStructuresListCall) Do(opts ...googleapi.CallOption) (*Googl
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleHomeEnterpriseSdmV1ListStructuresResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1311,72 +1003,7 @@ func (c *EnterprisesStructuresListCall) Do(opts ...googleapi.CallOption) (*Googl
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists structures managed by the enterprise.",
-	//   "flatPath": "v1/enterprises/{enterprisesId}/structures",
-	//   "httpMethod": "GET",
-	//   "id": "smartdevicemanagement.enterprises.structures.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "Optional filter to list structures.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Requested page size. Server may return fewer structures than requested. If unspecified, server will pick an appropriate default.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "The token of the page to retrieve.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "The parent enterprise to list structures under. E.g. \"enterprises/XYZ\".",
-	//       "location": "path",
-	//       "pattern": "^enterprises/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/structures",
-	//   "response": {
-	//     "$ref": "GoogleHomeEnterpriseSdmV1ListStructuresResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sdm.service"
-	//   ]
-	// }
-
 }
-
-// Pages invokes f for each page of results.
-// A non-nil error returned from f will halt the iteration.
-// The provided context supersedes any context provided to the Context method.
-func (c *EnterprisesStructuresListCall) Pages(ctx context.Context, f func(*GoogleHomeEnterpriseSdmV1ListStructuresResponse) error) error {
-	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
-	for {
-		x, err := c.Do()
-		if err != nil {
-			return err
-		}
-		if err := f(x); err != nil {
-			return err
-		}
-		if x.NextPageToken == "" {
-			return nil
-		}
-		c.PageToken(x.NextPageToken)
-	}
-}
-
-// method id "smartdevicemanagement.enterprises.structures.rooms.get":
 
 type EnterprisesStructuresRoomsGetCall struct {
 	s            *Service
@@ -1398,33 +1025,29 @@ func (r *EnterprisesStructuresRoomsService) Get(name string) *EnterprisesStructu
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *EnterprisesStructuresRoomsGetCall) Fields(s ...googleapi.Field) *EnterprisesStructuresRoomsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *EnterprisesStructuresRoomsGetCall) IfNoneMatch(entityTag string) *EnterprisesStructuresRoomsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *EnterprisesStructuresRoomsGetCall) Context(ctx context.Context) *EnterprisesStructuresRoomsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *EnterprisesStructuresRoomsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1433,12 +1056,7 @@ func (c *EnterprisesStructuresRoomsGetCall) Header() http.Header {
 }
 
 func (c *EnterprisesStructuresRoomsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1459,12 +1077,11 @@ func (c *EnterprisesStructuresRoomsGetCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "smartdevicemanagement.enterprises.structures.rooms.get" call.
-// Exactly one of *GoogleHomeEnterpriseSdmV1Room or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *GoogleHomeEnterpriseSdmV1Room.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleHomeEnterpriseSdmV1Room.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *EnterprisesStructuresRoomsGetCall) Do(opts ...googleapi.CallOption) (*GoogleHomeEnterpriseSdmV1Room, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1472,17 +1089,17 @@ func (c *EnterprisesStructuresRoomsGetCall) Do(opts ...googleapi.CallOption) (*G
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleHomeEnterpriseSdmV1Room{
 		ServerResponse: googleapi.ServerResponse{
@@ -1495,35 +1112,7 @@ func (c *EnterprisesStructuresRoomsGetCall) Do(opts ...googleapi.CallOption) (*G
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a room managed by the enterprise.",
-	//   "flatPath": "v1/enterprises/{enterprisesId}/structures/{structuresId}/rooms/{roomsId}",
-	//   "httpMethod": "GET",
-	//   "id": "smartdevicemanagement.enterprises.structures.rooms.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the room requested. For example: \"enterprises/XYZ/structures/ABC/rooms/123\".",
-	//       "location": "path",
-	//       "pattern": "^enterprises/[^/]+/structures/[^/]+/rooms/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleHomeEnterpriseSdmV1Room"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sdm.service"
-	//   ]
-	// }
-
 }
-
-// method id "smartdevicemanagement.enterprises.structures.rooms.list":
 
 type EnterprisesStructuresRoomsListCall struct {
 	s            *Service
@@ -1536,57 +1125,38 @@ type EnterprisesStructuresRoomsListCall struct {
 
 // List: Lists rooms managed by the enterprise.
 //
-//   - parent: The parent resource name of the rooms requested. For
-//     example: "enterprises/XYZ/structures/ABC".
+//   - parent: The parent resource name of the rooms requested. For example:
+//     "enterprises/XYZ/structures/ABC".
 func (r *EnterprisesStructuresRoomsService) List(parent string) *EnterprisesStructuresRoomsListCall {
 	c := &EnterprisesStructuresRoomsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": Requested page size.
-// Server may return fewer rooms than requested. If unspecified, server
-// will pick an appropriate default.
-func (c *EnterprisesStructuresRoomsListCall) PageSize(pageSize int64) *EnterprisesStructuresRoomsListCall {
-	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
-	return c
-}
-
-// PageToken sets the optional parameter "pageToken": The token of the
-// page to retrieve.
-func (c *EnterprisesStructuresRoomsListCall) PageToken(pageToken string) *EnterprisesStructuresRoomsListCall {
-	c.urlParams_.Set("pageToken", pageToken)
-	return c
-}
-
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *EnterprisesStructuresRoomsListCall) Fields(s ...googleapi.Field) *EnterprisesStructuresRoomsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *EnterprisesStructuresRoomsListCall) IfNoneMatch(entityTag string) *EnterprisesStructuresRoomsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *EnterprisesStructuresRoomsListCall) Context(ctx context.Context) *EnterprisesStructuresRoomsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *EnterprisesStructuresRoomsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1595,12 +1165,7 @@ func (c *EnterprisesStructuresRoomsListCall) Header() http.Header {
 }
 
 func (c *EnterprisesStructuresRoomsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1621,14 +1186,11 @@ func (c *EnterprisesStructuresRoomsListCall) doRequest(alt string) (*http.Respon
 }
 
 // Do executes the "smartdevicemanagement.enterprises.structures.rooms.list" call.
-// Exactly one of *GoogleHomeEnterpriseSdmV1ListRoomsResponse or error
-// will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleHomeEnterpriseSdmV1ListRoomsResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleHomeEnterpriseSdmV1ListRoomsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *EnterprisesStructuresRoomsListCall) Do(opts ...googleapi.CallOption) (*GoogleHomeEnterpriseSdmV1ListRoomsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1636,17 +1198,17 @@ func (c *EnterprisesStructuresRoomsListCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleHomeEnterpriseSdmV1ListRoomsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1659,62 +1221,4 @@ func (c *EnterprisesStructuresRoomsListCall) Do(opts ...googleapi.CallOption) (*
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists rooms managed by the enterprise.",
-	//   "flatPath": "v1/enterprises/{enterprisesId}/structures/{structuresId}/rooms",
-	//   "httpMethod": "GET",
-	//   "id": "smartdevicemanagement.enterprises.structures.rooms.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "Requested page size. Server may return fewer rooms than requested. If unspecified, server will pick an appropriate default.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "The token of the page to retrieve.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "The parent resource name of the rooms requested. For example: \"enterprises/XYZ/structures/ABC\".",
-	//       "location": "path",
-	//       "pattern": "^enterprises/[^/]+/structures/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/rooms",
-	//   "response": {
-	//     "$ref": "GoogleHomeEnterpriseSdmV1ListRoomsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sdm.service"
-	//   ]
-	// }
-
-}
-
-// Pages invokes f for each page of results.
-// A non-nil error returned from f will halt the iteration.
-// The provided context supersedes any context provided to the Context method.
-func (c *EnterprisesStructuresRoomsListCall) Pages(ctx context.Context, f func(*GoogleHomeEnterpriseSdmV1ListRoomsResponse) error) error {
-	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
-	for {
-		x, err := c.Do()
-		if err != nil {
-			return err
-		}
-		if err := f(x); err != nil {
-			return err
-		}
-		if x.NextPageToken == "" {
-			return nil
-		}
-		c.PageToken(x.NextPageToken)
-	}
 }

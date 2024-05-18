@@ -1,28 +1,40 @@
 module google.golang.org/api
 
-go 1.19
+go 1.20
 
 require (
-	cloud.google.com/go/compute/metadata v0.2.1
-	github.com/google/go-cmp v0.5.9
-	github.com/google/uuid v1.3.0
-	github.com/googleapis/enterprise-certificate-proxy v0.2.0
-	github.com/googleapis/gax-go/v2 v2.6.0
-	go.opencensus.io v0.23.0
-	golang.org/x/net v0.0.0-20221014081412-f15817d10f9b
-	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
-	golang.org/x/sync v0.1.0
-	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10
-	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
-	google.golang.org/appengine v1.6.7
-	google.golang.org/genproto v0.0.0-20221024183307-1bc688fe9f3e
-	google.golang.org/grpc v1.50.1
+	cloud.google.com/go v0.113.0
+	cloud.google.com/go/auth v0.4.1
+	cloud.google.com/go/auth/oauth2adapt v0.2.2
+	cloud.google.com/go/compute/metadata v0.3.0
+	github.com/google/go-cmp v0.6.0
+	github.com/google/s2a-go v0.1.7
+	github.com/google/uuid v1.6.0
+	github.com/googleapis/enterprise-certificate-proxy v0.3.2
+	github.com/googleapis/gax-go/v2 v2.12.4
+	go.opencensus.io v0.24.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0
+	golang.org/x/net v0.25.0
+	golang.org/x/oauth2 v0.20.0
+	golang.org/x/sync v0.7.0
+	golang.org/x/time v0.5.0
+	google.golang.org/genproto/googleapis/bytestream v0.0.0-20240513163218-0867130af1f8
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240513163218-0867130af1f8
+	google.golang.org/grpc v1.63.2
+	google.golang.org/protobuf v1.34.1
 )
 
 require (
-	cloud.google.com/go/compute v1.12.1 // indirect
-	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
-	golang.org/x/text v0.4.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
+	go.opentelemetry.io/otel v1.24.0 // indirect
+	go.opentelemetry.io/otel/metric v1.24.0 // indirect
+	go.opentelemetry.io/otel/trace v1.24.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 )

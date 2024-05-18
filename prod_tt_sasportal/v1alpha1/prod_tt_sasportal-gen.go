@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package prod_tt_sasportal provides access to the SAS Portal API (Testing).
 //
 // For product documentation, see: https://developers.google.com/spectrum-access-system/
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,24 +28,31 @@
 //	ctx := context.Background()
 //	prod_tt_sasportalService, err := prod_tt_sasportal.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// By default, all available scopes (see "Constants") are used to authenticate.
+// To restrict scopes, use [google.golang.org/api/option.WithScopes]:
+//
+//	prod_tt_sasportalService, err := prod_tt_sasportal.NewService(ctx, option.WithScopes(prod_tt_sasportal.SasportalScope))
+//
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	prod_tt_sasportalService, err := prod_tt_sasportal.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	prod_tt_sasportalService, err := prod_tt_sasportal.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package prod_tt_sasportal // import "google.golang.org/api/prod_tt_sasportal/v1alpha1"
 
 import (
@@ -71,15 +89,21 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "prod_tt_sasportal:v1alpha1"
 const apiName = "prod_tt_sasportal"
 const apiVersion = "v1alpha1"
 const basePath = "https://prod-tt-sasportal.googleapis.com/"
+const basePathTemplate = "https://prod-tt-sasportal.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://prod-tt-sasportal.mtls.googleapis.com/"
 
 // OAuth2 scopes used by this API.
 const (
+	// See, edit, configure, and delete your Google Cloud data and see the email
+	// address for your Google Account.
+	CloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
+
 	// Read, create, update, and delete your SAS Portal data.
 	SasportalScope = "https://www.googleapis.com/auth/sasportal"
 )
@@ -87,12 +111,15 @@ const (
 // NewService creates a new Service.
 func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, error) {
 	scopesOption := internaloption.WithDefaultScopes(
+		"https://www.googleapis.com/auth/cloud-platform",
 		"https://www.googleapis.com/auth/sasportal",
 	)
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -375,69 +402,53 @@ type PoliciesService struct {
 
 // SasPortalAssignment: Associates `members` with a `role`.
 type SasPortalAssignment struct {
-	// Members: The identities the role is assigned to. It can have the
-	// following values: * `{user_email}`: An email address that represents
-	// a specific Google account. For example: `alice@gmail.com`. *
-	// `{group_email}`: An email address that represents a Google group. For
-	// example, `viewers@gmail.com`.
+	// Members: The identities the role is assigned to. It can have the following
+	// values: * `{user_email}`: An email address that represents a specific Google
+	// account. For example: `alice@gmail.com`. * `{group_email}`: An email address
+	// that represents a Google group. For example, `viewers@gmail.com`.
 	Members []string `json:"members,omitempty"`
-
 	// Role: Required. Role that is assigned to `members`.
 	Role string `json:"role,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Members") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Members") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Members") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Members") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalAssignment) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalAssignment
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalChannelWithScore: The channel with score.
 type SasPortalChannelWithScore struct {
 	// FrequencyRange: The frequency range of the channel.
 	FrequencyRange *SasPortalFrequencyRange `json:"frequencyRange,omitempty"`
-
-	// Score: The channel score, normalized to be in [0,100].
+	// Score: The channel score, normalized to be in the range [0,100].
 	Score float64 `json:"score,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "FrequencyRange") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "FrequencyRange") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "FrequencyRange") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalChannelWithScore) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalChannelWithScore
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 func (s *SasPortalChannelWithScore) UnmarshalJSON(data []byte) error {
@@ -456,194 +467,178 @@ func (s *SasPortalChannelWithScore) UnmarshalJSON(data []byte) error {
 
 // SasPortalCreateSignedDeviceRequest: Request for CreateSignedDevice.
 type SasPortalCreateSignedDeviceRequest struct {
-	// EncodedDevice: Required. JSON Web Token signed using a CPI private
-	// key. Payload must be the JSON encoding of the device. The user_id
-	// field must be set.
+	// EncodedDevice: Required. JSON Web Token signed using a CPI private key.
+	// Payload must be the JSON encoding of the device. The user_id field must be
+	// set.
 	EncodedDevice string `json:"encodedDevice,omitempty"`
-
-	// InstallerId: Required. Unique installer id (CPI ID) from the
-	// Certified Professional Installers database.
+	// InstallerId: Required. Unique installer id (CPI ID) from the Certified
+	// Professional Installers database.
 	InstallerId string `json:"installerId,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "EncodedDevice") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "EncodedDevice") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "EncodedDevice") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalCreateSignedDeviceRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalCreateSignedDeviceRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalCustomer: Entity representing a SAS customer.
 type SasPortalCustomer struct {
-	// DisplayName: Required. Name of the organization that the customer
-	// entity represents.
+	// DisplayName: Required. Name of the organization that the customer entity
+	// represents.
 	DisplayName string `json:"displayName,omitempty"`
-
 	// Name: Output only. Resource name of the customer.
 	Name string `json:"name,omitempty"`
-
 	// SasUserIds: User IDs used by the devices belonging to this customer.
 	SasUserIds []string `json:"sasUserIds,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "DisplayName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DisplayName") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "DisplayName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalCustomer) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalCustomer
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalDeployment: The Deployment.
 type SasPortalDeployment struct {
 	// DisplayName: The deployment's display name.
 	DisplayName string `json:"displayName,omitempty"`
-
-	// Frns: Output only. The FRNs copied from its direct parent.
+	// Frns: Output only. The FCC Registration Numbers (FRNs) copied from its
+	// direct parent.
 	Frns []string `json:"frns,omitempty"`
-
 	// Name: Output only. Resource name.
 	Name string `json:"name,omitempty"`
-
-	// SasUserIds: User ID used by the devices belonging to this deployment.
-	// Each deployment should be associated with one unique user ID.
+	// SasUserIds: User ID used by the devices belonging to this deployment. Each
+	// deployment should be associated with one unique user ID.
 	SasUserIds []string `json:"sasUserIds,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "DisplayName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DisplayName") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "DisplayName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalDeployment) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalDeployment
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalDeploymentAssociation: Association between a gcp project and a SAS
+// user id.
+type SasPortalDeploymentAssociation struct {
+	// GcpProjectId: GCP project id of the associated project.
+	GcpProjectId string `json:"gcpProjectId,omitempty"`
+	// UserId: User id of the deployment.
+	UserId string `json:"userId,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "GcpProjectId") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "GcpProjectId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalDeploymentAssociation) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalDeploymentAssociation
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type SasPortalDevice struct {
-	// ActiveConfig: Output only. Current configuration of the device as
-	// registered to the SAS.
+	// ActiveConfig: Output only. Current configuration of the device as registered
+	// to the SAS.
 	ActiveConfig *SasPortalDeviceConfig `json:"activeConfig,omitempty"`
-
 	// CurrentChannels: Output only. Current channels with scores.
 	CurrentChannels []*SasPortalChannelWithScore `json:"currentChannels,omitempty"`
-
-	// DeviceMetadata: Device parameters that can be overridden by both SAS
-	// Portal and SAS registration requests.
+	// DeviceMetadata: Device parameters that can be overridden by both SAS Portal
+	// and SAS registration requests.
 	DeviceMetadata *SasPortalDeviceMetadata `json:"deviceMetadata,omitempty"`
-
 	// DisplayName: Device display name.
 	DisplayName string `json:"displayName,omitempty"`
-
-	// FccId: The FCC identifier of the device.
+	// FccId: The FCC identifier of the device. Refer to
+	// https://www.fcc.gov/oet/ea/fccid for FccID format. Accept underscores and
+	// periods because some test-SAS customers use them.
 	FccId string `json:"fccId,omitempty"`
-
-	// GrantRangeAllowlists: Only ranges within the allowlists are available
-	// for new grants.
+	// GrantRangeAllowlists: Only ranges that are within the allowlists are
+	// available for new grants.
 	GrantRangeAllowlists []*SasPortalFrequencyRange `json:"grantRangeAllowlists,omitempty"`
-
 	// Grants: Output only. Grants held by the device.
 	Grants []*SasPortalDeviceGrant `json:"grants,omitempty"`
-
 	// Name: Output only. The resource path name.
 	Name string `json:"name,omitempty"`
-
-	// PreloadedConfig: Configuration of the device, as specified via SAS
-	// Portal API.
+	// PreloadedConfig: Configuration of the device, as specified via SAS Portal
+	// API.
 	PreloadedConfig *SasPortalDeviceConfig `json:"preloadedConfig,omitempty"`
-
 	// SerialNumber: A serial number assigned to the device by the device
 	// manufacturer.
 	SerialNumber string `json:"serialNumber,omitempty"`
-
 	// State: Output only. Device state.
 	//
 	// Possible values:
 	//   "DEVICE_STATE_UNSPECIFIED" - Unspecified state.
-	//   "RESERVED" - Device created in the SAS Portal, however, not yet
-	// registered with SAS.
+	//   "RESERVED" - Device created in the SAS Portal, however, not yet registered
+	// with SAS.
 	//   "REGISTERED" - Device registered with SAS.
 	//   "DEREGISTERED" - Device de-registered with SAS.
 	State string `json:"state,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "ActiveConfig") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ActiveConfig") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ActiveConfig") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalDevice) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalDevice
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SasPortalDeviceAirInterface: Information about the device's air
-// interface.
+// SasPortalDeviceAirInterface: Information about the device's air interface.
 type SasPortalDeviceAirInterface struct {
 	// RadioTechnology: Conditional. This field specifies the radio access
 	// technology that is used for the CBSD.
@@ -659,44 +654,34 @@ type SasPortalDeviceAirInterface struct {
 	//   "REDLINE"
 	//   "TARANA_WIRELESS"
 	RadioTechnology string `json:"radioTechnology,omitempty"`
-
-	// SupportedSpec: Optional. This field is related to the
-	// `radioTechnology` and provides the air interface specification that
-	// the CBSD is compliant with at the time of registration.
+	// SupportedSpec: Optional. This field is related to the `radioTechnology` and
+	// provides the air interface specification that the CBSD is compliant with at
+	// the time of registration.
 	SupportedSpec string `json:"supportedSpec,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "RadioTechnology") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "RadioTechnology") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "RadioTechnology") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalDeviceAirInterface) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalDeviceAirInterface
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalDeviceConfig: Information about the device configuration.
 type SasPortalDeviceConfig struct {
 	// AirInterface: Information about this device's air interface.
 	AirInterface *SasPortalDeviceAirInterface `json:"airInterface,omitempty"`
-
 	// CallSign: The call sign of the device operator.
 	CallSign string `json:"callSign,omitempty"`
-
 	// Category: FCC category of the device.
 	//
 	// Possible values:
@@ -704,26 +689,19 @@ type SasPortalDeviceConfig struct {
 	//   "DEVICE_CATEGORY_A" - Category A.
 	//   "DEVICE_CATEGORY_B" - Category B.
 	Category string `json:"category,omitempty"`
-
 	// InstallationParams: Installation parameters for the device.
 	InstallationParams *SasPortalInstallationParams `json:"installationParams,omitempty"`
-
-	// IsSigned: Output only. Whether the configuration has been signed by a
-	// CPI.
+	// IsSigned: Output only. Whether the configuration has been signed by a CPI.
 	IsSigned bool `json:"isSigned,omitempty"`
-
-	// MeasurementCapabilities: Measurement reporting capabilities of the
-	// device.
+	// MeasurementCapabilities: Measurement reporting capabilities of the device.
 	//
 	// Possible values:
 	//   "MEASUREMENT_CAPABILITY_UNSPECIFIED"
 	//   "MEASUREMENT_CAPABILITY_RECEIVED_POWER_WITH_GRANT"
 	//   "MEASUREMENT_CAPABILITY_RECEIVED_POWER_WITHOUT_GRANT"
 	MeasurementCapabilities []string `json:"measurementCapabilities,omitempty"`
-
 	// Model: Information about this device model.
 	Model *SasPortalDeviceModel `json:"model,omitempty"`
-
 	// State: State of the configuration.
 	//
 	// Possible values:
@@ -731,40 +709,31 @@ type SasPortalDeviceConfig struct {
 	//   "DRAFT"
 	//   "FINAL"
 	State string `json:"state,omitempty"`
-
-	// UpdateTime: Output only. The last time the device configuration was
-	// edited.
+	// UpdateTime: Output only. The last time the device configuration was edited.
 	UpdateTime string `json:"updateTime,omitempty"`
-
 	// UserId: The identifier of a device user.
 	UserId string `json:"userId,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AirInterface") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AirInterface") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AirInterface") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalDeviceConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalDeviceConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SasPortalDeviceGrant: Device grant. It is an authorization provided
-// by the Spectrum Access System to a device to transmit using specified
-// operating parameters after a successful heartbeat by the device.
+// SasPortalDeviceGrant: Device grant. It is an authorization provided by the
+// Spectrum Access System to a device to transmit using specified operating
+// parameters after a successful heartbeat by the device.
 type SasPortalDeviceGrant struct {
 	// ChannelType: Type of channel used.
 	//
@@ -773,67 +742,51 @@ type SasPortalDeviceGrant struct {
 	//   "CHANNEL_TYPE_GAA"
 	//   "CHANNEL_TYPE_PAL"
 	ChannelType string `json:"channelType,omitempty"`
-
 	// ExpireTime: The expiration time of the grant.
 	ExpireTime string `json:"expireTime,omitempty"`
-
 	// FrequencyRange: The transmission frequency range.
 	FrequencyRange *SasPortalFrequencyRange `json:"frequencyRange,omitempty"`
-
 	// GrantId: Grant Id.
 	GrantId string `json:"grantId,omitempty"`
-
-	// LastHeartbeatTransmitExpireTime: The transmit expiration time of the
-	// last heartbeat.
+	// LastHeartbeatTransmitExpireTime: The transmit expiration time of the last
+	// heartbeat.
 	LastHeartbeatTransmitExpireTime string `json:"lastHeartbeatTransmitExpireTime,omitempty"`
-
-	// MaxEirp: Maximum Equivalent Isotropically Radiated Power (EIRP)
-	// permitted by the grant. The maximum EIRP is in units of dBm/MHz. The
-	// value of `maxEirp` represents the average (RMS) EIRP that would be
-	// measured by the procedure defined in FCC part 96.41(e)(3).
+	// MaxEirp: Maximum Equivalent Isotropically Radiated Power (EIRP) permitted by
+	// the grant. The maximum EIRP is in units of dBm/MHz. The value of `maxEirp`
+	// represents the average (RMS) EIRP that would be measured by the procedure
+	// defined in FCC part 96.41(e)(3).
 	MaxEirp float64 `json:"maxEirp,omitempty"`
-
 	// MoveList: The DPA move lists on which this grant appears.
 	MoveList []*SasPortalDpaMoveList `json:"moveList,omitempty"`
-
 	// State: State of the grant.
 	//
 	// Possible values:
 	//   "GRANT_STATE_UNSPECIFIED"
-	//   "GRANT_STATE_GRANTED" - The grant has been granted but the device
-	// is not heartbeating on it.
-	//   "GRANT_STATE_TERMINATED" - The grant has been terminated by the
-	// SAS.
+	//   "GRANT_STATE_GRANTED" - The grant has been granted but the device is not
+	// heartbeating on it.
+	//   "GRANT_STATE_TERMINATED" - The grant has been terminated by the SAS.
 	//   "GRANT_STATE_SUSPENDED" - The grant has been suspended by the SAS.
 	//   "GRANT_STATE_AUTHORIZED" - The device is currently transmitting.
 	//   "GRANT_STATE_EXPIRED" - The grant has expired.
 	State string `json:"state,omitempty"`
-
-	// SuspensionReason: If the grant is suspended, the reason(s) for
-	// suspension.
+	// SuspensionReason: If the grant is suspended, the reason(s) for suspension.
 	SuspensionReason []string `json:"suspensionReason,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ChannelType") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ChannelType") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ChannelType") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalDeviceGrant) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalDeviceGrant
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 func (s *SasPortalDeviceGrant) UnmarshalJSON(data []byte) error {
@@ -850,169 +803,132 @@ func (s *SasPortalDeviceGrant) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// SasPortalDeviceMetadata: Device data overridable by both SAS Portal
-// and registration requests.
+// SasPortalDeviceMetadata: Device data overridable by both SAS Portal and
+// registration requests.
 type SasPortalDeviceMetadata struct {
-	// AntennaModel: If populated, the Antenna Model Pattern to use. Format
-	// is: RecordCreatorId:PatternId
+	// AntennaModel: If populated, the Antenna Model Pattern to use. Format is:
+	// `RecordCreatorId:PatternId`
 	AntennaModel string `json:"antennaModel,omitempty"`
-
-	// CommonChannelGroup: CCG. A group of CBSDs in the same ICG requesting
-	// a common primary channel assignment. See CBRSA-TS-2001 V3.0.0 for
-	// more details.
+	// CommonChannelGroup: Common Channel Group (CCG). A group of CBSDs in the same
+	// ICG requesting a common primary channel assignment. For more details, see
+	// CBRSA-TS-2001 V3.0.0
+	// (https://ongoalliance.org/wp-content/uploads/2020/02/CBRSA-TS-2001-V3.0.0_Approved-for-publication.pdf).
 	CommonChannelGroup string `json:"commonChannelGroup,omitempty"`
-
-	// InterferenceCoordinationGroup: ICG. A group of CBSDs that manage
-	// their own interference with the group. See CBRSA-TS-2001 V3.0.0 for
-	// more details.
+	// InterferenceCoordinationGroup: Interference Coordination Group (ICG). A
+	// group of CBSDs that manage their own interference with the group. For more
+	// details, see CBRSA-TS-2001 V3.0.0
+	// (https://ongoalliance.org/wp-content/uploads/2020/02/CBRSA-TS-2001-V3.0.0_Approved-for-publication.pdf).
 	InterferenceCoordinationGroup string `json:"interferenceCoordinationGroup,omitempty"`
-
-	// NrqzValidated: Output only. Whether a CPI has validated to have
-	// coordinated with the National Quiet Zone office.
+	// NrqzValidated: Output only. Set to `true` if a CPI has validated that they
+	// have coordinated with the National Quiet Zone office.
 	NrqzValidated bool `json:"nrqzValidated,omitempty"`
-
-	// NrqzValidation: Output only. National Radio Quiet Zone validation
-	// info.
+	// NrqzValidation: Output only. National Radio Quiet Zone validation info.
 	NrqzValidation *SasPortalNrqzValidation `json:"nrqzValidation,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AntennaModel") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AntennaModel") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AntennaModel") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalDeviceMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalDeviceMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalDeviceModel: Information about the model of the device.
 type SasPortalDeviceModel struct {
 	// FirmwareVersion: The firmware version of the device.
 	FirmwareVersion string `json:"firmwareVersion,omitempty"`
-
 	// HardwareVersion: The hardware version of the device.
 	HardwareVersion string `json:"hardwareVersion,omitempty"`
-
 	// Name: The name of the device model.
 	Name string `json:"name,omitempty"`
-
 	// SoftwareVersion: The software version of the device.
 	SoftwareVersion string `json:"softwareVersion,omitempty"`
-
 	// Vendor: The name of the device vendor.
 	Vendor string `json:"vendor,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "FirmwareVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "FirmwareVersion") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "FirmwareVersion") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalDeviceModel) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalDeviceModel
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalDpaMoveList: An entry in a DPA's move list.
 type SasPortalDpaMoveList struct {
 	// DpaId: The ID of the DPA.
 	DpaId string `json:"dpaId,omitempty"`
-
 	// FrequencyRange: The frequency range that the move list affects.
 	FrequencyRange *SasPortalFrequencyRange `json:"frequencyRange,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "DpaId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "DpaId") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "DpaId") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalDpaMoveList) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalDpaMoveList
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalEmpty: A generic empty message that you can re-use to avoid
-// defining duplicated empty messages in your APIs. A typical example is
-// to use it as the request or the response type of an API method. For
-// instance: service Foo { rpc Bar(google.protobuf.Empty) returns
+// defining duplicated empty messages in your APIs. A typical example is to use
+// it as the request or the response type of an API method. For instance:
+// service Foo { rpc Bar(google.protobuf.Empty) returns
 // (google.protobuf.Empty); }
 type SasPortalEmpty struct {
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
 }
 
 // SasPortalFrequencyRange: Frequency range from `low_frequency` to
 // `high_frequency`.
 type SasPortalFrequencyRange struct {
-	// HighFrequencyMhz: The highest frequency of the frequency range in
-	// MHz.
+	// HighFrequencyMhz: The highest frequency of the frequency range in MHz.
 	HighFrequencyMhz float64 `json:"highFrequencyMhz,omitempty"`
-
 	// LowFrequencyMhz: The lowest frequency of the frequency range in MHz.
 	LowFrequencyMhz float64 `json:"lowFrequencyMhz,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "HighFrequencyMhz") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "HighFrequencyMhz") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "HighFrequencyMhz") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalFrequencyRange) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalFrequencyRange
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 func (s *SasPortalFrequencyRange) UnmarshalJSON(data []byte) error {
@@ -1031,180 +947,166 @@ func (s *SasPortalFrequencyRange) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// SasPortalGcpProjectDeployment: Deployment associated with the GCP project.
+// Includes whether SAS analytics has been enabled or not.
+type SasPortalGcpProjectDeployment struct {
+	// Deployment: Deployment associated with the GCP project.
+	Deployment *SasPortalDeployment `json:"deployment,omitempty"`
+	// HasEnabledAnalytics: Whether SAS analytics has been enabled.
+	HasEnabledAnalytics bool `json:"hasEnabledAnalytics,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Deployment") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Deployment") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalGcpProjectDeployment) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalGcpProjectDeployment
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
 // SasPortalGenerateSecretRequest: Request for GenerateSecret.
 type SasPortalGenerateSecretRequest struct {
 }
 
 // SasPortalGenerateSecretResponse: Response for GenerateSecret.
 type SasPortalGenerateSecretResponse struct {
-	// Secret: The secret generated by the string and used by
-	// ValidateInstaller.
+	// Secret: The secret generated by the string and used by ValidateInstaller.
 	Secret string `json:"secret,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Secret") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Secret") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Secret") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalGenerateSecretResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalGenerateSecretResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalGetPolicyRequest: Request message for `GetPolicy` method.
 type SasPortalGetPolicyRequest struct {
-	// Resource: Required. The resource for which the policy is being
-	// requested.
+	// Resource: Required. The resource for which the policy is being requested.
 	Resource string `json:"resource,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Resource") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Resource") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Resource") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalGetPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalGetPolicyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SasPortalInstallationParams: Information about the device
-// installation parameters.
+// SasPortalInstallationParams: Information about the device installation
+// parameters.
 type SasPortalInstallationParams struct {
-	// AntennaAzimuth: Boresight direction of the horizontal plane of the
-	// antenna in degrees with respect to true north. The value of this
-	// parameter is an integer with a value between 0 and 359 inclusive. A
-	// value of 0 degrees means true north; a value of 90 degrees means
-	// east. This parameter is optional for Category A devices and
-	// conditional for Category B devices.
+	// AntennaAzimuth: Boresight direction of the horizontal plane of the antenna
+	// in degrees with respect to true north. The value of this parameter is an
+	// integer with a value between 0 and 359 inclusive. A value of 0 degrees means
+	// true north; a value of 90 degrees means east. This parameter is optional for
+	// Category A devices and conditional for Category B devices.
 	AntennaAzimuth int64 `json:"antennaAzimuth,omitempty"`
-
 	// AntennaBeamwidth: 3-dB antenna beamwidth of the antenna in the
-	// horizontal-plane in degrees. This parameter is an unsigned integer
-	// having a value between 0 and 360 (degrees) inclusive; it is optional
-	// for Category A devices and conditional for Category B devices.
+	// horizontal-plane in degrees. This parameter is an unsigned integer having a
+	// value between 0 and 360 (degrees) inclusive; it is optional for Category A
+	// devices and conditional for Category B devices.
 	AntennaBeamwidth int64 `json:"antennaBeamwidth,omitempty"`
-
-	// AntennaDowntilt: Antenna downtilt in degrees and is an integer with a
-	// value between -90 and +90 inclusive; a negative value means the
-	// antenna is tilted up (above horizontal). This parameter is optional
-	// for Category A devices and conditional for Category B devices.
+	// AntennaDowntilt: Antenna downtilt in degrees and is an integer with a value
+	// between -90 and +90 inclusive; a negative value means the antenna is tilted
+	// up (above horizontal). This parameter is optional for Category A devices and
+	// conditional for Category B devices.
 	AntennaDowntilt int64 `json:"antennaDowntilt,omitempty"`
-
-	// AntennaGain: Peak antenna gain in dBi. This parameter is an integer
-	// with a value between -127 and +128 (dBi) inclusive.
+	// AntennaGain: Peak antenna gain in dBi. This parameter is an integer with a
+	// value between -127 and +128 (dBi) inclusive.
 	AntennaGain int64 `json:"antennaGain,omitempty"`
-
 	// AntennaModel: If an external antenna is used, the antenna model is
-	// optionally provided in this field. The string has a maximum length of
-	// 128 octets.
+	// optionally provided in this field. The string has a maximum length of 128
+	// octets.
 	AntennaModel string `json:"antennaModel,omitempty"`
-
-	// CpeCbsdIndication: If present, this parameter specifies whether the
-	// CBSD is a CPE-CBSD or not.
+	// CpeCbsdIndication: If present, this parameter specifies whether the CBSD is
+	// a CPE-CBSD or not.
 	CpeCbsdIndication bool `json:"cpeCbsdIndication,omitempty"`
-
 	// EirpCapability: This parameter is the maximum device EIRP in units of
-	// dBm/10MHz and is an integer with a value between -127 and +47 (dBm/10
-	// MHz) inclusive. If not included, SAS interprets it as maximum
-	// allowable EIRP in units of dBm/10MHz for device category.
+	// dBm/10MHz and is an integer with a value between -127 and +47 (dBm/10 MHz)
+	// inclusive. If not included, SAS interprets it as maximum allowable EIRP in
+	// units of dBm/10MHz for device category.
 	EirpCapability int64 `json:"eirpCapability,omitempty"`
-
-	// Height: Device antenna height in meters. When the `heightType`
-	// parameter value is "AGL", the antenna height should be given relative
-	// to ground level. When the `heightType` parameter value is "AMSL", it
-	// is given with respect to WGS84 datum.
+	// Height: Device antenna height in meters. When the `heightType` parameter
+	// value is "AGL", the antenna height should be given relative to ground level.
+	// When the `heightType` parameter value is "AMSL", it is given with respect to
+	// WGS84 datum.
 	Height float64 `json:"height,omitempty"`
-
 	// HeightType: Specifies how the height is measured.
 	//
 	// Possible values:
 	//   "HEIGHT_TYPE_UNSPECIFIED" - Unspecified height type.
-	//   "HEIGHT_TYPE_AGL" - AGL height is measured relative to the ground
+	//   "HEIGHT_TYPE_AGL" - AGL height is measured relative to the ground level.
+	//   "HEIGHT_TYPE_AMSL" - AMSL height is measured relative to the mean sea
 	// level.
-	//   "HEIGHT_TYPE_AMSL" - AMSL height is measured relative to the mean
-	// sea level.
 	HeightType string `json:"heightType,omitempty"`
-
-	// HorizontalAccuracy: A positive number in meters to indicate accuracy
-	// of the device antenna horizontal location. This optional parameter
-	// should only be present if its value is less than the FCC requirement
-	// of 50 meters.
+	// HorizontalAccuracy: A positive number in meters to indicate accuracy of the
+	// device antenna horizontal location. This optional parameter should only be
+	// present if its value is less than the FCC requirement of 50 meters.
 	HorizontalAccuracy float64 `json:"horizontalAccuracy,omitempty"`
-
-	// IndoorDeployment: Whether the device antenna is indoor or not.
-	// `true`: indoor. `false`: outdoor.
+	// IndoorDeployment: Whether the device antenna is indoor or not. `true`:
+	// indoor. `false`: outdoor.
 	IndoorDeployment bool `json:"indoorDeployment,omitempty"`
-
-	// Latitude: Latitude of the device antenna location in degrees relative
-	// to the WGS 84 datum. The allowed range is from -90.000000 to
-	// +90.000000. Positive values represent latitudes north of the equator;
-	// negative values south of the equator.
+	// Latitude: Latitude of the device antenna location in degrees relative to the
+	// WGS 84 datum. The allowed range is from -90.000000 to +90.000000. Positive
+	// values represent latitudes north of the equator; negative values south of
+	// the equator.
 	Latitude float64 `json:"latitude,omitempty"`
-
-	// Longitude: Longitude of the device antenna location in degrees
-	// relative to the WGS 84 datum. The allowed range is from -180.000000
-	// to +180.000000. Positive values represent longitudes east of the
-	// prime meridian; negative values west of the prime meridian.
+	// Longitude: Longitude of the device antenna location in degrees relative to
+	// the WGS 84 datum. The allowed range is from -180.000000 to +180.000000.
+	// Positive values represent longitudes east of the prime meridian; negative
+	// values west of the prime meridian.
 	Longitude float64 `json:"longitude,omitempty"`
-
-	// VerticalAccuracy: A positive number in meters to indicate accuracy of
-	// the device antenna vertical location. This optional parameter should
-	// only be present if its value is less than the FCC requirement of 3
-	// meters.
+	// VerticalAccuracy: A positive number in meters to indicate accuracy of the
+	// device antenna vertical location. This optional parameter should only be
+	// present if its value is less than the FCC requirement of 3 meters.
 	VerticalAccuracy float64 `json:"verticalAccuracy,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AntennaAzimuth") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AntennaAzimuth") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AntennaAzimuth") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalInstallationParams) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalInstallationParams
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 func (s *SasPortalInstallationParams) UnmarshalJSON(data []byte) error {
@@ -1233,291 +1135,360 @@ func (s *SasPortalInstallationParams) UnmarshalJSON(data []byte) error {
 type SasPortalListCustomersResponse struct {
 	// Customers: The list of customers that match the request.
 	Customers []*SasPortalCustomer `json:"customers,omitempty"`
-
 	// NextPageToken: A pagination token returned from a previous call to
-	// ListCustomers that indicates from where listing should continue. If
-	// the field is missing or empty, it means there are no more customers.
+	// ListCustomers that indicates from where listing should continue. If the
+	// field is missing or empty, it means there are no more customers.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Customers") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Customers") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Customers") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalListCustomersResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalListCustomersResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalListDeploymentsResponse: Response for ListDeployments.
 type SasPortalListDeploymentsResponse struct {
 	// Deployments: The deployments that match the request.
 	Deployments []*SasPortalDeployment `json:"deployments,omitempty"`
-
 	// NextPageToken: A pagination token returned from a previous call to
-	// ListDeployments that indicates from where listing should continue. If
-	// the field is missing or empty, it means there are no more
-	// deployments.
+	// ListDeployments that indicates from where listing should continue. If the
+	// field is missing or empty, it means there are no more deployments.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Deployments") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Deployments") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Deployments") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalListDeploymentsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalListDeploymentsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalListDevicesResponse: Response for ListDevices.
 type SasPortalListDevicesResponse struct {
 	// Devices: The devices that match the request.
 	Devices []*SasPortalDevice `json:"devices,omitempty"`
-
 	// NextPageToken: A pagination token returned from a previous call to
-	// ListDevices that indicates from where listing should continue. If the
-	// field is missing or empty, it means there is no more devices.
+	// ListDevices that indicates from where listing should continue. If the field
+	// is missing or empty, it means there is no more devices.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Devices") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Devices") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Devices") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Devices") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalListDevicesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalListDevicesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalListGcpProjectDeploymentsResponse: Response for
+// [ListGcpProjectDeployments].
+type SasPortalListGcpProjectDeploymentsResponse struct {
+	// Deployments: Optional. Deployments associated with the GCP project
+	Deployments []*SasPortalGcpProjectDeployment `json:"deployments,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "Deployments") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Deployments") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalListGcpProjectDeploymentsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalListGcpProjectDeploymentsResponse
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalListLegacyOrganizationsResponse: Response for
+// [ListLegacyOrganizations].
+// [spectrum.sas.portal.v1alpha1.Provisioning.ListLegacyOrganizations].
+type SasPortalListLegacyOrganizationsResponse struct {
+	// Organizations: Optional. Legacy SAS organizations.
+	Organizations []*SasPortalOrganization `json:"organizations,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "Organizations") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Organizations") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalListLegacyOrganizationsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalListLegacyOrganizationsResponse
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalListNodesResponse: Response for ListNodes.
 type SasPortalListNodesResponse struct {
-	// NextPageToken: A pagination token returned from a previous call to
-	// ListNodes that indicates from where listing should continue. If the
-	// field is missing or empty, it means there is no more nodes.
+	// NextPageToken: A pagination token returned from a previous call to ListNodes
+	// that indicates from where listing should continue. If the field is missing
+	// or empty, it means there is no more nodes.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Nodes: The nodes that match the request.
 	Nodes []*SasPortalNode `json:"nodes,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalListNodesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalListNodesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalMigrateOrganizationMetadata: Long-running operation metadata
+// message returned by the MigrateOrganization.
+type SasPortalMigrateOrganizationMetadata struct {
+	// OperationState: Output only. Current operation state
+	//
+	// Possible values:
+	//   "OPERATION_STATE_UNSPECIFIED" - Unspecified.
+	//   "OPERATION_STATE_PENDING" - Pending (Not started).
+	//   "OPERATION_STATE_RUNNING" - In-progress.
+	//   "OPERATION_STATE_SUCCEEDED" - Done successfully.
+	//   "OPERATION_STATE_FAILED" - Done with errors.
+	OperationState string `json:"operationState,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "OperationState") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "OperationState") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalMigrateOrganizationMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalMigrateOrganizationMetadata
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalMigrateOrganizationRequest: Request for [MigrateOrganization].
+// [spectrum.sas.portal.v1alpha1.Provisioning.MigrateOrganization]. GCP
+// Project, Organization Info, and caller's GAIA ID should be retrieved from
+// the RPC handler, and used to check authorization on SAS Portal organization
+// and to create GCP Projects.
+type SasPortalMigrateOrganizationRequest struct {
+	// OrganizationId: Required. Id of the SAS organization to be migrated.
+	OrganizationId int64 `json:"organizationId,omitempty,string"`
+	// ForceSendFields is a list of field names (e.g. "OrganizationId") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "OrganizationId") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalMigrateOrganizationRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalMigrateOrganizationRequest
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalMigrateOrganizationResponse: Response for [MigrateOrganization].
+// [spectrum.sas.portal.v1alpha1.Provisioning.MigrateOrganization].
+type SasPortalMigrateOrganizationResponse struct {
+	// DeploymentAssociation: Optional. A list of deployment association that were
+	// created for the migration, or current associations if they already exist.
+	DeploymentAssociation []*SasPortalDeploymentAssociation `json:"deploymentAssociation,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DeploymentAssociation") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DeploymentAssociation") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalMigrateOrganizationResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalMigrateOrganizationResponse
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalMoveDeploymentRequest: Request for MoveDeployment.
 type SasPortalMoveDeploymentRequest struct {
-	// Destination: Required. The name of the new parent resource node or
-	// customer to reparent the deployment under.
+	// Destination: Required. The name of the new parent resource node or customer
+	// to reparent the deployment under.
 	Destination string `json:"destination,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Destination") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Destination") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Destination") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalMoveDeploymentRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalMoveDeploymentRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalMoveDeviceRequest: Request for MoveDevice.
 type SasPortalMoveDeviceRequest struct {
-	// Destination: Required. The name of the new parent resource node or
-	// customer to reparent the device under.
+	// Destination: Required. The name of the new parent resource node or customer
+	// to reparent the device under.
 	Destination string `json:"destination,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Destination") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Destination") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Destination") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalMoveDeviceRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalMoveDeviceRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalMoveNodeRequest: Request for MoveNode.
 type SasPortalMoveNodeRequest struct {
-	// Destination: Required. The name of the new parent resource node or
-	// customer to reparent the node under.
+	// Destination: Required. The name of the new parent resource node or customer
+	// to reparent the node under.
 	Destination string `json:"destination,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Destination") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Destination") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Destination") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalMoveNodeRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalMoveNodeRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalNode: The Node.
 type SasPortalNode struct {
 	// DisplayName: The node's display name.
 	DisplayName string `json:"displayName,omitempty"`
-
 	// Name: Output only. Resource name.
 	Name string `json:"name,omitempty"`
-
 	// SasUserIds: User ids used by the devices belonging to this node.
 	SasUserIds []string `json:"sasUserIds,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "DisplayName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DisplayName") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "DisplayName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalNode) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalNode
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalNrqzValidation: Information about National Radio Quiet Zone
 // validation.
 type SasPortalNrqzValidation struct {
-	// CaseId: Validation case id.
+	// CaseId: Validation case ID.
 	CaseId string `json:"caseId,omitempty"`
-
 	// CpiId: CPI who signed the validation.
 	CpiId string `json:"cpiId,omitempty"`
-
-	// Latitude: Device latitude associated with the validation.
+	// Latitude: Device latitude that's associated with the validation.
 	Latitude float64 `json:"latitude,omitempty"`
-
-	// Longitude: Device longitude associated with the validation.
+	// Longitude: Device longitude that's associated with the validation.
 	Longitude float64 `json:"longitude,omitempty"`
-
 	// State: State of the NRQZ validation info.
 	//
 	// Possible values:
@@ -1525,28 +1496,22 @@ type SasPortalNrqzValidation struct {
 	//   "DRAFT" - Draft state.
 	//   "FINAL" - Final state.
 	State string `json:"state,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "CaseId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "CaseId") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "CaseId") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalNrqzValidation) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalNrqzValidation
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 func (s *SasPortalNrqzValidation) UnmarshalJSON(data []byte) error {
@@ -1565,365 +1530,404 @@ func (s *SasPortalNrqzValidation) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// SasPortalOperation: This resource represents a long-running operation
-// that is the result of a network API call.
+// SasPortalOperation: This resource represents a long-running operation that
+// is the result of a network API call.
 type SasPortalOperation struct {
-	// Done: If the value is `false`, it means the operation is still in
-	// progress. If `true`, the operation is completed, and either `error`
-	// or `response` is available.
+	// Done: If the value is `false`, it means the operation is still in progress.
+	// If `true`, the operation is completed, and either `error` or `response` is
+	// available.
 	Done bool `json:"done,omitempty"`
-
-	// Error: The error result of the operation in case of failure or
-	// cancellation.
+	// Error: The error result of the operation in case of failure or cancellation.
 	Error *SasPortalStatus `json:"error,omitempty"`
-
 	// Metadata: Service-specific metadata associated with the operation. It
-	// typically contains progress information and common metadata such as
-	// create time. Some services might not provide such metadata. Any
-	// method that returns a long-running operation should document the
-	// metadata type, if any.
+	// typically contains progress information and common metadata such as create
+	// time. Some services might not provide such metadata. Any method that returns
+	// a long-running operation should document the metadata type, if any.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
-
-	// Name: The server-assigned name, which is only unique within the same
-	// service that originally returns it. If you use the default HTTP
-	// mapping, the `name` should be a resource name ending with
-	// `operations/{unique_id}`.
+	// Name: The server-assigned name, which is only unique within the same service
+	// that originally returns it. If you use the default HTTP mapping, the `name`
+	// should be a resource name ending with `operations/{unique_id}`.
 	Name string `json:"name,omitempty"`
-
-	// Response: The normal response of the operation in case of success. If
-	// the original method returns no data on success, such as `Delete`, the
-	// response is `google.protobuf.Empty`. If the original method is
-	// standard `Get`/`Create`/`Update`, the response should be the
-	// resource. For other methods, the response should have the type
-	// `XxxResponse`, where `Xxx` is the original method name. For example,
-	// if the original method name is `TakeSnapshot()`, the inferred
-	// response type is `TakeSnapshotResponse`.
+	// Response: The normal, successful response of the operation. If the original
+	// method returns no data on success, such as `Delete`, the response is
+	// `google.protobuf.Empty`. If the original method is standard
+	// `Get`/`Create`/`Update`, the response should be the resource. For other
+	// methods, the response should have the type `XxxResponse`, where `Xxx` is the
+	// original method name. For example, if the original method name is
+	// `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
 	Response googleapi.RawMessage `json:"response,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Done") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Done") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Done") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Done") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalOperation) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalOperation
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalOrganization: Organization details.
+type SasPortalOrganization struct {
+	// DisplayName: Name of organization
+	DisplayName string `json:"displayName,omitempty"`
+	// Id: Id of organization
+	Id int64 `json:"id,omitempty,string"`
+	// ForceSendFields is a list of field names (e.g. "DisplayName") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DisplayName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalOrganization) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalOrganization
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalPolicy: Defines an access control policy to the resources.
 type SasPortalPolicy struct {
 	// Assignments: List of assignments
 	Assignments []*SasPortalAssignment `json:"assignments,omitempty"`
-
-	// Etag: The etag is used for optimistic concurrency control as a way to
-	// help prevent simultaneous updates of a policy from overwriting each
-	// other. It is strongly suggested that systems make use of the etag in
-	// the read-modify-write cycle to perform policy updates in order to
-	// avoid race conditions: An etag is returned in the response to
-	// GetPolicy, and systems are expected to put that etag in the request
-	// to SetPolicy to ensure that their change will be applied to the same
-	// version of the policy. If no etag is provided in the call to
-	// GetPolicy, then the existing policy is overwritten blindly.
+	// Etag: The etag is used for optimistic concurrency control as a way to help
+	// prevent simultaneous updates of a policy from overwriting each other. It is
+	// strongly suggested that systems make use of the etag in the
+	// read-modify-write cycle to perform policy updates in order to avoid race
+	// conditions: An etag is returned in the response to GetPolicy, and systems
+	// are expected to put that etag in the request to SetPolicy to ensure that
+	// their change will be applied to the same version of the policy. If no etag
+	// is provided in the call to GetPolicy, then the existing policy is
+	// overwritten blindly.
 	Etag string `json:"etag,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Assignments") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Assignments") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Assignments") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalPolicy
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalProvisionDeploymentRequest: Request for [ProvisionDeployment].
+// [spectrum.sas.portal.v1alpha1.Provisioning.ProvisionDeployment]. GCP
+// Project, Organization Info, and caller’s GAIA ID should be retrieved from
+// the RPC handler, and used as inputs to create a new SAS organization (if not
+// exists) and a new SAS deployment.
+type SasPortalProvisionDeploymentRequest struct {
+	// NewDeploymentDisplayName: Optional. If this field is set, and a new SAS
+	// Portal Deployment needs to be created, its display name will be set to the
+	// value of this field.
+	NewDeploymentDisplayName string `json:"newDeploymentDisplayName,omitempty"`
+	// NewOrganizationDisplayName: Optional. If this field is set, and a new SAS
+	// Portal Organization needs to be created, its display name will be set to the
+	// value of this field.
+	NewOrganizationDisplayName string `json:"newOrganizationDisplayName,omitempty"`
+	// OrganizationId: Optional. If this field is set then a new deployment will be
+	// created under the organization specified by this id.
+	OrganizationId int64 `json:"organizationId,omitempty,string"`
+	// ForceSendFields is a list of field names (e.g. "NewDeploymentDisplayName")
+	// to unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "NewDeploymentDisplayName") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalProvisionDeploymentRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalProvisionDeploymentRequest
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalProvisionDeploymentResponse: Response for [ProvisionDeployment].
+// [spectrum.sas.portal.v1alpha1.Provisioning.ProvisionDeployment].
+type SasPortalProvisionDeploymentResponse struct {
+	// ErrorMessage: Optional. Optional error message if the provisioning request
+	// is not successful.
+	ErrorMessage string `json:"errorMessage,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "ErrorMessage") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ErrorMessage") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalProvisionDeploymentResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalProvisionDeploymentResponse
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalSetPolicyRequest: Request message for `SetPolicy` method.
 type SasPortalSetPolicyRequest struct {
-	// DisableNotification: Optional. Set the field as true when we would
-	// like to disable the onboarding notification.
+	// DisableNotification: Optional. Set the field as `true` to disable the
+	// onboarding notification.
 	DisableNotification bool `json:"disableNotification,omitempty"`
-
 	// Policy: Required. The policy to be applied to the `resource`.
 	Policy *SasPortalPolicy `json:"policy,omitempty"`
-
-	// Resource: Required. The resource for which the policy is being
-	// specified. This policy replaces any existing policy.
+	// Resource: Required. The resource for which the policy is being specified.
+	// This policy replaces any existing policy.
 	Resource string `json:"resource,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "DisableNotification")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "DisableNotification") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DisableNotification") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "DisableNotification") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalSetPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalSetPolicyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalSetupSasAnalyticsMetadata: Metadata returned by the long running
+// operation for the SetupSasAnalytics rpc.
+type SasPortalSetupSasAnalyticsMetadata struct {
+}
+
+// SasPortalSetupSasAnalyticsRequest: Request for the SetupSasAnalytics rpc.
+type SasPortalSetupSasAnalyticsRequest struct {
+	// UserId: Optional. User id to setup analytics for, if not provided the user
+	// id associated with the project is used. optional
+	UserId string `json:"userId,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "UserId") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "UserId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SasPortalSetupSasAnalyticsRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod SasPortalSetupSasAnalyticsRequest
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SasPortalSetupSasAnalyticsResponse: Response returned by the long running
+// operation for the SetupSasAnalytics rpc.
+type SasPortalSetupSasAnalyticsResponse struct {
 }
 
 // SasPortalSignDeviceRequest: Request for SignDevice.
 type SasPortalSignDeviceRequest struct {
-	// Device: Required. The device to sign. The device fields name, fcc_id
-	// and serial_number must be set. The user_id field must be set.
+	// Device: Required. The device to sign. The device fields name, fcc_id and
+	// serial_number must be set. The user_id field must be set.
 	Device *SasPortalDevice `json:"device,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Device") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Device") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Device") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalSignDeviceRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalSignDeviceRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SasPortalStatus: The `Status` type defines a logical error model that
-// is suitable for different programming environments, including REST
-// APIs and RPC APIs. It is used by gRPC (https://github.com/grpc). Each
-// `Status` message contains three pieces of data: error code, error
-// message, and error details. You can find out more about this error
-// model and how to work with it in the API Design Guide
-// (https://cloud.google.com/apis/design/errors).
+// SasPortalStatus: The `Status` type defines a logical error model that is
+// suitable for different programming environments, including REST APIs and RPC
+// APIs. It is used by gRPC (https://github.com/grpc). Each `Status` message
+// contains three pieces of data: error code, error message, and error details.
+// You can find out more about this error model and how to work with it in the
+// API Design Guide (https://cloud.google.com/apis/design/errors).
 type SasPortalStatus struct {
-	// Code: The status code, which should be an enum value of
-	// google.rpc.Code.
+	// Code: The status code, which should be an enum value of google.rpc.Code.
 	Code int64 `json:"code,omitempty"`
-
-	// Details: A list of messages that carry the error details. There is a
-	// common set of message types for APIs to use.
+	// Details: A list of messages that carry the error details. There is a common
+	// set of message types for APIs to use.
 	Details []googleapi.RawMessage `json:"details,omitempty"`
-
-	// Message: A developer-facing error message, which should be in
-	// English. Any user-facing error message should be localized and sent
-	// in the google.rpc.Status.details field, or localized by the client.
+	// Message: A developer-facing error message, which should be in English. Any
+	// user-facing error message should be localized and sent in the
+	// google.rpc.Status.details field, or localized by the client.
 	Message string `json:"message,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Code") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Code") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Code") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Code") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalStatus
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SasPortalTestPermissionsRequest: Request message for
-// `TestPermissions` method.
+// SasPortalTestPermissionsRequest: Request message for `TestPermissions`
+// method.
 type SasPortalTestPermissionsRequest struct {
 	// Permissions: The set of permissions to check for the `resource`.
 	Permissions []string `json:"permissions,omitempty"`
-
 	// Resource: Required. The resource for which the permissions are being
 	// requested.
 	Resource string `json:"resource,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Permissions") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Permissions") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Permissions") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalTestPermissionsRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalTestPermissionsRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SasPortalTestPermissionsResponse: Response message for
-// `TestPermissions` method.
+// SasPortalTestPermissionsResponse: Response message for `TestPermissions`
+// method.
 type SasPortalTestPermissionsResponse struct {
 	// Permissions: A set of permissions that the caller is allowed.
 	Permissions []string `json:"permissions,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Permissions") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Permissions") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Permissions") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalTestPermissionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalTestPermissionsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalUpdateSignedDeviceRequest: Request for UpdateSignedDevice.
 type SasPortalUpdateSignedDeviceRequest struct {
-	// EncodedDevice: Required. The JSON Web Token signed using a CPI
-	// private key. Payload must be the JSON encoding of the device. The
-	// user_id field must be set.
+	// EncodedDevice: Required. The JSON Web Token signed using a CPI private key.
+	// Payload must be the JSON encoding of the device. The user_id field must be
+	// set.
 	EncodedDevice string `json:"encodedDevice,omitempty"`
-
-	// InstallerId: Required. Unique installer ID (CPI ID) from the
-	// Certified Professional Installers database.
+	// InstallerId: Required. Unique installer ID (CPI ID) from the Certified
+	// Professional Installers database.
 	InstallerId string `json:"installerId,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "EncodedDevice") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "EncodedDevice") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "EncodedDevice") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalUpdateSignedDeviceRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalUpdateSignedDeviceRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalValidateInstallerRequest: Request for ValidateInstaller.
 type SasPortalValidateInstallerRequest struct {
-	// EncodedSecret: Required. JSON Web Token signed using a CPI private
-	// key. Payload must include a "secret" claim whose value is the secret.
+	// EncodedSecret: Required. JSON Web Token signed using a CPI private key.
+	// Payload must include a "secret" claim whose value is the secret.
 	EncodedSecret string `json:"encodedSecret,omitempty"`
-
-	// InstallerId: Required. Unique installer id (CPI ID) from the
-	// Certified Professional Installers database.
+	// InstallerId: Required. Unique installer id (CPI ID) from the Certified
+	// Professional Installers database.
 	InstallerId string `json:"installerId,omitempty"`
-
 	// Secret: Required. Secret returned by the GenerateSecret.
 	Secret string `json:"secret,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "EncodedSecret") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "EncodedSecret") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "EncodedSecret") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SasPortalValidateInstallerRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SasPortalValidateInstallerRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SasPortalValidateInstallerResponse: Response for ValidateInstaller.
 type SasPortalValidateInstallerResponse struct {
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
 }
-
-// method id "prod_tt_sasportal.customers.get":
 
 type CustomersGetCall struct {
 	s            *Service
@@ -1944,33 +1948,29 @@ func (r *CustomersService) Get(name string) *CustomersGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersGetCall) Fields(s ...googleapi.Field) *CustomersGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersGetCall) IfNoneMatch(entityTag string) *CustomersGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersGetCall) Context(ctx context.Context) *CustomersGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1979,12 +1979,7 @@ func (c *CustomersGetCall) Header() http.Header {
 }
 
 func (c *CustomersGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -2005,12 +2000,11 @@ func (c *CustomersGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.customers.get" call.
-// Exactly one of *SasPortalCustomer or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalCustomer.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalCustomer.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersGetCall) Do(opts ...googleapi.CallOption) (*SasPortalCustomer, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2018,17 +2012,17 @@ func (c *CustomersGetCall) Do(opts ...googleapi.CallOption) (*SasPortalCustomer,
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalCustomer{
 		ServerResponse: googleapi.ServerResponse{
@@ -2041,35 +2035,7 @@ func (c *CustomersGetCall) Do(opts ...googleapi.CallOption) (*SasPortalCustomer,
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a requested customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the customer.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalCustomer"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.list":
 
 type CustomersListCall struct {
 	s            *Service
@@ -2085,49 +2051,45 @@ func (r *CustomersService) List() *CustomersListCall {
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of customers to return in the response.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// customers to return in the response.
 func (c *CustomersListCall) PageSize(pageSize int64) *CustomersListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListCustomers that indicates where
-// this listing should continue from.
+// returned from a previous call to ListCustomers that indicates where this
+// listing should continue from.
 func (c *CustomersListCall) PageToken(pageToken string) *CustomersListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersListCall) Fields(s ...googleapi.Field) *CustomersListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersListCall) IfNoneMatch(entityTag string) *CustomersListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersListCall) Context(ctx context.Context) *CustomersListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2136,12 +2098,7 @@ func (c *CustomersListCall) Header() http.Header {
 }
 
 func (c *CustomersListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -2159,12 +2116,11 @@ func (c *CustomersListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.customers.list" call.
-// Exactly one of *SasPortalListCustomersResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListCustomersResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListCustomersResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *CustomersListCall) Do(opts ...googleapi.CallOption) (*SasPortalListCustomersResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2172,17 +2128,17 @@ func (c *CustomersListCall) Do(opts ...googleapi.CallOption) (*SasPortalListCust
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListCustomersResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -2195,34 +2151,6 @@ func (c *CustomersListCall) Do(opts ...googleapi.CallOption) (*SasPortalListCust
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a list of requested customers.",
-	//   "flatPath": "v1alpha1/customers",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.list",
-	//   "parameterOrder": [],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "The maximum number of customers to return in the response.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListCustomers that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/customers",
-	//   "response": {
-	//     "$ref": "SasPortalListCustomersResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -2230,7 +2158,7 @@ func (c *CustomersListCall) Do(opts ...googleapi.CallOption) (*SasPortalListCust
 // The provided context supersedes any context provided to the Context method.
 func (c *CustomersListCall) Pages(ctx context.Context, f func(*SasPortalListCustomersResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -2246,7 +2174,306 @@ func (c *CustomersListCall) Pages(ctx context.Context, f func(*SasPortalListCust
 	}
 }
 
-// method id "prod_tt_sasportal.customers.patch":
+type CustomersListGcpProjectDeploymentsCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// ListGcpProjectDeployments: Returns a list of SAS deployments associated with
+// current GCP project. Includes whether SAS analytics has been enabled or not.
+func (r *CustomersService) ListGcpProjectDeployments() *CustomersListGcpProjectDeploymentsCall {
+	c := &CustomersListGcpProjectDeploymentsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *CustomersListGcpProjectDeploymentsCall) Fields(s ...googleapi.Field) *CustomersListGcpProjectDeploymentsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *CustomersListGcpProjectDeploymentsCall) IfNoneMatch(entityTag string) *CustomersListGcpProjectDeploymentsCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *CustomersListGcpProjectDeploymentsCall) Context(ctx context.Context) *CustomersListGcpProjectDeploymentsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *CustomersListGcpProjectDeploymentsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CustomersListGcpProjectDeploymentsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/customers:listGcpProjectDeployments")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "prod_tt_sasportal.customers.listGcpProjectDeployments" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListGcpProjectDeploymentsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *CustomersListGcpProjectDeploymentsCall) Do(opts ...googleapi.CallOption) (*SasPortalListGcpProjectDeploymentsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &SasPortalListGcpProjectDeploymentsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type CustomersListLegacyOrganizationsCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// ListLegacyOrganizations: Returns a list of legacy organizations.
+func (r *CustomersService) ListLegacyOrganizations() *CustomersListLegacyOrganizationsCall {
+	c := &CustomersListLegacyOrganizationsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *CustomersListLegacyOrganizationsCall) Fields(s ...googleapi.Field) *CustomersListLegacyOrganizationsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *CustomersListLegacyOrganizationsCall) IfNoneMatch(entityTag string) *CustomersListLegacyOrganizationsCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *CustomersListLegacyOrganizationsCall) Context(ctx context.Context) *CustomersListLegacyOrganizationsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *CustomersListLegacyOrganizationsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CustomersListLegacyOrganizationsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/customers:listLegacyOrganizations")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "prod_tt_sasportal.customers.listLegacyOrganizations" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListLegacyOrganizationsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *CustomersListLegacyOrganizationsCall) Do(opts ...googleapi.CallOption) (*SasPortalListLegacyOrganizationsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &SasPortalListLegacyOrganizationsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type CustomersMigrateOrganizationCall struct {
+	s                                   *Service
+	sasportalmigrateorganizationrequest *SasPortalMigrateOrganizationRequest
+	urlParams_                          gensupport.URLParams
+	ctx_                                context.Context
+	header_                             http.Header
+}
+
+// MigrateOrganization: Migrates a SAS organization to the cloud. This will
+// create GCP projects for each deployment and associate them. The SAS
+// Organization is linked to the gcp project that called the command.
+// go/sas-legacy-customer-migration
+func (r *CustomersService) MigrateOrganization(sasportalmigrateorganizationrequest *SasPortalMigrateOrganizationRequest) *CustomersMigrateOrganizationCall {
+	c := &CustomersMigrateOrganizationCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.sasportalmigrateorganizationrequest = sasportalmigrateorganizationrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *CustomersMigrateOrganizationCall) Fields(s ...googleapi.Field) *CustomersMigrateOrganizationCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *CustomersMigrateOrganizationCall) Context(ctx context.Context) *CustomersMigrateOrganizationCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *CustomersMigrateOrganizationCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CustomersMigrateOrganizationCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalmigrateorganizationrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/customers:migrateOrganization")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "prod_tt_sasportal.customers.migrateOrganization" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalOperation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *CustomersMigrateOrganizationCall) Do(opts ...googleapi.CallOption) (*SasPortalOperation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &SasPortalOperation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
 
 type CustomersPatchCall struct {
 	s                 *Service
@@ -2267,31 +2494,28 @@ func (r *CustomersService) Patch(name string, sasportalcustomer *SasPortalCustom
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Fields to be
-// updated.
+// UpdateMask sets the optional parameter "updateMask": Fields to be updated.
 func (c *CustomersPatchCall) UpdateMask(updateMask string) *CustomersPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersPatchCall) Fields(s ...googleapi.Field) *CustomersPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersPatchCall) Context(ctx context.Context) *CustomersPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2300,18 +2524,12 @@ func (c *CustomersPatchCall) Header() http.Header {
 }
 
 func (c *CustomersPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalcustomer)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}")
@@ -2328,12 +2546,11 @@ func (c *CustomersPatchCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.customers.patch" call.
-// Exactly one of *SasPortalCustomer or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalCustomer.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalCustomer.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalCustomer, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2341,17 +2558,17 @@ func (c *CustomersPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalCustome
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalCustomer{
 		ServerResponse: googleapi.ServerResponse{
@@ -2364,44 +2581,201 @@ func (c *CustomersPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalCustome
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.customers.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. Resource name of the customer.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Fields to be updated.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "request": {
-	//     "$ref": "SasPortalCustomer"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalCustomer"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
-// method id "prod_tt_sasportal.customers.deployments.create":
+type CustomersProvisionDeploymentCall struct {
+	s                                   *Service
+	sasportalprovisiondeploymentrequest *SasPortalProvisionDeploymentRequest
+	urlParams_                          gensupport.URLParams
+	ctx_                                context.Context
+	header_                             http.Header
+}
+
+// ProvisionDeployment: Creates a new SAS deployment through the GCP workflow.
+// Creates a SAS organization if an organization match is not found.
+func (r *CustomersService) ProvisionDeployment(sasportalprovisiondeploymentrequest *SasPortalProvisionDeploymentRequest) *CustomersProvisionDeploymentCall {
+	c := &CustomersProvisionDeploymentCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.sasportalprovisiondeploymentrequest = sasportalprovisiondeploymentrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *CustomersProvisionDeploymentCall) Fields(s ...googleapi.Field) *CustomersProvisionDeploymentCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *CustomersProvisionDeploymentCall) Context(ctx context.Context) *CustomersProvisionDeploymentCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *CustomersProvisionDeploymentCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CustomersProvisionDeploymentCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalprovisiondeploymentrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/customers:provisionDeployment")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "prod_tt_sasportal.customers.provisionDeployment" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalProvisionDeploymentResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *CustomersProvisionDeploymentCall) Do(opts ...googleapi.CallOption) (*SasPortalProvisionDeploymentResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &SasPortalProvisionDeploymentResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type CustomersSetupSasAnalyticsCall struct {
+	s                                 *Service
+	sasportalsetupsasanalyticsrequest *SasPortalSetupSasAnalyticsRequest
+	urlParams_                        gensupport.URLParams
+	ctx_                              context.Context
+	header_                           http.Header
+}
+
+// SetupSasAnalytics: Setups the a GCP Project to receive SAS Analytics
+// messages via GCP Pub/Sub with a subscription to BigQuery. All the Pub/Sub
+// topics and BigQuery tables are created automatically as part of this
+// service.
+func (r *CustomersService) SetupSasAnalytics(sasportalsetupsasanalyticsrequest *SasPortalSetupSasAnalyticsRequest) *CustomersSetupSasAnalyticsCall {
+	c := &CustomersSetupSasAnalyticsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.sasportalsetupsasanalyticsrequest = sasportalsetupsasanalyticsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *CustomersSetupSasAnalyticsCall) Fields(s ...googleapi.Field) *CustomersSetupSasAnalyticsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *CustomersSetupSasAnalyticsCall) Context(ctx context.Context) *CustomersSetupSasAnalyticsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *CustomersSetupSasAnalyticsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CustomersSetupSasAnalyticsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalsetupsasanalyticsrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/customers:setupSasAnalytics")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "prod_tt_sasportal.customers.setupSasAnalytics" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalOperation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *CustomersSetupSasAnalyticsCall) Do(opts ...googleapi.CallOption) (*SasPortalOperation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &SasPortalOperation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
 
 type CustomersDeploymentsCreateCall struct {
 	s                   *Service
@@ -2414,8 +2788,7 @@ type CustomersDeploymentsCreateCall struct {
 
 // Create: Creates a new deployment.
 //
-//   - parent: The parent resource name where the deployment is to be
-//     created.
+// - parent: The parent resource name where the deployment is to be created.
 func (r *CustomersDeploymentsService) Create(parent string, sasportaldeployment *SasPortalDeployment) *CustomersDeploymentsCreateCall {
 	c := &CustomersDeploymentsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -2424,23 +2797,21 @@ func (r *CustomersDeploymentsService) Create(parent string, sasportaldeployment 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDeploymentsCreateCall) Fields(s ...googleapi.Field) *CustomersDeploymentsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDeploymentsCreateCall) Context(ctx context.Context) *CustomersDeploymentsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDeploymentsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2449,18 +2820,12 @@ func (c *CustomersDeploymentsCreateCall) Header() http.Header {
 }
 
 func (c *CustomersDeploymentsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldeployment)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/deployments")
@@ -2477,12 +2842,11 @@ func (c *CustomersDeploymentsCreateCall) doRequest(alt string) (*http.Response, 
 }
 
 // Do executes the "prod_tt_sasportal.customers.deployments.create" call.
-// Exactly one of *SasPortalDeployment or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalDeployment.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDeployment.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDeploymentsCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDeployment, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2490,17 +2854,17 @@ func (c *CustomersDeploymentsCreateCall) Do(opts ...googleapi.CallOption) (*SasP
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDeployment{
 		ServerResponse: googleapi.ServerResponse{
@@ -2513,38 +2877,7 @@ func (c *CustomersDeploymentsCreateCall) Do(opts ...googleapi.CallOption) (*SasP
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new deployment.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/deployments",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.deployments.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent resource name where the deployment is to be created.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/deployments",
-	//   "request": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.deployments.delete":
 
 type CustomersDeploymentsDeleteCall struct {
 	s          *Service
@@ -2564,23 +2897,21 @@ func (r *CustomersDeploymentsService) Delete(name string) *CustomersDeploymentsD
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDeploymentsDeleteCall) Fields(s ...googleapi.Field) *CustomersDeploymentsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDeploymentsDeleteCall) Context(ctx context.Context) *CustomersDeploymentsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDeploymentsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2589,12 +2920,7 @@ func (c *CustomersDeploymentsDeleteCall) Header() http.Header {
 }
 
 func (c *CustomersDeploymentsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -2612,12 +2938,10 @@ func (c *CustomersDeploymentsDeleteCall) doRequest(alt string) (*http.Response, 
 }
 
 // Do executes the "prod_tt_sasportal.customers.deployments.delete" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *CustomersDeploymentsDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2625,17 +2949,17 @@ func (c *CustomersDeploymentsDeleteCall) Do(opts ...googleapi.CallOption) (*SasP
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -2648,35 +2972,7 @@ func (c *CustomersDeploymentsDeleteCall) Do(opts ...googleapi.CallOption) (*SasP
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a deployment.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/deployments/{deploymentsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "prod_tt_sasportal.customers.deployments.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the deployment.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.deployments.get":
 
 type CustomersDeploymentsGetCall struct {
 	s            *Service
@@ -2697,33 +2993,29 @@ func (r *CustomersDeploymentsService) Get(name string) *CustomersDeploymentsGetC
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDeploymentsGetCall) Fields(s ...googleapi.Field) *CustomersDeploymentsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersDeploymentsGetCall) IfNoneMatch(entityTag string) *CustomersDeploymentsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDeploymentsGetCall) Context(ctx context.Context) *CustomersDeploymentsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDeploymentsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2732,12 +3024,7 @@ func (c *CustomersDeploymentsGetCall) Header() http.Header {
 }
 
 func (c *CustomersDeploymentsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -2758,12 +3045,11 @@ func (c *CustomersDeploymentsGetCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "prod_tt_sasportal.customers.deployments.get" call.
-// Exactly one of *SasPortalDeployment or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalDeployment.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDeployment.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDeploymentsGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDeployment, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2771,17 +3057,17 @@ func (c *CustomersDeploymentsGetCall) Do(opts ...googleapi.CallOption) (*SasPort
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDeployment{
 		ServerResponse: googleapi.ServerResponse{
@@ -2794,35 +3080,7 @@ func (c *CustomersDeploymentsGetCall) Do(opts ...googleapi.CallOption) (*SasPort
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a requested deployment.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/deployments/{deploymentsId}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.deployments.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the deployment.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.deployments.list":
 
 type CustomersDeploymentsListCall struct {
 	s            *Service
@@ -2843,58 +3101,54 @@ func (r *CustomersDeploymentsService) List(parent string) *CustomersDeploymentsL
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have the following format: "DIRECT_CHILDREN" or
-// format: "direct_children". The filter is case insensitive. If empty,
-// then no deployments are filtered.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have the following format: "DIRECT_CHILDREN" or format:
+// "direct_children". The filter is case insensitive. If empty, then no
+// deployments are filtered.
 func (c *CustomersDeploymentsListCall) Filter(filter string) *CustomersDeploymentsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of deployments to return in the response.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// deployments to return in the response.
 func (c *CustomersDeploymentsListCall) PageSize(pageSize int64) *CustomersDeploymentsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDeployments that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDeployments that indicates where this
+// listing should continue from.
 func (c *CustomersDeploymentsListCall) PageToken(pageToken string) *CustomersDeploymentsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDeploymentsListCall) Fields(s ...googleapi.Field) *CustomersDeploymentsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersDeploymentsListCall) IfNoneMatch(entityTag string) *CustomersDeploymentsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDeploymentsListCall) Context(ctx context.Context) *CustomersDeploymentsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDeploymentsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2903,12 +3157,7 @@ func (c *CustomersDeploymentsListCall) Header() http.Header {
 }
 
 func (c *CustomersDeploymentsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -2929,12 +3178,11 @@ func (c *CustomersDeploymentsListCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "prod_tt_sasportal.customers.deployments.list" call.
-// Exactly one of *SasPortalListDeploymentsResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDeploymentsResponse.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDeploymentsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *CustomersDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDeploymentsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2942,17 +3190,17 @@ func (c *CustomersDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPor
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDeploymentsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -2965,48 +3213,6 @@ func (c *CustomersDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPor
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists deployments.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/deployments",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.deployments.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have the following format: \"DIRECT_CHILDREN\" or format: \"direct_children\". The filter is case insensitive. If empty, then no deployments are filtered.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of deployments to return in the response.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDeployments that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name, for example, \"nodes/1\", customer/1/nodes/2.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/deployments",
-	//   "response": {
-	//     "$ref": "SasPortalListDeploymentsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -3014,7 +3220,7 @@ func (c *CustomersDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPor
 // The provided context supersedes any context provided to the Context method.
 func (c *CustomersDeploymentsListCall) Pages(ctx context.Context, f func(*SasPortalListDeploymentsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -3029,8 +3235,6 @@ func (c *CustomersDeploymentsListCall) Pages(ctx context.Context, f func(*SasPor
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.customers.deployments.move":
 
 type CustomersDeploymentsMoveCall struct {
 	s                              *Service
@@ -3052,23 +3256,21 @@ func (r *CustomersDeploymentsService) Move(name string, sasportalmovedeploymentr
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDeploymentsMoveCall) Fields(s ...googleapi.Field) *CustomersDeploymentsMoveCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDeploymentsMoveCall) Context(ctx context.Context) *CustomersDeploymentsMoveCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDeploymentsMoveCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3077,18 +3279,12 @@ func (c *CustomersDeploymentsMoveCall) Header() http.Header {
 }
 
 func (c *CustomersDeploymentsMoveCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalmovedeploymentrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:move")
@@ -3105,12 +3301,11 @@ func (c *CustomersDeploymentsMoveCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "prod_tt_sasportal.customers.deployments.move" call.
-// Exactly one of *SasPortalOperation or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalOperation.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalOperation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDeploymentsMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3118,17 +3313,17 @@ func (c *CustomersDeploymentsMoveCall) Do(opts ...googleapi.CallOption) (*SasPor
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -3141,38 +3336,7 @@ func (c *CustomersDeploymentsMoveCall) Do(opts ...googleapi.CallOption) (*SasPor
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Moves a deployment under another node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/deployments/{deploymentsId}:move",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.deployments.move",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the deployment to move.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:move",
-	//   "request": {
-	//     "$ref": "SasPortalMoveDeploymentRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.deployments.patch":
 
 type CustomersDeploymentsPatchCall struct {
 	s                   *Service
@@ -3193,31 +3357,28 @@ func (r *CustomersDeploymentsService) Patch(name string, sasportaldeployment *Sa
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Fields to be
-// updated.
+// UpdateMask sets the optional parameter "updateMask": Fields to be updated.
 func (c *CustomersDeploymentsPatchCall) UpdateMask(updateMask string) *CustomersDeploymentsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDeploymentsPatchCall) Fields(s ...googleapi.Field) *CustomersDeploymentsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDeploymentsPatchCall) Context(ctx context.Context) *CustomersDeploymentsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDeploymentsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3226,18 +3387,12 @@ func (c *CustomersDeploymentsPatchCall) Header() http.Header {
 }
 
 func (c *CustomersDeploymentsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldeployment)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}")
@@ -3254,12 +3409,11 @@ func (c *CustomersDeploymentsPatchCall) doRequest(alt string) (*http.Response, e
 }
 
 // Do executes the "prod_tt_sasportal.customers.deployments.patch" call.
-// Exactly one of *SasPortalDeployment or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalDeployment.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDeployment.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDeploymentsPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalDeployment, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3267,17 +3421,17 @@ func (c *CustomersDeploymentsPatchCall) Do(opts ...googleapi.CallOption) (*SasPo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDeployment{
 		ServerResponse: googleapi.ServerResponse{
@@ -3290,44 +3444,7 @@ func (c *CustomersDeploymentsPatchCall) Do(opts ...googleapi.CallOption) (*SasPo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing deployment.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/deployments/{deploymentsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.customers.deployments.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. Resource name.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Fields to be updated.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "request": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.deployments.devices.create":
 
 type CustomersDeploymentsDevicesCreateCall struct {
 	s               *Service
@@ -3349,23 +3466,21 @@ func (r *CustomersDeploymentsDevicesService) Create(parent string, sasportaldevi
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDeploymentsDevicesCreateCall) Fields(s ...googleapi.Field) *CustomersDeploymentsDevicesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDeploymentsDevicesCreateCall) Context(ctx context.Context) *CustomersDeploymentsDevicesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDeploymentsDevicesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3374,18 +3489,12 @@ func (c *CustomersDeploymentsDevicesCreateCall) Header() http.Header {
 }
 
 func (c *CustomersDeploymentsDevicesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldevice)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices")
@@ -3402,12 +3511,11 @@ func (c *CustomersDeploymentsDevicesCreateCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "prod_tt_sasportal.customers.deployments.devices.create" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDeploymentsDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3415,17 +3523,17 @@ func (c *CustomersDeploymentsDevicesCreateCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -3438,38 +3546,7 @@ func (c *CustomersDeploymentsDevicesCreateCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a device under a node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/deployments/{deploymentsId}/devices",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.deployments.devices.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "request": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.deployments.devices.createSigned":
 
 type CustomersDeploymentsDevicesCreateSignedCall struct {
 	s                                  *Service
@@ -3491,23 +3568,21 @@ func (r *CustomersDeploymentsDevicesService) CreateSigned(parent string, sasport
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDeploymentsDevicesCreateSignedCall) Fields(s ...googleapi.Field) *CustomersDeploymentsDevicesCreateSignedCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDeploymentsDevicesCreateSignedCall) Context(ctx context.Context) *CustomersDeploymentsDevicesCreateSignedCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDeploymentsDevicesCreateSignedCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3516,18 +3591,12 @@ func (c *CustomersDeploymentsDevicesCreateSignedCall) Header() http.Header {
 }
 
 func (c *CustomersDeploymentsDevicesCreateSignedCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalcreatesigneddevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices:createSigned")
@@ -3544,12 +3613,11 @@ func (c *CustomersDeploymentsDevicesCreateSignedCall) doRequest(alt string) (*ht
 }
 
 // Do executes the "prod_tt_sasportal.customers.deployments.devices.createSigned" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDeploymentsDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3557,17 +3625,17 @@ func (c *CustomersDeploymentsDevicesCreateSignedCall) Do(opts ...googleapi.CallO
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -3580,38 +3648,7 @@ func (c *CustomersDeploymentsDevicesCreateSignedCall) Do(opts ...googleapi.CallO
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a signed device under a node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/deployments/{deploymentsId}/devices:createSigned",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.deployments.devices.createSigned",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices:createSigned",
-	//   "request": {
-	//     "$ref": "SasPortalCreateSignedDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.deployments.devices.list":
 
 type CustomersDeploymentsDevicesListCall struct {
 	s            *Service
@@ -3631,59 +3668,55 @@ func (r *CustomersDeploymentsDevicesService) List(parent string) *CustomersDeplo
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have one of the following formats: "sn=123454" or
-// "display_name=MyDevice". sn corresponds to serial number of the
-// device. The filter is case insensitive.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have one of the following formats: "sn=123454" or
+// "display_name=MyDevice". sn corresponds to serial number of the device. The
+// filter is case insensitive.
 func (c *CustomersDeploymentsDevicesListCall) Filter(filter string) *CustomersDeploymentsDevicesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of devices to return in the response. If empty or zero, all devices
-// will be listed. Must be in the range [0, 1000].
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// devices to return in the response. If empty or zero, all devices will be
+// listed. Must be in the range [0, 1000].
 func (c *CustomersDeploymentsDevicesListCall) PageSize(pageSize int64) *CustomersDeploymentsDevicesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDevices that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDevices that indicates where this
+// listing should continue from.
 func (c *CustomersDeploymentsDevicesListCall) PageToken(pageToken string) *CustomersDeploymentsDevicesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDeploymentsDevicesListCall) Fields(s ...googleapi.Field) *CustomersDeploymentsDevicesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersDeploymentsDevicesListCall) IfNoneMatch(entityTag string) *CustomersDeploymentsDevicesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDeploymentsDevicesListCall) Context(ctx context.Context) *CustomersDeploymentsDevicesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDeploymentsDevicesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3692,12 +3725,7 @@ func (c *CustomersDeploymentsDevicesListCall) Header() http.Header {
 }
 
 func (c *CustomersDeploymentsDevicesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -3718,12 +3746,11 @@ func (c *CustomersDeploymentsDevicesListCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "prod_tt_sasportal.customers.deployments.devices.list" call.
-// Exactly one of *SasPortalListDevicesResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDevicesResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDevicesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *CustomersDeploymentsDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDevicesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3731,17 +3758,17 @@ func (c *CustomersDeploymentsDevicesListCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDevicesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -3754,48 +3781,6 @@ func (c *CustomersDeploymentsDevicesListCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists devices under a node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/deployments/{deploymentsId}/devices",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.deployments.devices.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have one of the following formats: \"sn=123454\" or \"display_name=MyDevice\". sn corresponds to serial number of the device. The filter is case insensitive.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of devices to return in the response. If empty or zero, all devices will be listed. Must be in the range [0, 1000].",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDevices that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "response": {
-	//     "$ref": "SasPortalListDevicesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -3803,7 +3788,7 @@ func (c *CustomersDeploymentsDevicesListCall) Do(opts ...googleapi.CallOption) (
 // The provided context supersedes any context provided to the Context method.
 func (c *CustomersDeploymentsDevicesListCall) Pages(ctx context.Context, f func(*SasPortalListDevicesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -3818,8 +3803,6 @@ func (c *CustomersDeploymentsDevicesListCall) Pages(ctx context.Context, f func(
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.customers.devices.create":
 
 type CustomersDevicesCreateCall struct {
 	s               *Service
@@ -3841,23 +3824,21 @@ func (r *CustomersDevicesService) Create(parent string, sasportaldevice *SasPort
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDevicesCreateCall) Fields(s ...googleapi.Field) *CustomersDevicesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDevicesCreateCall) Context(ctx context.Context) *CustomersDevicesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDevicesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3866,18 +3847,12 @@ func (c *CustomersDevicesCreateCall) Header() http.Header {
 }
 
 func (c *CustomersDevicesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldevice)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices")
@@ -3894,12 +3869,11 @@ func (c *CustomersDevicesCreateCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "prod_tt_sasportal.customers.devices.create" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3907,17 +3881,17 @@ func (c *CustomersDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -3930,38 +3904,7 @@ func (c *CustomersDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a device under a node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/devices",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.devices.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "request": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.devices.createSigned":
 
 type CustomersDevicesCreateSignedCall struct {
 	s                                  *Service
@@ -3983,23 +3926,21 @@ func (r *CustomersDevicesService) CreateSigned(parent string, sasportalcreatesig
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDevicesCreateSignedCall) Fields(s ...googleapi.Field) *CustomersDevicesCreateSignedCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDevicesCreateSignedCall) Context(ctx context.Context) *CustomersDevicesCreateSignedCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDevicesCreateSignedCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4008,18 +3949,12 @@ func (c *CustomersDevicesCreateSignedCall) Header() http.Header {
 }
 
 func (c *CustomersDevicesCreateSignedCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalcreatesigneddevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices:createSigned")
@@ -4036,12 +3971,11 @@ func (c *CustomersDevicesCreateSignedCall) doRequest(alt string) (*http.Response
 }
 
 // Do executes the "prod_tt_sasportal.customers.devices.createSigned" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4049,17 +3983,17 @@ func (c *CustomersDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*Sa
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -4072,38 +4006,7 @@ func (c *CustomersDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*Sa
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a signed device under a node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/devices:createSigned",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.devices.createSigned",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices:createSigned",
-	//   "request": {
-	//     "$ref": "SasPortalCreateSignedDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.devices.delete":
 
 type CustomersDevicesDeleteCall struct {
 	s          *Service
@@ -4123,23 +4026,21 @@ func (r *CustomersDevicesService) Delete(name string) *CustomersDevicesDeleteCal
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDevicesDeleteCall) Fields(s ...googleapi.Field) *CustomersDevicesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDevicesDeleteCall) Context(ctx context.Context) *CustomersDevicesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDevicesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4148,12 +4049,7 @@ func (c *CustomersDevicesDeleteCall) Header() http.Header {
 }
 
 func (c *CustomersDevicesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -4171,12 +4067,10 @@ func (c *CustomersDevicesDeleteCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "prod_tt_sasportal.customers.devices.delete" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *CustomersDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4184,17 +4078,17 @@ func (c *CustomersDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -4207,35 +4101,7 @@ func (c *CustomersDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a device.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/devices/{devicesId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "prod_tt_sasportal.customers.devices.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.devices.get":
 
 type CustomersDevicesGetCall struct {
 	s            *Service
@@ -4256,33 +4122,29 @@ func (r *CustomersDevicesService) Get(name string) *CustomersDevicesGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDevicesGetCall) Fields(s ...googleapi.Field) *CustomersDevicesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersDevicesGetCall) IfNoneMatch(entityTag string) *CustomersDevicesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDevicesGetCall) Context(ctx context.Context) *CustomersDevicesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDevicesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4291,12 +4153,7 @@ func (c *CustomersDevicesGetCall) Header() http.Header {
 }
 
 func (c *CustomersDevicesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -4317,12 +4174,11 @@ func (c *CustomersDevicesGetCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "prod_tt_sasportal.customers.devices.get" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDevicesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4330,17 +4186,17 @@ func (c *CustomersDevicesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDe
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -4353,35 +4209,7 @@ func (c *CustomersDevicesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDe
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets details about a device.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/devices/{devicesId}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.devices.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.devices.list":
 
 type CustomersDevicesListCall struct {
 	s            *Service
@@ -4401,59 +4229,55 @@ func (r *CustomersDevicesService) List(parent string) *CustomersDevicesListCall 
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have one of the following formats: "sn=123454" or
-// "display_name=MyDevice". sn corresponds to serial number of the
-// device. The filter is case insensitive.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have one of the following formats: "sn=123454" or
+// "display_name=MyDevice". sn corresponds to serial number of the device. The
+// filter is case insensitive.
 func (c *CustomersDevicesListCall) Filter(filter string) *CustomersDevicesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of devices to return in the response. If empty or zero, all devices
-// will be listed. Must be in the range [0, 1000].
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// devices to return in the response. If empty or zero, all devices will be
+// listed. Must be in the range [0, 1000].
 func (c *CustomersDevicesListCall) PageSize(pageSize int64) *CustomersDevicesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDevices that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDevices that indicates where this
+// listing should continue from.
 func (c *CustomersDevicesListCall) PageToken(pageToken string) *CustomersDevicesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDevicesListCall) Fields(s ...googleapi.Field) *CustomersDevicesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersDevicesListCall) IfNoneMatch(entityTag string) *CustomersDevicesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDevicesListCall) Context(ctx context.Context) *CustomersDevicesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDevicesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4462,12 +4286,7 @@ func (c *CustomersDevicesListCall) Header() http.Header {
 }
 
 func (c *CustomersDevicesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -4488,12 +4307,11 @@ func (c *CustomersDevicesListCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "prod_tt_sasportal.customers.devices.list" call.
-// Exactly one of *SasPortalListDevicesResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDevicesResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDevicesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *CustomersDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDevicesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4501,17 +4319,17 @@ func (c *CustomersDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalL
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDevicesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -4524,48 +4342,6 @@ func (c *CustomersDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalL
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists devices under a node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/devices",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.devices.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have one of the following formats: \"sn=123454\" or \"display_name=MyDevice\". sn corresponds to serial number of the device. The filter is case insensitive.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of devices to return in the response. If empty or zero, all devices will be listed. Must be in the range [0, 1000].",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDevices that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "response": {
-	//     "$ref": "SasPortalListDevicesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -4573,7 +4349,7 @@ func (c *CustomersDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalL
 // The provided context supersedes any context provided to the Context method.
 func (c *CustomersDevicesListCall) Pages(ctx context.Context, f func(*SasPortalListDevicesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -4588,8 +4364,6 @@ func (c *CustomersDevicesListCall) Pages(ctx context.Context, f func(*SasPortalL
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.customers.devices.move":
 
 type CustomersDevicesMoveCall struct {
 	s                          *Service
@@ -4611,23 +4385,21 @@ func (r *CustomersDevicesService) Move(name string, sasportalmovedevicerequest *
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDevicesMoveCall) Fields(s ...googleapi.Field) *CustomersDevicesMoveCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDevicesMoveCall) Context(ctx context.Context) *CustomersDevicesMoveCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDevicesMoveCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4636,18 +4408,12 @@ func (c *CustomersDevicesMoveCall) Header() http.Header {
 }
 
 func (c *CustomersDevicesMoveCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalmovedevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:move")
@@ -4664,12 +4430,11 @@ func (c *CustomersDevicesMoveCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "prod_tt_sasportal.customers.devices.move" call.
-// Exactly one of *SasPortalOperation or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalOperation.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalOperation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDevicesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4677,17 +4442,17 @@ func (c *CustomersDevicesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalO
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -4700,38 +4465,7 @@ func (c *CustomersDevicesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalO
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Moves a device under another node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/devices/{devicesId}:move",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.devices.move",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device to move.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:move",
-	//   "request": {
-	//     "$ref": "SasPortalMoveDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.devices.patch":
 
 type CustomersDevicesPatchCall struct {
 	s               *Service
@@ -4752,31 +4486,28 @@ func (r *CustomersDevicesService) Patch(name string, sasportaldevice *SasPortalD
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Fields to be
-// updated.
+// UpdateMask sets the optional parameter "updateMask": Fields to be updated.
 func (c *CustomersDevicesPatchCall) UpdateMask(updateMask string) *CustomersDevicesPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDevicesPatchCall) Fields(s ...googleapi.Field) *CustomersDevicesPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDevicesPatchCall) Context(ctx context.Context) *CustomersDevicesPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDevicesPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4785,18 +4516,12 @@ func (c *CustomersDevicesPatchCall) Header() http.Header {
 }
 
 func (c *CustomersDevicesPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldevice)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}")
@@ -4813,12 +4538,11 @@ func (c *CustomersDevicesPatchCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "prod_tt_sasportal.customers.devices.patch" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDevicesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4826,17 +4550,17 @@ func (c *CustomersDevicesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -4849,44 +4573,7 @@ func (c *CustomersDevicesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a device.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/devices/{devicesId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.customers.devices.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource path name.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Fields to be updated.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "request": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.devices.signDevice":
 
 type CustomersDevicesSignDeviceCall struct {
 	s                          *Service
@@ -4908,23 +4595,21 @@ func (r *CustomersDevicesService) SignDevice(name string, sasportalsigndevicereq
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDevicesSignDeviceCall) Fields(s ...googleapi.Field) *CustomersDevicesSignDeviceCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDevicesSignDeviceCall) Context(ctx context.Context) *CustomersDevicesSignDeviceCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDevicesSignDeviceCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4933,18 +4618,12 @@ func (c *CustomersDevicesSignDeviceCall) Header() http.Header {
 }
 
 func (c *CustomersDevicesSignDeviceCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalsigndevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:signDevice")
@@ -4961,12 +4640,10 @@ func (c *CustomersDevicesSignDeviceCall) doRequest(alt string) (*http.Response, 
 }
 
 // Do executes the "prod_tt_sasportal.customers.devices.signDevice" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *CustomersDevicesSignDeviceCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4974,17 +4651,17 @@ func (c *CustomersDevicesSignDeviceCall) Do(opts ...googleapi.CallOption) (*SasP
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -4997,38 +4674,7 @@ func (c *CustomersDevicesSignDeviceCall) Do(opts ...googleapi.CallOption) (*SasP
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Signs a device.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/devices/{devicesId}:signDevice",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.devices.signDevice",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource path name.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:signDevice",
-	//   "request": {
-	//     "$ref": "SasPortalSignDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.devices.updateSigned":
 
 type CustomersDevicesUpdateSignedCall struct {
 	s                                  *Service
@@ -5050,23 +4696,21 @@ func (r *CustomersDevicesService) UpdateSigned(name string, sasportalupdatesigne
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersDevicesUpdateSignedCall) Fields(s ...googleapi.Field) *CustomersDevicesUpdateSignedCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersDevicesUpdateSignedCall) Context(ctx context.Context) *CustomersDevicesUpdateSignedCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersDevicesUpdateSignedCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5075,18 +4719,12 @@ func (c *CustomersDevicesUpdateSignedCall) Header() http.Header {
 }
 
 func (c *CustomersDevicesUpdateSignedCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalupdatesigneddevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:updateSigned")
@@ -5103,12 +4741,11 @@ func (c *CustomersDevicesUpdateSignedCall) doRequest(alt string) (*http.Response
 }
 
 // Do executes the "prod_tt_sasportal.customers.devices.updateSigned" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersDevicesUpdateSignedCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5116,17 +4753,17 @@ func (c *CustomersDevicesUpdateSignedCall) Do(opts ...googleapi.CallOption) (*Sa
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -5139,38 +4776,7 @@ func (c *CustomersDevicesUpdateSignedCall) Do(opts ...googleapi.CallOption) (*Sa
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a signed device.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/devices/{devicesId}:updateSigned",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.customers.devices.updateSigned",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device to update.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:updateSigned",
-	//   "request": {
-	//     "$ref": "SasPortalUpdateSignedDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.create":
 
 type CustomersNodesCreateCall struct {
 	s             *Service
@@ -5192,23 +4798,21 @@ func (r *CustomersNodesService) Create(parent string, sasportalnode *SasPortalNo
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesCreateCall) Fields(s ...googleapi.Field) *CustomersNodesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesCreateCall) Context(ctx context.Context) *CustomersNodesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5217,18 +4821,12 @@ func (c *CustomersNodesCreateCall) Header() http.Header {
 }
 
 func (c *CustomersNodesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalnode)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/nodes")
@@ -5245,12 +4843,10 @@ func (c *CustomersNodesCreateCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.create" call.
-// Exactly one of *SasPortalNode or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalNode.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalNode.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *CustomersNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5258,17 +4854,17 @@ func (c *CustomersNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalN
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalNode{
 		ServerResponse: googleapi.ServerResponse{
@@ -5281,38 +4877,7 @@ func (c *CustomersNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalN
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new node.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.nodes.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent resource name where the node is to be created.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/nodes",
-	//   "request": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.delete":
 
 type CustomersNodesDeleteCall struct {
 	s          *Service
@@ -5332,23 +4897,21 @@ func (r *CustomersNodesService) Delete(name string) *CustomersNodesDeleteCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesDeleteCall) Fields(s ...googleapi.Field) *CustomersNodesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesDeleteCall) Context(ctx context.Context) *CustomersNodesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5357,12 +4920,7 @@ func (c *CustomersNodesDeleteCall) Header() http.Header {
 }
 
 func (c *CustomersNodesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -5380,12 +4938,10 @@ func (c *CustomersNodesDeleteCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.delete" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *CustomersNodesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5393,17 +4949,17 @@ func (c *CustomersNodesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalE
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -5416,35 +4972,7 @@ func (c *CustomersNodesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalE
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a node.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "prod_tt_sasportal.customers.nodes.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the node.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.get":
 
 type CustomersNodesGetCall struct {
 	s            *Service
@@ -5465,33 +4993,29 @@ func (r *CustomersNodesService) Get(name string) *CustomersNodesGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesGetCall) Fields(s ...googleapi.Field) *CustomersNodesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersNodesGetCall) IfNoneMatch(entityTag string) *CustomersNodesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesGetCall) Context(ctx context.Context) *CustomersNodesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5500,12 +5024,7 @@ func (c *CustomersNodesGetCall) Header() http.Header {
 }
 
 func (c *CustomersNodesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -5526,12 +5045,10 @@ func (c *CustomersNodesGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.get" call.
-// Exactly one of *SasPortalNode or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalNode.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalNode.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *CustomersNodesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5539,17 +5056,17 @@ func (c *CustomersNodesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalNode
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalNode{
 		ServerResponse: googleapi.ServerResponse{
@@ -5562,35 +5079,7 @@ func (c *CustomersNodesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalNode
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a requested node.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.nodes.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the node.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.list":
 
 type CustomersNodesListCall struct {
 	s            *Service
@@ -5610,58 +5099,54 @@ func (r *CustomersNodesService) List(parent string) *CustomersNodesListCall {
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have the following format: "DIRECT_CHILDREN" or
-// format: "direct_children". The filter is case insensitive. If empty,
-// then no nodes are filtered.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have the following format: "DIRECT_CHILDREN" or format:
+// "direct_children". The filter is case insensitive. If empty, then no nodes
+// are filtered.
 func (c *CustomersNodesListCall) Filter(filter string) *CustomersNodesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of nodes to return in the response.
+// PageSize sets the optional parameter "pageSize": The maximum number of nodes
+// to return in the response.
 func (c *CustomersNodesListCall) PageSize(pageSize int64) *CustomersNodesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListNodes that indicates where this
-// listing should continue from.
+// returned from a previous call to ListNodes that indicates where this listing
+// should continue from.
 func (c *CustomersNodesListCall) PageToken(pageToken string) *CustomersNodesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesListCall) Fields(s ...googleapi.Field) *CustomersNodesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersNodesListCall) IfNoneMatch(entityTag string) *CustomersNodesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesListCall) Context(ctx context.Context) *CustomersNodesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5670,12 +5155,7 @@ func (c *CustomersNodesListCall) Header() http.Header {
 }
 
 func (c *CustomersNodesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -5696,12 +5176,11 @@ func (c *CustomersNodesListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.list" call.
-// Exactly one of *SasPortalListNodesResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *SasPortalListNodesResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *SasPortalListNodesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *CustomersNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListNodesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5709,17 +5188,17 @@ func (c *CustomersNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalLis
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListNodesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -5732,48 +5211,6 @@ func (c *CustomersNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalLis
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists nodes.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.nodes.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have the following format: \"DIRECT_CHILDREN\" or format: \"direct_children\". The filter is case insensitive. If empty, then no nodes are filtered.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of nodes to return in the response.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListNodes that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name, for example, \"nodes/1\".",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/nodes",
-	//   "response": {
-	//     "$ref": "SasPortalListNodesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -5781,7 +5218,7 @@ func (c *CustomersNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalLis
 // The provided context supersedes any context provided to the Context method.
 func (c *CustomersNodesListCall) Pages(ctx context.Context, f func(*SasPortalListNodesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -5796,8 +5233,6 @@ func (c *CustomersNodesListCall) Pages(ctx context.Context, f func(*SasPortalLis
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.customers.nodes.move":
 
 type CustomersNodesMoveCall struct {
 	s                        *Service
@@ -5819,23 +5254,21 @@ func (r *CustomersNodesService) Move(name string, sasportalmovenoderequest *SasP
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesMoveCall) Fields(s ...googleapi.Field) *CustomersNodesMoveCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesMoveCall) Context(ctx context.Context) *CustomersNodesMoveCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesMoveCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5844,18 +5277,12 @@ func (c *CustomersNodesMoveCall) Header() http.Header {
 }
 
 func (c *CustomersNodesMoveCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalmovenoderequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:move")
@@ -5872,12 +5299,11 @@ func (c *CustomersNodesMoveCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.move" call.
-// Exactly one of *SasPortalOperation or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalOperation.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalOperation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersNodesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5885,17 +5311,17 @@ func (c *CustomersNodesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOpe
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -5908,38 +5334,7 @@ func (c *CustomersNodesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOpe
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Moves a node under another node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}:move",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.nodes.move",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the node to move.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:move",
-	//   "request": {
-	//     "$ref": "SasPortalMoveNodeRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.patch":
 
 type CustomersNodesPatchCall struct {
 	s             *Service
@@ -5960,31 +5355,28 @@ func (r *CustomersNodesService) Patch(name string, sasportalnode *SasPortalNode)
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Fields to be
-// updated.
+// UpdateMask sets the optional parameter "updateMask": Fields to be updated.
 func (c *CustomersNodesPatchCall) UpdateMask(updateMask string) *CustomersNodesPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesPatchCall) Fields(s ...googleapi.Field) *CustomersNodesPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesPatchCall) Context(ctx context.Context) *CustomersNodesPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5993,18 +5385,12 @@ func (c *CustomersNodesPatchCall) Header() http.Header {
 }
 
 func (c *CustomersNodesPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalnode)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}")
@@ -6021,12 +5407,10 @@ func (c *CustomersNodesPatchCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.patch" call.
-// Exactly one of *SasPortalNode or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalNode.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalNode.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *CustomersNodesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6034,17 +5418,17 @@ func (c *CustomersNodesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalNo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalNode{
 		ServerResponse: googleapi.ServerResponse{
@@ -6057,44 +5441,7 @@ func (c *CustomersNodesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalNo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing node.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.customers.nodes.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. Resource name.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Fields to be updated.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "request": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.deployments.create":
 
 type CustomersNodesDeploymentsCreateCall struct {
 	s                   *Service
@@ -6107,8 +5454,7 @@ type CustomersNodesDeploymentsCreateCall struct {
 
 // Create: Creates a new deployment.
 //
-//   - parent: The parent resource name where the deployment is to be
-//     created.
+// - parent: The parent resource name where the deployment is to be created.
 func (r *CustomersNodesDeploymentsService) Create(parent string, sasportaldeployment *SasPortalDeployment) *CustomersNodesDeploymentsCreateCall {
 	c := &CustomersNodesDeploymentsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -6117,23 +5463,21 @@ func (r *CustomersNodesDeploymentsService) Create(parent string, sasportaldeploy
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesDeploymentsCreateCall) Fields(s ...googleapi.Field) *CustomersNodesDeploymentsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesDeploymentsCreateCall) Context(ctx context.Context) *CustomersNodesDeploymentsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesDeploymentsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6142,18 +5486,12 @@ func (c *CustomersNodesDeploymentsCreateCall) Header() http.Header {
 }
 
 func (c *CustomersNodesDeploymentsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldeployment)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/deployments")
@@ -6170,12 +5508,11 @@ func (c *CustomersNodesDeploymentsCreateCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.deployments.create" call.
-// Exactly one of *SasPortalDeployment or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalDeployment.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDeployment.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersNodesDeploymentsCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDeployment, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6183,17 +5520,17 @@ func (c *CustomersNodesDeploymentsCreateCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDeployment{
 		ServerResponse: googleapi.ServerResponse{
@@ -6206,38 +5543,7 @@ func (c *CustomersNodesDeploymentsCreateCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new deployment.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}/deployments",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.nodes.deployments.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent resource name where the deployment is to be created.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/deployments",
-	//   "request": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.deployments.list":
 
 type CustomersNodesDeploymentsListCall struct {
 	s            *Service
@@ -6258,58 +5564,54 @@ func (r *CustomersNodesDeploymentsService) List(parent string) *CustomersNodesDe
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have the following format: "DIRECT_CHILDREN" or
-// format: "direct_children". The filter is case insensitive. If empty,
-// then no deployments are filtered.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have the following format: "DIRECT_CHILDREN" or format:
+// "direct_children". The filter is case insensitive. If empty, then no
+// deployments are filtered.
 func (c *CustomersNodesDeploymentsListCall) Filter(filter string) *CustomersNodesDeploymentsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of deployments to return in the response.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// deployments to return in the response.
 func (c *CustomersNodesDeploymentsListCall) PageSize(pageSize int64) *CustomersNodesDeploymentsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDeployments that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDeployments that indicates where this
+// listing should continue from.
 func (c *CustomersNodesDeploymentsListCall) PageToken(pageToken string) *CustomersNodesDeploymentsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesDeploymentsListCall) Fields(s ...googleapi.Field) *CustomersNodesDeploymentsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersNodesDeploymentsListCall) IfNoneMatch(entityTag string) *CustomersNodesDeploymentsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesDeploymentsListCall) Context(ctx context.Context) *CustomersNodesDeploymentsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesDeploymentsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6318,12 +5620,7 @@ func (c *CustomersNodesDeploymentsListCall) Header() http.Header {
 }
 
 func (c *CustomersNodesDeploymentsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -6344,12 +5641,11 @@ func (c *CustomersNodesDeploymentsListCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.deployments.list" call.
-// Exactly one of *SasPortalListDeploymentsResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDeploymentsResponse.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDeploymentsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *CustomersNodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDeploymentsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6357,17 +5653,17 @@ func (c *CustomersNodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*S
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDeploymentsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -6380,48 +5676,6 @@ func (c *CustomersNodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*S
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists deployments.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}/deployments",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.nodes.deployments.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have the following format: \"DIRECT_CHILDREN\" or format: \"direct_children\". The filter is case insensitive. If empty, then no deployments are filtered.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of deployments to return in the response.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDeployments that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name, for example, \"nodes/1\", customer/1/nodes/2.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/deployments",
-	//   "response": {
-	//     "$ref": "SasPortalListDeploymentsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -6429,7 +5683,7 @@ func (c *CustomersNodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*S
 // The provided context supersedes any context provided to the Context method.
 func (c *CustomersNodesDeploymentsListCall) Pages(ctx context.Context, f func(*SasPortalListDeploymentsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -6444,8 +5698,6 @@ func (c *CustomersNodesDeploymentsListCall) Pages(ctx context.Context, f func(*S
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.customers.nodes.devices.create":
 
 type CustomersNodesDevicesCreateCall struct {
 	s               *Service
@@ -6467,23 +5719,21 @@ func (r *CustomersNodesDevicesService) Create(parent string, sasportaldevice *Sa
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesDevicesCreateCall) Fields(s ...googleapi.Field) *CustomersNodesDevicesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesDevicesCreateCall) Context(ctx context.Context) *CustomersNodesDevicesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesDevicesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6492,18 +5742,12 @@ func (c *CustomersNodesDevicesCreateCall) Header() http.Header {
 }
 
 func (c *CustomersNodesDevicesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldevice)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices")
@@ -6520,12 +5764,11 @@ func (c *CustomersNodesDevicesCreateCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.devices.create" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersNodesDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6533,17 +5776,17 @@ func (c *CustomersNodesDevicesCreateCall) Do(opts ...googleapi.CallOption) (*Sas
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -6556,38 +5799,7 @@ func (c *CustomersNodesDevicesCreateCall) Do(opts ...googleapi.CallOption) (*Sas
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a device under a node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}/devices",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.nodes.devices.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "request": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.devices.createSigned":
 
 type CustomersNodesDevicesCreateSignedCall struct {
 	s                                  *Service
@@ -6609,23 +5821,21 @@ func (r *CustomersNodesDevicesService) CreateSigned(parent string, sasportalcrea
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesDevicesCreateSignedCall) Fields(s ...googleapi.Field) *CustomersNodesDevicesCreateSignedCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesDevicesCreateSignedCall) Context(ctx context.Context) *CustomersNodesDevicesCreateSignedCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesDevicesCreateSignedCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6634,18 +5844,12 @@ func (c *CustomersNodesDevicesCreateSignedCall) Header() http.Header {
 }
 
 func (c *CustomersNodesDevicesCreateSignedCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalcreatesigneddevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices:createSigned")
@@ -6662,12 +5866,11 @@ func (c *CustomersNodesDevicesCreateSignedCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.devices.createSigned" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *CustomersNodesDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6675,17 +5878,17 @@ func (c *CustomersNodesDevicesCreateSignedCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -6698,38 +5901,7 @@ func (c *CustomersNodesDevicesCreateSignedCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a signed device under a node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}/devices:createSigned",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.nodes.devices.createSigned",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices:createSigned",
-	//   "request": {
-	//     "$ref": "SasPortalCreateSignedDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.devices.list":
 
 type CustomersNodesDevicesListCall struct {
 	s            *Service
@@ -6749,59 +5921,55 @@ func (r *CustomersNodesDevicesService) List(parent string) *CustomersNodesDevice
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have one of the following formats: "sn=123454" or
-// "display_name=MyDevice". sn corresponds to serial number of the
-// device. The filter is case insensitive.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have one of the following formats: "sn=123454" or
+// "display_name=MyDevice". sn corresponds to serial number of the device. The
+// filter is case insensitive.
 func (c *CustomersNodesDevicesListCall) Filter(filter string) *CustomersNodesDevicesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of devices to return in the response. If empty or zero, all devices
-// will be listed. Must be in the range [0, 1000].
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// devices to return in the response. If empty or zero, all devices will be
+// listed. Must be in the range [0, 1000].
 func (c *CustomersNodesDevicesListCall) PageSize(pageSize int64) *CustomersNodesDevicesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDevices that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDevices that indicates where this
+// listing should continue from.
 func (c *CustomersNodesDevicesListCall) PageToken(pageToken string) *CustomersNodesDevicesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesDevicesListCall) Fields(s ...googleapi.Field) *CustomersNodesDevicesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersNodesDevicesListCall) IfNoneMatch(entityTag string) *CustomersNodesDevicesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesDevicesListCall) Context(ctx context.Context) *CustomersNodesDevicesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesDevicesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6810,12 +5978,7 @@ func (c *CustomersNodesDevicesListCall) Header() http.Header {
 }
 
 func (c *CustomersNodesDevicesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -6836,12 +5999,11 @@ func (c *CustomersNodesDevicesListCall) doRequest(alt string) (*http.Response, e
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.devices.list" call.
-// Exactly one of *SasPortalListDevicesResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDevicesResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDevicesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *CustomersNodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDevicesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6849,17 +6011,17 @@ func (c *CustomersNodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDevicesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -6872,48 +6034,6 @@ func (c *CustomersNodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists devices under a node or customer.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}/devices",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.nodes.devices.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have one of the following formats: \"sn=123454\" or \"display_name=MyDevice\". sn corresponds to serial number of the device. The filter is case insensitive.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of devices to return in the response. If empty or zero, all devices will be listed. Must be in the range [0, 1000].",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDevices that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "response": {
-	//     "$ref": "SasPortalListDevicesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -6921,7 +6041,7 @@ func (c *CustomersNodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPo
 // The provided context supersedes any context provided to the Context method.
 func (c *CustomersNodesDevicesListCall) Pages(ctx context.Context, f func(*SasPortalListDevicesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -6936,8 +6056,6 @@ func (c *CustomersNodesDevicesListCall) Pages(ctx context.Context, f func(*SasPo
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.customers.nodes.nodes.create":
 
 type CustomersNodesNodesCreateCall struct {
 	s             *Service
@@ -6959,23 +6077,21 @@ func (r *CustomersNodesNodesService) Create(parent string, sasportalnode *SasPor
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesNodesCreateCall) Fields(s ...googleapi.Field) *CustomersNodesNodesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesNodesCreateCall) Context(ctx context.Context) *CustomersNodesNodesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesNodesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6984,18 +6100,12 @@ func (c *CustomersNodesNodesCreateCall) Header() http.Header {
 }
 
 func (c *CustomersNodesNodesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalnode)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/nodes")
@@ -7012,12 +6122,10 @@ func (c *CustomersNodesNodesCreateCall) doRequest(alt string) (*http.Response, e
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.nodes.create" call.
-// Exactly one of *SasPortalNode or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalNode.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalNode.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *CustomersNodesNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7025,17 +6133,17 @@ func (c *CustomersNodesNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalNode{
 		ServerResponse: googleapi.ServerResponse{
@@ -7048,38 +6156,7 @@ func (c *CustomersNodesNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new node.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}/nodes",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.customers.nodes.nodes.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent resource name where the node is to be created.",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/nodes",
-	//   "request": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.customers.nodes.nodes.list":
 
 type CustomersNodesNodesListCall struct {
 	s            *Service
@@ -7099,58 +6176,54 @@ func (r *CustomersNodesNodesService) List(parent string) *CustomersNodesNodesLis
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have the following format: "DIRECT_CHILDREN" or
-// format: "direct_children". The filter is case insensitive. If empty,
-// then no nodes are filtered.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have the following format: "DIRECT_CHILDREN" or format:
+// "direct_children". The filter is case insensitive. If empty, then no nodes
+// are filtered.
 func (c *CustomersNodesNodesListCall) Filter(filter string) *CustomersNodesNodesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of nodes to return in the response.
+// PageSize sets the optional parameter "pageSize": The maximum number of nodes
+// to return in the response.
 func (c *CustomersNodesNodesListCall) PageSize(pageSize int64) *CustomersNodesNodesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListNodes that indicates where this
-// listing should continue from.
+// returned from a previous call to ListNodes that indicates where this listing
+// should continue from.
 func (c *CustomersNodesNodesListCall) PageToken(pageToken string) *CustomersNodesNodesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *CustomersNodesNodesListCall) Fields(s ...googleapi.Field) *CustomersNodesNodesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *CustomersNodesNodesListCall) IfNoneMatch(entityTag string) *CustomersNodesNodesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *CustomersNodesNodesListCall) Context(ctx context.Context) *CustomersNodesNodesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *CustomersNodesNodesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7159,12 +6232,7 @@ func (c *CustomersNodesNodesListCall) Header() http.Header {
 }
 
 func (c *CustomersNodesNodesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7185,12 +6253,11 @@ func (c *CustomersNodesNodesListCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "prod_tt_sasportal.customers.nodes.nodes.list" call.
-// Exactly one of *SasPortalListNodesResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *SasPortalListNodesResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *SasPortalListNodesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *CustomersNodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListNodesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7198,17 +6265,17 @@ func (c *CustomersNodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPort
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListNodesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -7221,48 +6288,6 @@ func (c *CustomersNodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPort
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists nodes.",
-	//   "flatPath": "v1alpha1/customers/{customersId}/nodes/{nodesId}/nodes",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.customers.nodes.nodes.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have the following format: \"DIRECT_CHILDREN\" or format: \"direct_children\". The filter is case insensitive. If empty, then no nodes are filtered.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of nodes to return in the response.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListNodes that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name, for example, \"nodes/1\".",
-	//       "location": "path",
-	//       "pattern": "^customers/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/nodes",
-	//   "response": {
-	//     "$ref": "SasPortalListNodesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -7270,7 +6295,7 @@ func (c *CustomersNodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPort
 // The provided context supersedes any context provided to the Context method.
 func (c *CustomersNodesNodesListCall) Pages(ctx context.Context, f func(*SasPortalListNodesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -7285,8 +6310,6 @@ func (c *CustomersNodesNodesListCall) Pages(ctx context.Context, f func(*SasPort
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.deployments.get":
 
 type DeploymentsGetCall struct {
 	s            *Service
@@ -7307,33 +6330,29 @@ func (r *DeploymentsService) Get(name string) *DeploymentsGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *DeploymentsGetCall) Fields(s ...googleapi.Field) *DeploymentsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *DeploymentsGetCall) IfNoneMatch(entityTag string) *DeploymentsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *DeploymentsGetCall) Context(ctx context.Context) *DeploymentsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *DeploymentsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7342,12 +6361,7 @@ func (c *DeploymentsGetCall) Header() http.Header {
 }
 
 func (c *DeploymentsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7368,12 +6382,11 @@ func (c *DeploymentsGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.deployments.get" call.
-// Exactly one of *SasPortalDeployment or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalDeployment.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDeployment.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *DeploymentsGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDeployment, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7381,17 +6394,17 @@ func (c *DeploymentsGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDeploym
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDeployment{
 		ServerResponse: googleapi.ServerResponse{
@@ -7404,35 +6417,7 @@ func (c *DeploymentsGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDeploym
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a requested deployment.",
-	//   "flatPath": "v1alpha1/deployments/{deploymentsId}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.deployments.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the deployment.",
-	//       "location": "path",
-	//       "pattern": "^deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.deployments.devices.delete":
 
 type DeploymentsDevicesDeleteCall struct {
 	s          *Service
@@ -7452,23 +6437,21 @@ func (r *DeploymentsDevicesService) Delete(name string) *DeploymentsDevicesDelet
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *DeploymentsDevicesDeleteCall) Fields(s ...googleapi.Field) *DeploymentsDevicesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *DeploymentsDevicesDeleteCall) Context(ctx context.Context) *DeploymentsDevicesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *DeploymentsDevicesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7477,12 +6460,7 @@ func (c *DeploymentsDevicesDeleteCall) Header() http.Header {
 }
 
 func (c *DeploymentsDevicesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -7500,12 +6478,10 @@ func (c *DeploymentsDevicesDeleteCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "prod_tt_sasportal.deployments.devices.delete" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *DeploymentsDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7513,17 +6489,17 @@ func (c *DeploymentsDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPor
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -7536,35 +6512,7 @@ func (c *DeploymentsDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPor
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a device.",
-	//   "flatPath": "v1alpha1/deployments/{deploymentsId}/devices/{devicesId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "prod_tt_sasportal.deployments.devices.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device.",
-	//       "location": "path",
-	//       "pattern": "^deployments/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.deployments.devices.get":
 
 type DeploymentsDevicesGetCall struct {
 	s            *Service
@@ -7585,33 +6533,29 @@ func (r *DeploymentsDevicesService) Get(name string) *DeploymentsDevicesGetCall 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *DeploymentsDevicesGetCall) Fields(s ...googleapi.Field) *DeploymentsDevicesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *DeploymentsDevicesGetCall) IfNoneMatch(entityTag string) *DeploymentsDevicesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *DeploymentsDevicesGetCall) Context(ctx context.Context) *DeploymentsDevicesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *DeploymentsDevicesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7620,12 +6564,7 @@ func (c *DeploymentsDevicesGetCall) Header() http.Header {
 }
 
 func (c *DeploymentsDevicesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7646,12 +6585,11 @@ func (c *DeploymentsDevicesGetCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "prod_tt_sasportal.deployments.devices.get" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *DeploymentsDevicesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7659,17 +6597,17 @@ func (c *DeploymentsDevicesGetCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -7682,35 +6620,7 @@ func (c *DeploymentsDevicesGetCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets details about a device.",
-	//   "flatPath": "v1alpha1/deployments/{deploymentsId}/devices/{devicesId}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.deployments.devices.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device.",
-	//       "location": "path",
-	//       "pattern": "^deployments/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.deployments.devices.move":
 
 type DeploymentsDevicesMoveCall struct {
 	s                          *Service
@@ -7732,23 +6642,21 @@ func (r *DeploymentsDevicesService) Move(name string, sasportalmovedevicerequest
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *DeploymentsDevicesMoveCall) Fields(s ...googleapi.Field) *DeploymentsDevicesMoveCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *DeploymentsDevicesMoveCall) Context(ctx context.Context) *DeploymentsDevicesMoveCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *DeploymentsDevicesMoveCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7757,18 +6665,12 @@ func (c *DeploymentsDevicesMoveCall) Header() http.Header {
 }
 
 func (c *DeploymentsDevicesMoveCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalmovedevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:move")
@@ -7785,12 +6687,11 @@ func (c *DeploymentsDevicesMoveCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "prod_tt_sasportal.deployments.devices.move" call.
-// Exactly one of *SasPortalOperation or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalOperation.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalOperation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *DeploymentsDevicesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7798,17 +6699,17 @@ func (c *DeploymentsDevicesMoveCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -7821,38 +6722,7 @@ func (c *DeploymentsDevicesMoveCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Moves a device under another node or customer.",
-	//   "flatPath": "v1alpha1/deployments/{deploymentsId}/devices/{devicesId}:move",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.deployments.devices.move",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device to move.",
-	//       "location": "path",
-	//       "pattern": "^deployments/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:move",
-	//   "request": {
-	//     "$ref": "SasPortalMoveDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.deployments.devices.patch":
 
 type DeploymentsDevicesPatchCall struct {
 	s               *Service
@@ -7873,31 +6743,28 @@ func (r *DeploymentsDevicesService) Patch(name string, sasportaldevice *SasPorta
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Fields to be
-// updated.
+// UpdateMask sets the optional parameter "updateMask": Fields to be updated.
 func (c *DeploymentsDevicesPatchCall) UpdateMask(updateMask string) *DeploymentsDevicesPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *DeploymentsDevicesPatchCall) Fields(s ...googleapi.Field) *DeploymentsDevicesPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *DeploymentsDevicesPatchCall) Context(ctx context.Context) *DeploymentsDevicesPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *DeploymentsDevicesPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7906,18 +6773,12 @@ func (c *DeploymentsDevicesPatchCall) Header() http.Header {
 }
 
 func (c *DeploymentsDevicesPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldevice)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}")
@@ -7934,12 +6795,11 @@ func (c *DeploymentsDevicesPatchCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "prod_tt_sasportal.deployments.devices.patch" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *DeploymentsDevicesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7947,17 +6807,17 @@ func (c *DeploymentsDevicesPatchCall) Do(opts ...googleapi.CallOption) (*SasPort
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -7970,44 +6830,7 @@ func (c *DeploymentsDevicesPatchCall) Do(opts ...googleapi.CallOption) (*SasPort
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a device.",
-	//   "flatPath": "v1alpha1/deployments/{deploymentsId}/devices/{devicesId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.deployments.devices.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource path name.",
-	//       "location": "path",
-	//       "pattern": "^deployments/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Fields to be updated.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "request": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.deployments.devices.signDevice":
 
 type DeploymentsDevicesSignDeviceCall struct {
 	s                          *Service
@@ -8029,23 +6852,21 @@ func (r *DeploymentsDevicesService) SignDevice(name string, sasportalsigndevicer
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *DeploymentsDevicesSignDeviceCall) Fields(s ...googleapi.Field) *DeploymentsDevicesSignDeviceCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *DeploymentsDevicesSignDeviceCall) Context(ctx context.Context) *DeploymentsDevicesSignDeviceCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *DeploymentsDevicesSignDeviceCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8054,18 +6875,12 @@ func (c *DeploymentsDevicesSignDeviceCall) Header() http.Header {
 }
 
 func (c *DeploymentsDevicesSignDeviceCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalsigndevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:signDevice")
@@ -8082,12 +6897,10 @@ func (c *DeploymentsDevicesSignDeviceCall) doRequest(alt string) (*http.Response
 }
 
 // Do executes the "prod_tt_sasportal.deployments.devices.signDevice" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *DeploymentsDevicesSignDeviceCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8095,17 +6908,17 @@ func (c *DeploymentsDevicesSignDeviceCall) Do(opts ...googleapi.CallOption) (*Sa
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -8118,38 +6931,7 @@ func (c *DeploymentsDevicesSignDeviceCall) Do(opts ...googleapi.CallOption) (*Sa
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Signs a device.",
-	//   "flatPath": "v1alpha1/deployments/{deploymentsId}/devices/{devicesId}:signDevice",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.deployments.devices.signDevice",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource path name.",
-	//       "location": "path",
-	//       "pattern": "^deployments/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:signDevice",
-	//   "request": {
-	//     "$ref": "SasPortalSignDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.deployments.devices.updateSigned":
 
 type DeploymentsDevicesUpdateSignedCall struct {
 	s                                  *Service
@@ -8171,23 +6953,21 @@ func (r *DeploymentsDevicesService) UpdateSigned(name string, sasportalupdatesig
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *DeploymentsDevicesUpdateSignedCall) Fields(s ...googleapi.Field) *DeploymentsDevicesUpdateSignedCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *DeploymentsDevicesUpdateSignedCall) Context(ctx context.Context) *DeploymentsDevicesUpdateSignedCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *DeploymentsDevicesUpdateSignedCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8196,18 +6976,12 @@ func (c *DeploymentsDevicesUpdateSignedCall) Header() http.Header {
 }
 
 func (c *DeploymentsDevicesUpdateSignedCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalupdatesigneddevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:updateSigned")
@@ -8224,12 +6998,11 @@ func (c *DeploymentsDevicesUpdateSignedCall) doRequest(alt string) (*http.Respon
 }
 
 // Do executes the "prod_tt_sasportal.deployments.devices.updateSigned" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *DeploymentsDevicesUpdateSignedCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8237,17 +7010,17 @@ func (c *DeploymentsDevicesUpdateSignedCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -8260,38 +7033,7 @@ func (c *DeploymentsDevicesUpdateSignedCall) Do(opts ...googleapi.CallOption) (*
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a signed device.",
-	//   "flatPath": "v1alpha1/deployments/{deploymentsId}/devices/{devicesId}:updateSigned",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.deployments.devices.updateSigned",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device to update.",
-	//       "location": "path",
-	//       "pattern": "^deployments/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:updateSigned",
-	//   "request": {
-	//     "$ref": "SasPortalUpdateSignedDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.installer.generateSecret":
 
 type InstallerGenerateSecretCall struct {
 	s                              *Service
@@ -8301,8 +7043,7 @@ type InstallerGenerateSecretCall struct {
 	header_                        http.Header
 }
 
-// GenerateSecret: Generates a secret to be used with the
-// ValidateInstaller.
+// GenerateSecret: Generates a secret to be used with the ValidateInstaller.
 func (r *InstallerService) GenerateSecret(sasportalgeneratesecretrequest *SasPortalGenerateSecretRequest) *InstallerGenerateSecretCall {
 	c := &InstallerGenerateSecretCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.sasportalgeneratesecretrequest = sasportalgeneratesecretrequest
@@ -8310,23 +7051,21 @@ func (r *InstallerService) GenerateSecret(sasportalgeneratesecretrequest *SasPor
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *InstallerGenerateSecretCall) Fields(s ...googleapi.Field) *InstallerGenerateSecretCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *InstallerGenerateSecretCall) Context(ctx context.Context) *InstallerGenerateSecretCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *InstallerGenerateSecretCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8335,18 +7074,12 @@ func (c *InstallerGenerateSecretCall) Header() http.Header {
 }
 
 func (c *InstallerGenerateSecretCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalgeneratesecretrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/installer:generateSecret")
@@ -8360,12 +7093,11 @@ func (c *InstallerGenerateSecretCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "prod_tt_sasportal.installer.generateSecret" call.
-// Exactly one of *SasPortalGenerateSecretResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalGenerateSecretResponse.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalGenerateSecretResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *InstallerGenerateSecretCall) Do(opts ...googleapi.CallOption) (*SasPortalGenerateSecretResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8373,17 +7105,17 @@ func (c *InstallerGenerateSecretCall) Do(opts ...googleapi.CallOption) (*SasPort
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalGenerateSecretResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -8396,28 +7128,7 @@ func (c *InstallerGenerateSecretCall) Do(opts ...googleapi.CallOption) (*SasPort
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Generates a secret to be used with the ValidateInstaller.",
-	//   "flatPath": "v1alpha1/installer:generateSecret",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.installer.generateSecret",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1alpha1/installer:generateSecret",
-	//   "request": {
-	//     "$ref": "SasPortalGenerateSecretRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalGenerateSecretResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.installer.validate":
 
 type InstallerValidateCall struct {
 	s                                 *Service
@@ -8427,8 +7138,8 @@ type InstallerValidateCall struct {
 	header_                           http.Header
 }
 
-// Validate: Validates the identity of a Certified Professional
-// Installer (CPI).
+// Validate: Validates the identity of a Certified Professional Installer
+// (CPI).
 func (r *InstallerService) Validate(sasportalvalidateinstallerrequest *SasPortalValidateInstallerRequest) *InstallerValidateCall {
 	c := &InstallerValidateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.sasportalvalidateinstallerrequest = sasportalvalidateinstallerrequest
@@ -8436,23 +7147,21 @@ func (r *InstallerService) Validate(sasportalvalidateinstallerrequest *SasPortal
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *InstallerValidateCall) Fields(s ...googleapi.Field) *InstallerValidateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *InstallerValidateCall) Context(ctx context.Context) *InstallerValidateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *InstallerValidateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8461,18 +7170,12 @@ func (c *InstallerValidateCall) Header() http.Header {
 }
 
 func (c *InstallerValidateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalvalidateinstallerrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/installer:validate")
@@ -8486,13 +7189,11 @@ func (c *InstallerValidateCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.installer.validate" call.
-// Exactly one of *SasPortalValidateInstallerResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalValidateInstallerResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalValidateInstallerResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *InstallerValidateCall) Do(opts ...googleapi.CallOption) (*SasPortalValidateInstallerResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8500,17 +7201,17 @@ func (c *InstallerValidateCall) Do(opts ...googleapi.CallOption) (*SasPortalVali
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalValidateInstallerResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -8523,28 +7224,7 @@ func (c *InstallerValidateCall) Do(opts ...googleapi.CallOption) (*SasPortalVali
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Validates the identity of a Certified Professional Installer (CPI).",
-	//   "flatPath": "v1alpha1/installer:validate",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.installer.validate",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1alpha1/installer:validate",
-	//   "request": {
-	//     "$ref": "SasPortalValidateInstallerRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalValidateInstallerResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.get":
 
 type NodesGetCall struct {
 	s            *Service
@@ -8565,33 +7245,29 @@ func (r *NodesService) Get(name string) *NodesGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesGetCall) Fields(s ...googleapi.Field) *NodesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesGetCall) IfNoneMatch(entityTag string) *NodesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesGetCall) Context(ctx context.Context) *NodesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8600,12 +7276,7 @@ func (c *NodesGetCall) Header() http.Header {
 }
 
 func (c *NodesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -8626,12 +7297,10 @@ func (c *NodesGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.get" call.
-// Exactly one of *SasPortalNode or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalNode.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalNode.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NodesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8639,17 +7308,17 @@ func (c *NodesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalNode{
 		ServerResponse: googleapi.ServerResponse{
@@ -8662,35 +7331,7 @@ func (c *NodesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a requested node.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the node.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.deployments.delete":
 
 type NodesDeploymentsDeleteCall struct {
 	s          *Service
@@ -8710,23 +7351,21 @@ func (r *NodesDeploymentsService) Delete(name string) *NodesDeploymentsDeleteCal
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDeploymentsDeleteCall) Fields(s ...googleapi.Field) *NodesDeploymentsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDeploymentsDeleteCall) Context(ctx context.Context) *NodesDeploymentsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDeploymentsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8735,12 +7374,7 @@ func (c *NodesDeploymentsDeleteCall) Header() http.Header {
 }
 
 func (c *NodesDeploymentsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -8758,12 +7392,10 @@ func (c *NodesDeploymentsDeleteCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "prod_tt_sasportal.nodes.deployments.delete" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NodesDeploymentsDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8771,17 +7403,17 @@ func (c *NodesDeploymentsDeleteCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -8794,35 +7426,7 @@ func (c *NodesDeploymentsDeleteCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a deployment.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/deployments/{deploymentsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "prod_tt_sasportal.nodes.deployments.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the deployment.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.deployments.get":
 
 type NodesDeploymentsGetCall struct {
 	s            *Service
@@ -8843,33 +7447,29 @@ func (r *NodesDeploymentsService) Get(name string) *NodesDeploymentsGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDeploymentsGetCall) Fields(s ...googleapi.Field) *NodesDeploymentsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesDeploymentsGetCall) IfNoneMatch(entityTag string) *NodesDeploymentsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDeploymentsGetCall) Context(ctx context.Context) *NodesDeploymentsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDeploymentsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8878,12 +7478,7 @@ func (c *NodesDeploymentsGetCall) Header() http.Header {
 }
 
 func (c *NodesDeploymentsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -8904,12 +7499,11 @@ func (c *NodesDeploymentsGetCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "prod_tt_sasportal.nodes.deployments.get" call.
-// Exactly one of *SasPortalDeployment or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalDeployment.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDeployment.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDeploymentsGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDeployment, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8917,17 +7511,17 @@ func (c *NodesDeploymentsGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDe
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDeployment{
 		ServerResponse: googleapi.ServerResponse{
@@ -8940,35 +7534,7 @@ func (c *NodesDeploymentsGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDe
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a requested deployment.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/deployments/{deploymentsId}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.deployments.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the deployment.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.deployments.list":
 
 type NodesDeploymentsListCall struct {
 	s            *Service
@@ -8989,58 +7555,54 @@ func (r *NodesDeploymentsService) List(parent string) *NodesDeploymentsListCall 
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have the following format: "DIRECT_CHILDREN" or
-// format: "direct_children". The filter is case insensitive. If empty,
-// then no deployments are filtered.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have the following format: "DIRECT_CHILDREN" or format:
+// "direct_children". The filter is case insensitive. If empty, then no
+// deployments are filtered.
 func (c *NodesDeploymentsListCall) Filter(filter string) *NodesDeploymentsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of deployments to return in the response.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// deployments to return in the response.
 func (c *NodesDeploymentsListCall) PageSize(pageSize int64) *NodesDeploymentsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDeployments that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDeployments that indicates where this
+// listing should continue from.
 func (c *NodesDeploymentsListCall) PageToken(pageToken string) *NodesDeploymentsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDeploymentsListCall) Fields(s ...googleapi.Field) *NodesDeploymentsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesDeploymentsListCall) IfNoneMatch(entityTag string) *NodesDeploymentsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDeploymentsListCall) Context(ctx context.Context) *NodesDeploymentsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDeploymentsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9049,12 +7611,7 @@ func (c *NodesDeploymentsListCall) Header() http.Header {
 }
 
 func (c *NodesDeploymentsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -9075,12 +7632,11 @@ func (c *NodesDeploymentsListCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "prod_tt_sasportal.nodes.deployments.list" call.
-// Exactly one of *SasPortalListDeploymentsResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDeploymentsResponse.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDeploymentsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *NodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDeploymentsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9088,17 +7644,17 @@ func (c *NodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPortalL
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDeploymentsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -9111,48 +7667,6 @@ func (c *NodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPortalL
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists deployments.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/deployments",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.deployments.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have the following format: \"DIRECT_CHILDREN\" or format: \"direct_children\". The filter is case insensitive. If empty, then no deployments are filtered.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of deployments to return in the response.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDeployments that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name, for example, \"nodes/1\", customer/1/nodes/2.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/deployments",
-	//   "response": {
-	//     "$ref": "SasPortalListDeploymentsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -9160,7 +7674,7 @@ func (c *NodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPortalL
 // The provided context supersedes any context provided to the Context method.
 func (c *NodesDeploymentsListCall) Pages(ctx context.Context, f func(*SasPortalListDeploymentsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -9175,8 +7689,6 @@ func (c *NodesDeploymentsListCall) Pages(ctx context.Context, f func(*SasPortalL
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.nodes.deployments.move":
 
 type NodesDeploymentsMoveCall struct {
 	s                              *Service
@@ -9198,23 +7710,21 @@ func (r *NodesDeploymentsService) Move(name string, sasportalmovedeploymentreque
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDeploymentsMoveCall) Fields(s ...googleapi.Field) *NodesDeploymentsMoveCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDeploymentsMoveCall) Context(ctx context.Context) *NodesDeploymentsMoveCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDeploymentsMoveCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9223,18 +7733,12 @@ func (c *NodesDeploymentsMoveCall) Header() http.Header {
 }
 
 func (c *NodesDeploymentsMoveCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalmovedeploymentrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:move")
@@ -9251,12 +7755,11 @@ func (c *NodesDeploymentsMoveCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "prod_tt_sasportal.nodes.deployments.move" call.
-// Exactly one of *SasPortalOperation or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalOperation.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalOperation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDeploymentsMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9264,17 +7767,17 @@ func (c *NodesDeploymentsMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalO
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -9287,38 +7790,7 @@ func (c *NodesDeploymentsMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalO
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Moves a deployment under another node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/deployments/{deploymentsId}:move",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.deployments.move",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the deployment to move.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:move",
-	//   "request": {
-	//     "$ref": "SasPortalMoveDeploymentRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.deployments.patch":
 
 type NodesDeploymentsPatchCall struct {
 	s                   *Service
@@ -9339,31 +7811,28 @@ func (r *NodesDeploymentsService) Patch(name string, sasportaldeployment *SasPor
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Fields to be
-// updated.
+// UpdateMask sets the optional parameter "updateMask": Fields to be updated.
 func (c *NodesDeploymentsPatchCall) UpdateMask(updateMask string) *NodesDeploymentsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDeploymentsPatchCall) Fields(s ...googleapi.Field) *NodesDeploymentsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDeploymentsPatchCall) Context(ctx context.Context) *NodesDeploymentsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDeploymentsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9372,18 +7841,12 @@ func (c *NodesDeploymentsPatchCall) Header() http.Header {
 }
 
 func (c *NodesDeploymentsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldeployment)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}")
@@ -9400,12 +7863,11 @@ func (c *NodesDeploymentsPatchCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "prod_tt_sasportal.nodes.deployments.patch" call.
-// Exactly one of *SasPortalDeployment or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalDeployment.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDeployment.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDeploymentsPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalDeployment, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9413,17 +7875,17 @@ func (c *NodesDeploymentsPatchCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDeployment{
 		ServerResponse: googleapi.ServerResponse{
@@ -9436,44 +7898,7 @@ func (c *NodesDeploymentsPatchCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing deployment.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/deployments/{deploymentsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.nodes.deployments.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. Resource name.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Fields to be updated.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "request": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.deployments.devices.create":
 
 type NodesDeploymentsDevicesCreateCall struct {
 	s               *Service
@@ -9495,23 +7920,21 @@ func (r *NodesDeploymentsDevicesService) Create(parent string, sasportaldevice *
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDeploymentsDevicesCreateCall) Fields(s ...googleapi.Field) *NodesDeploymentsDevicesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDeploymentsDevicesCreateCall) Context(ctx context.Context) *NodesDeploymentsDevicesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDeploymentsDevicesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9520,18 +7943,12 @@ func (c *NodesDeploymentsDevicesCreateCall) Header() http.Header {
 }
 
 func (c *NodesDeploymentsDevicesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldevice)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices")
@@ -9548,12 +7965,11 @@ func (c *NodesDeploymentsDevicesCreateCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "prod_tt_sasportal.nodes.deployments.devices.create" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDeploymentsDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9561,17 +7977,17 @@ func (c *NodesDeploymentsDevicesCreateCall) Do(opts ...googleapi.CallOption) (*S
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -9584,38 +8000,7 @@ func (c *NodesDeploymentsDevicesCreateCall) Do(opts ...googleapi.CallOption) (*S
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a device under a node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/deployments/{deploymentsId}/devices",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.deployments.devices.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "request": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.deployments.devices.createSigned":
 
 type NodesDeploymentsDevicesCreateSignedCall struct {
 	s                                  *Service
@@ -9637,23 +8022,21 @@ func (r *NodesDeploymentsDevicesService) CreateSigned(parent string, sasportalcr
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDeploymentsDevicesCreateSignedCall) Fields(s ...googleapi.Field) *NodesDeploymentsDevicesCreateSignedCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDeploymentsDevicesCreateSignedCall) Context(ctx context.Context) *NodesDeploymentsDevicesCreateSignedCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDeploymentsDevicesCreateSignedCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9662,18 +8045,12 @@ func (c *NodesDeploymentsDevicesCreateSignedCall) Header() http.Header {
 }
 
 func (c *NodesDeploymentsDevicesCreateSignedCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalcreatesigneddevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices:createSigned")
@@ -9690,12 +8067,11 @@ func (c *NodesDeploymentsDevicesCreateSignedCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "prod_tt_sasportal.nodes.deployments.devices.createSigned" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDeploymentsDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9703,17 +8079,17 @@ func (c *NodesDeploymentsDevicesCreateSignedCall) Do(opts ...googleapi.CallOptio
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -9726,38 +8102,7 @@ func (c *NodesDeploymentsDevicesCreateSignedCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a signed device under a node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/deployments/{deploymentsId}/devices:createSigned",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.deployments.devices.createSigned",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices:createSigned",
-	//   "request": {
-	//     "$ref": "SasPortalCreateSignedDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.deployments.devices.list":
 
 type NodesDeploymentsDevicesListCall struct {
 	s            *Service
@@ -9777,59 +8122,55 @@ func (r *NodesDeploymentsDevicesService) List(parent string) *NodesDeploymentsDe
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have one of the following formats: "sn=123454" or
-// "display_name=MyDevice". sn corresponds to serial number of the
-// device. The filter is case insensitive.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have one of the following formats: "sn=123454" or
+// "display_name=MyDevice". sn corresponds to serial number of the device. The
+// filter is case insensitive.
 func (c *NodesDeploymentsDevicesListCall) Filter(filter string) *NodesDeploymentsDevicesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of devices to return in the response. If empty or zero, all devices
-// will be listed. Must be in the range [0, 1000].
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// devices to return in the response. If empty or zero, all devices will be
+// listed. Must be in the range [0, 1000].
 func (c *NodesDeploymentsDevicesListCall) PageSize(pageSize int64) *NodesDeploymentsDevicesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDevices that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDevices that indicates where this
+// listing should continue from.
 func (c *NodesDeploymentsDevicesListCall) PageToken(pageToken string) *NodesDeploymentsDevicesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDeploymentsDevicesListCall) Fields(s ...googleapi.Field) *NodesDeploymentsDevicesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesDeploymentsDevicesListCall) IfNoneMatch(entityTag string) *NodesDeploymentsDevicesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDeploymentsDevicesListCall) Context(ctx context.Context) *NodesDeploymentsDevicesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDeploymentsDevicesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9838,12 +8179,7 @@ func (c *NodesDeploymentsDevicesListCall) Header() http.Header {
 }
 
 func (c *NodesDeploymentsDevicesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -9864,12 +8200,11 @@ func (c *NodesDeploymentsDevicesListCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "prod_tt_sasportal.nodes.deployments.devices.list" call.
-// Exactly one of *SasPortalListDevicesResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDevicesResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDevicesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *NodesDeploymentsDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDevicesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9877,17 +8212,17 @@ func (c *NodesDeploymentsDevicesListCall) Do(opts ...googleapi.CallOption) (*Sas
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDevicesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -9900,48 +8235,6 @@ func (c *NodesDeploymentsDevicesListCall) Do(opts ...googleapi.CallOption) (*Sas
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists devices under a node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/deployments/{deploymentsId}/devices",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.deployments.devices.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have one of the following formats: \"sn=123454\" or \"display_name=MyDevice\". sn corresponds to serial number of the device. The filter is case insensitive.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of devices to return in the response. If empty or zero, all devices will be listed. Must be in the range [0, 1000].",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDevices that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/deployments/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "response": {
-	//     "$ref": "SasPortalListDevicesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -9949,7 +8242,7 @@ func (c *NodesDeploymentsDevicesListCall) Do(opts ...googleapi.CallOption) (*Sas
 // The provided context supersedes any context provided to the Context method.
 func (c *NodesDeploymentsDevicesListCall) Pages(ctx context.Context, f func(*SasPortalListDevicesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -9964,8 +8257,6 @@ func (c *NodesDeploymentsDevicesListCall) Pages(ctx context.Context, f func(*Sas
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.nodes.devices.create":
 
 type NodesDevicesCreateCall struct {
 	s               *Service
@@ -9987,23 +8278,21 @@ func (r *NodesDevicesService) Create(parent string, sasportaldevice *SasPortalDe
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDevicesCreateCall) Fields(s ...googleapi.Field) *NodesDevicesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDevicesCreateCall) Context(ctx context.Context) *NodesDevicesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDevicesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10012,18 +8301,12 @@ func (c *NodesDevicesCreateCall) Header() http.Header {
 }
 
 func (c *NodesDevicesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldevice)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices")
@@ -10040,12 +8323,11 @@ func (c *NodesDevicesCreateCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.devices.create" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10053,17 +8335,17 @@ func (c *NodesDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDev
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -10076,38 +8358,7 @@ func (c *NodesDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDev
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a device under a node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/devices",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.devices.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "request": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.devices.createSigned":
 
 type NodesDevicesCreateSignedCall struct {
 	s                                  *Service
@@ -10129,23 +8380,21 @@ func (r *NodesDevicesService) CreateSigned(parent string, sasportalcreatesignedd
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDevicesCreateSignedCall) Fields(s ...googleapi.Field) *NodesDevicesCreateSignedCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDevicesCreateSignedCall) Context(ctx context.Context) *NodesDevicesCreateSignedCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDevicesCreateSignedCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10154,18 +8403,12 @@ func (c *NodesDevicesCreateSignedCall) Header() http.Header {
 }
 
 func (c *NodesDevicesCreateSignedCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalcreatesigneddevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices:createSigned")
@@ -10182,12 +8425,11 @@ func (c *NodesDevicesCreateSignedCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "prod_tt_sasportal.nodes.devices.createSigned" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10195,17 +8437,17 @@ func (c *NodesDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*SasPor
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -10218,38 +8460,7 @@ func (c *NodesDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*SasPor
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a signed device under a node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/devices:createSigned",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.devices.createSigned",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices:createSigned",
-	//   "request": {
-	//     "$ref": "SasPortalCreateSignedDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.devices.delete":
 
 type NodesDevicesDeleteCall struct {
 	s          *Service
@@ -10269,23 +8480,21 @@ func (r *NodesDevicesService) Delete(name string) *NodesDevicesDeleteCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDevicesDeleteCall) Fields(s ...googleapi.Field) *NodesDevicesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDevicesDeleteCall) Context(ctx context.Context) *NodesDevicesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDevicesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10294,12 +8503,7 @@ func (c *NodesDevicesDeleteCall) Header() http.Header {
 }
 
 func (c *NodesDevicesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -10317,12 +8521,10 @@ func (c *NodesDevicesDeleteCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.devices.delete" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NodesDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10330,17 +8532,17 @@ func (c *NodesDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmp
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -10353,35 +8555,7 @@ func (c *NodesDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmp
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a device.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/devices/{devicesId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "prod_tt_sasportal.nodes.devices.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.devices.get":
 
 type NodesDevicesGetCall struct {
 	s            *Service
@@ -10402,33 +8576,29 @@ func (r *NodesDevicesService) Get(name string) *NodesDevicesGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDevicesGetCall) Fields(s ...googleapi.Field) *NodesDevicesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesDevicesGetCall) IfNoneMatch(entityTag string) *NodesDevicesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDevicesGetCall) Context(ctx context.Context) *NodesDevicesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDevicesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10437,12 +8607,7 @@ func (c *NodesDevicesGetCall) Header() http.Header {
 }
 
 func (c *NodesDevicesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -10463,12 +8628,11 @@ func (c *NodesDevicesGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.devices.get" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDevicesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10476,17 +8640,17 @@ func (c *NodesDevicesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -10499,35 +8663,7 @@ func (c *NodesDevicesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets details about a device.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/devices/{devicesId}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.devices.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.devices.list":
 
 type NodesDevicesListCall struct {
 	s            *Service
@@ -10547,59 +8683,55 @@ func (r *NodesDevicesService) List(parent string) *NodesDevicesListCall {
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have one of the following formats: "sn=123454" or
-// "display_name=MyDevice". sn corresponds to serial number of the
-// device. The filter is case insensitive.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have one of the following formats: "sn=123454" or
+// "display_name=MyDevice". sn corresponds to serial number of the device. The
+// filter is case insensitive.
 func (c *NodesDevicesListCall) Filter(filter string) *NodesDevicesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of devices to return in the response. If empty or zero, all devices
-// will be listed. Must be in the range [0, 1000].
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// devices to return in the response. If empty or zero, all devices will be
+// listed. Must be in the range [0, 1000].
 func (c *NodesDevicesListCall) PageSize(pageSize int64) *NodesDevicesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDevices that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDevices that indicates where this
+// listing should continue from.
 func (c *NodesDevicesListCall) PageToken(pageToken string) *NodesDevicesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDevicesListCall) Fields(s ...googleapi.Field) *NodesDevicesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesDevicesListCall) IfNoneMatch(entityTag string) *NodesDevicesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDevicesListCall) Context(ctx context.Context) *NodesDevicesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDevicesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10608,12 +8740,7 @@ func (c *NodesDevicesListCall) Header() http.Header {
 }
 
 func (c *NodesDevicesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -10634,12 +8761,11 @@ func (c *NodesDevicesListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.devices.list" call.
-// Exactly one of *SasPortalListDevicesResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDevicesResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDevicesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *NodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDevicesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10647,17 +8773,17 @@ func (c *NodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListD
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDevicesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -10670,48 +8796,6 @@ func (c *NodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListD
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists devices under a node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/devices",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.devices.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have one of the following formats: \"sn=123454\" or \"display_name=MyDevice\". sn corresponds to serial number of the device. The filter is case insensitive.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of devices to return in the response. If empty or zero, all devices will be listed. Must be in the range [0, 1000].",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDevices that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "response": {
-	//     "$ref": "SasPortalListDevicesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -10719,7 +8803,7 @@ func (c *NodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListD
 // The provided context supersedes any context provided to the Context method.
 func (c *NodesDevicesListCall) Pages(ctx context.Context, f func(*SasPortalListDevicesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -10734,8 +8818,6 @@ func (c *NodesDevicesListCall) Pages(ctx context.Context, f func(*SasPortalListD
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.nodes.devices.move":
 
 type NodesDevicesMoveCall struct {
 	s                          *Service
@@ -10757,23 +8839,21 @@ func (r *NodesDevicesService) Move(name string, sasportalmovedevicerequest *SasP
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDevicesMoveCall) Fields(s ...googleapi.Field) *NodesDevicesMoveCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDevicesMoveCall) Context(ctx context.Context) *NodesDevicesMoveCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDevicesMoveCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10782,18 +8862,12 @@ func (c *NodesDevicesMoveCall) Header() http.Header {
 }
 
 func (c *NodesDevicesMoveCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalmovedevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:move")
@@ -10810,12 +8884,11 @@ func (c *NodesDevicesMoveCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.devices.move" call.
-// Exactly one of *SasPortalOperation or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalOperation.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalOperation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDevicesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10823,17 +8896,17 @@ func (c *NodesDevicesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOpera
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -10846,38 +8919,7 @@ func (c *NodesDevicesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOpera
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Moves a device under another node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/devices/{devicesId}:move",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.devices.move",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device to move.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:move",
-	//   "request": {
-	//     "$ref": "SasPortalMoveDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.devices.patch":
 
 type NodesDevicesPatchCall struct {
 	s               *Service
@@ -10898,31 +8940,28 @@ func (r *NodesDevicesService) Patch(name string, sasportaldevice *SasPortalDevic
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Fields to be
-// updated.
+// UpdateMask sets the optional parameter "updateMask": Fields to be updated.
 func (c *NodesDevicesPatchCall) UpdateMask(updateMask string) *NodesDevicesPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDevicesPatchCall) Fields(s ...googleapi.Field) *NodesDevicesPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDevicesPatchCall) Context(ctx context.Context) *NodesDevicesPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDevicesPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10931,18 +8970,12 @@ func (c *NodesDevicesPatchCall) Header() http.Header {
 }
 
 func (c *NodesDevicesPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldevice)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}")
@@ -10959,12 +8992,11 @@ func (c *NodesDevicesPatchCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.devices.patch" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDevicesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10972,17 +9004,17 @@ func (c *NodesDevicesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalDevi
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -10995,44 +9027,7 @@ func (c *NodesDevicesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalDevi
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a device.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/devices/{devicesId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.nodes.devices.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource path name.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Fields to be updated.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "request": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.devices.signDevice":
 
 type NodesDevicesSignDeviceCall struct {
 	s                          *Service
@@ -11054,23 +9049,21 @@ func (r *NodesDevicesService) SignDevice(name string, sasportalsigndevicerequest
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDevicesSignDeviceCall) Fields(s ...googleapi.Field) *NodesDevicesSignDeviceCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDevicesSignDeviceCall) Context(ctx context.Context) *NodesDevicesSignDeviceCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDevicesSignDeviceCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11079,18 +9072,12 @@ func (c *NodesDevicesSignDeviceCall) Header() http.Header {
 }
 
 func (c *NodesDevicesSignDeviceCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalsigndevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:signDevice")
@@ -11107,12 +9094,10 @@ func (c *NodesDevicesSignDeviceCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "prod_tt_sasportal.nodes.devices.signDevice" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NodesDevicesSignDeviceCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11120,17 +9105,17 @@ func (c *NodesDevicesSignDeviceCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -11143,38 +9128,7 @@ func (c *NodesDevicesSignDeviceCall) Do(opts ...googleapi.CallOption) (*SasPorta
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Signs a device.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/devices/{devicesId}:signDevice",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.devices.signDevice",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource path name.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:signDevice",
-	//   "request": {
-	//     "$ref": "SasPortalSignDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.devices.updateSigned":
 
 type NodesDevicesUpdateSignedCall struct {
 	s                                  *Service
@@ -11196,23 +9150,21 @@ func (r *NodesDevicesService) UpdateSigned(name string, sasportalupdatesigneddev
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesDevicesUpdateSignedCall) Fields(s ...googleapi.Field) *NodesDevicesUpdateSignedCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesDevicesUpdateSignedCall) Context(ctx context.Context) *NodesDevicesUpdateSignedCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesDevicesUpdateSignedCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11221,18 +9173,12 @@ func (c *NodesDevicesUpdateSignedCall) Header() http.Header {
 }
 
 func (c *NodesDevicesUpdateSignedCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalupdatesigneddevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:updateSigned")
@@ -11249,12 +9195,11 @@ func (c *NodesDevicesUpdateSignedCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "prod_tt_sasportal.nodes.devices.updateSigned" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesDevicesUpdateSignedCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11262,17 +9207,17 @@ func (c *NodesDevicesUpdateSignedCall) Do(opts ...googleapi.CallOption) (*SasPor
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -11285,38 +9230,7 @@ func (c *NodesDevicesUpdateSignedCall) Do(opts ...googleapi.CallOption) (*SasPor
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a signed device.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/devices/{devicesId}:updateSigned",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.nodes.devices.updateSigned",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the device to update.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:updateSigned",
-	//   "request": {
-	//     "$ref": "SasPortalUpdateSignedDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.create":
 
 type NodesNodesCreateCall struct {
 	s             *Service
@@ -11338,23 +9252,21 @@ func (r *NodesNodesService) Create(parent string, sasportalnode *SasPortalNode) 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesCreateCall) Fields(s ...googleapi.Field) *NodesNodesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesCreateCall) Context(ctx context.Context) *NodesNodesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11363,18 +9275,12 @@ func (c *NodesNodesCreateCall) Header() http.Header {
 }
 
 func (c *NodesNodesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalnode)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/nodes")
@@ -11391,12 +9297,10 @@ func (c *NodesNodesCreateCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.create" call.
-// Exactly one of *SasPortalNode or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalNode.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalNode.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NodesNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11404,17 +9308,17 @@ func (c *NodesNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalNode,
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalNode{
 		ServerResponse: googleapi.ServerResponse{
@@ -11427,38 +9331,7 @@ func (c *NodesNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalNode,
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new node.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.nodes.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent resource name where the node is to be created.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/nodes",
-	//   "request": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.delete":
 
 type NodesNodesDeleteCall struct {
 	s          *Service
@@ -11478,23 +9351,21 @@ func (r *NodesNodesService) Delete(name string) *NodesNodesDeleteCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesDeleteCall) Fields(s ...googleapi.Field) *NodesNodesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesDeleteCall) Context(ctx context.Context) *NodesNodesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11503,12 +9374,7 @@ func (c *NodesNodesDeleteCall) Header() http.Header {
 }
 
 func (c *NodesNodesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -11526,12 +9392,10 @@ func (c *NodesNodesDeleteCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.delete" call.
-// Exactly one of *SasPortalEmpty or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalEmpty.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalEmpty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NodesNodesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11539,17 +9403,17 @@ func (c *NodesNodesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -11562,35 +9426,7 @@ func (c *NodesNodesDeleteCall) Do(opts ...googleapi.CallOption) (*SasPortalEmpty
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a node.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}",
-	//   "httpMethod": "DELETE",
-	//   "id": "prod_tt_sasportal.nodes.nodes.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the node.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.get":
 
 type NodesNodesGetCall struct {
 	s            *Service
@@ -11611,33 +9447,29 @@ func (r *NodesNodesService) Get(name string) *NodesNodesGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesGetCall) Fields(s ...googleapi.Field) *NodesNodesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesNodesGetCall) IfNoneMatch(entityTag string) *NodesNodesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesGetCall) Context(ctx context.Context) *NodesNodesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11646,12 +9478,7 @@ func (c *NodesNodesGetCall) Header() http.Header {
 }
 
 func (c *NodesNodesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -11672,12 +9499,10 @@ func (c *NodesNodesGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.get" call.
-// Exactly one of *SasPortalNode or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalNode.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalNode.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NodesNodesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11685,17 +9510,17 @@ func (c *NodesNodesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalNode{
 		ServerResponse: googleapi.ServerResponse{
@@ -11708,35 +9533,7 @@ func (c *NodesNodesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, er
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a requested node.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.nodes.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the node.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "response": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.list":
 
 type NodesNodesListCall struct {
 	s            *Service
@@ -11756,58 +9553,54 @@ func (r *NodesNodesService) List(parent string) *NodesNodesListCall {
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have the following format: "DIRECT_CHILDREN" or
-// format: "direct_children". The filter is case insensitive. If empty,
-// then no nodes are filtered.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have the following format: "DIRECT_CHILDREN" or format:
+// "direct_children". The filter is case insensitive. If empty, then no nodes
+// are filtered.
 func (c *NodesNodesListCall) Filter(filter string) *NodesNodesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of nodes to return in the response.
+// PageSize sets the optional parameter "pageSize": The maximum number of nodes
+// to return in the response.
 func (c *NodesNodesListCall) PageSize(pageSize int64) *NodesNodesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListNodes that indicates where this
-// listing should continue from.
+// returned from a previous call to ListNodes that indicates where this listing
+// should continue from.
 func (c *NodesNodesListCall) PageToken(pageToken string) *NodesNodesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesListCall) Fields(s ...googleapi.Field) *NodesNodesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesNodesListCall) IfNoneMatch(entityTag string) *NodesNodesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesListCall) Context(ctx context.Context) *NodesNodesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11816,12 +9609,7 @@ func (c *NodesNodesListCall) Header() http.Header {
 }
 
 func (c *NodesNodesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -11842,12 +9630,11 @@ func (c *NodesNodesListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.list" call.
-// Exactly one of *SasPortalListNodesResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *SasPortalListNodesResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *SasPortalListNodesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *NodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListNodesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11855,17 +9642,17 @@ func (c *NodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListNod
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListNodesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -11878,48 +9665,6 @@ func (c *NodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListNod
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists nodes.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.nodes.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have the following format: \"DIRECT_CHILDREN\" or format: \"direct_children\". The filter is case insensitive. If empty, then no nodes are filtered.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of nodes to return in the response.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListNodes that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name, for example, \"nodes/1\".",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/nodes",
-	//   "response": {
-	//     "$ref": "SasPortalListNodesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -11927,7 +9672,7 @@ func (c *NodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListNod
 // The provided context supersedes any context provided to the Context method.
 func (c *NodesNodesListCall) Pages(ctx context.Context, f func(*SasPortalListNodesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -11942,8 +9687,6 @@ func (c *NodesNodesListCall) Pages(ctx context.Context, f func(*SasPortalListNod
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.move":
 
 type NodesNodesMoveCall struct {
 	s                        *Service
@@ -11965,23 +9708,21 @@ func (r *NodesNodesService) Move(name string, sasportalmovenoderequest *SasPorta
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesMoveCall) Fields(s ...googleapi.Field) *NodesNodesMoveCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesMoveCall) Context(ctx context.Context) *NodesNodesMoveCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesMoveCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11990,18 +9731,12 @@ func (c *NodesNodesMoveCall) Header() http.Header {
 }
 
 func (c *NodesNodesMoveCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalmovenoderequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}:move")
@@ -12018,12 +9753,11 @@ func (c *NodesNodesMoveCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.move" call.
-// Exactly one of *SasPortalOperation or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalOperation.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalOperation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesNodesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12031,17 +9765,17 @@ func (c *NodesNodesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOperati
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -12054,38 +9788,7 @@ func (c *NodesNodesMoveCall) Do(opts ...googleapi.CallOption) (*SasPortalOperati
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Moves a node under another node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}:move",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.nodes.move",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the node to move.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}:move",
-	//   "request": {
-	//     "$ref": "SasPortalMoveNodeRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.patch":
 
 type NodesNodesPatchCall struct {
 	s             *Service
@@ -12106,31 +9809,28 @@ func (r *NodesNodesService) Patch(name string, sasportalnode *SasPortalNode) *No
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Fields to be
-// updated.
+// UpdateMask sets the optional parameter "updateMask": Fields to be updated.
 func (c *NodesNodesPatchCall) UpdateMask(updateMask string) *NodesNodesPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesPatchCall) Fields(s ...googleapi.Field) *NodesNodesPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesPatchCall) Context(ctx context.Context) *NodesNodesPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12139,18 +9839,12 @@ func (c *NodesNodesPatchCall) Header() http.Header {
 }
 
 func (c *NodesNodesPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalnode)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+name}")
@@ -12167,12 +9861,10 @@ func (c *NodesNodesPatchCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.patch" call.
-// Exactly one of *SasPortalNode or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalNode.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalNode.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NodesNodesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12180,17 +9872,17 @@ func (c *NodesNodesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalNode{
 		ServerResponse: googleapi.ServerResponse{
@@ -12203,44 +9895,7 @@ func (c *NodesNodesPatchCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing node.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}",
-	//   "httpMethod": "PATCH",
-	//   "id": "prod_tt_sasportal.nodes.nodes.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. Resource name.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Fields to be updated.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+name}",
-	//   "request": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.deployments.create":
 
 type NodesNodesDeploymentsCreateCall struct {
 	s                   *Service
@@ -12253,8 +9908,7 @@ type NodesNodesDeploymentsCreateCall struct {
 
 // Create: Creates a new deployment.
 //
-//   - parent: The parent resource name where the deployment is to be
-//     created.
+// - parent: The parent resource name where the deployment is to be created.
 func (r *NodesNodesDeploymentsService) Create(parent string, sasportaldeployment *SasPortalDeployment) *NodesNodesDeploymentsCreateCall {
 	c := &NodesNodesDeploymentsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -12263,23 +9917,21 @@ func (r *NodesNodesDeploymentsService) Create(parent string, sasportaldeployment
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesDeploymentsCreateCall) Fields(s ...googleapi.Field) *NodesNodesDeploymentsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesDeploymentsCreateCall) Context(ctx context.Context) *NodesNodesDeploymentsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesDeploymentsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12288,18 +9940,12 @@ func (c *NodesNodesDeploymentsCreateCall) Header() http.Header {
 }
 
 func (c *NodesNodesDeploymentsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldeployment)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/deployments")
@@ -12316,12 +9962,11 @@ func (c *NodesNodesDeploymentsCreateCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.deployments.create" call.
-// Exactly one of *SasPortalDeployment or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SasPortalDeployment.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDeployment.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesNodesDeploymentsCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDeployment, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12329,17 +9974,17 @@ func (c *NodesNodesDeploymentsCreateCall) Do(opts ...googleapi.CallOption) (*Sas
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDeployment{
 		ServerResponse: googleapi.ServerResponse{
@@ -12352,38 +9997,7 @@ func (c *NodesNodesDeploymentsCreateCall) Do(opts ...googleapi.CallOption) (*Sas
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new deployment.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}/deployments",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.nodes.deployments.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent resource name where the deployment is to be created.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/deployments",
-	//   "request": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDeployment"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.deployments.list":
 
 type NodesNodesDeploymentsListCall struct {
 	s            *Service
@@ -12404,58 +10018,54 @@ func (r *NodesNodesDeploymentsService) List(parent string) *NodesNodesDeployment
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have the following format: "DIRECT_CHILDREN" or
-// format: "direct_children". The filter is case insensitive. If empty,
-// then no deployments are filtered.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have the following format: "DIRECT_CHILDREN" or format:
+// "direct_children". The filter is case insensitive. If empty, then no
+// deployments are filtered.
 func (c *NodesNodesDeploymentsListCall) Filter(filter string) *NodesNodesDeploymentsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of deployments to return in the response.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// deployments to return in the response.
 func (c *NodesNodesDeploymentsListCall) PageSize(pageSize int64) *NodesNodesDeploymentsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDeployments that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDeployments that indicates where this
+// listing should continue from.
 func (c *NodesNodesDeploymentsListCall) PageToken(pageToken string) *NodesNodesDeploymentsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesDeploymentsListCall) Fields(s ...googleapi.Field) *NodesNodesDeploymentsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesNodesDeploymentsListCall) IfNoneMatch(entityTag string) *NodesNodesDeploymentsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesDeploymentsListCall) Context(ctx context.Context) *NodesNodesDeploymentsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesDeploymentsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12464,12 +10074,7 @@ func (c *NodesNodesDeploymentsListCall) Header() http.Header {
 }
 
 func (c *NodesNodesDeploymentsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -12490,12 +10095,11 @@ func (c *NodesNodesDeploymentsListCall) doRequest(alt string) (*http.Response, e
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.deployments.list" call.
-// Exactly one of *SasPortalListDeploymentsResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDeploymentsResponse.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDeploymentsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *NodesNodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDeploymentsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12503,17 +10107,17 @@ func (c *NodesNodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDeploymentsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -12526,48 +10130,6 @@ func (c *NodesNodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists deployments.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}/deployments",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.nodes.deployments.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have the following format: \"DIRECT_CHILDREN\" or format: \"direct_children\". The filter is case insensitive. If empty, then no deployments are filtered.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of deployments to return in the response.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDeployments that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name, for example, \"nodes/1\", customer/1/nodes/2.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/deployments",
-	//   "response": {
-	//     "$ref": "SasPortalListDeploymentsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -12575,7 +10137,7 @@ func (c *NodesNodesDeploymentsListCall) Do(opts ...googleapi.CallOption) (*SasPo
 // The provided context supersedes any context provided to the Context method.
 func (c *NodesNodesDeploymentsListCall) Pages(ctx context.Context, f func(*SasPortalListDeploymentsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -12590,8 +10152,6 @@ func (c *NodesNodesDeploymentsListCall) Pages(ctx context.Context, f func(*SasPo
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.devices.create":
 
 type NodesNodesDevicesCreateCall struct {
 	s               *Service
@@ -12613,23 +10173,21 @@ func (r *NodesNodesDevicesService) Create(parent string, sasportaldevice *SasPor
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesDevicesCreateCall) Fields(s ...googleapi.Field) *NodesNodesDevicesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesDevicesCreateCall) Context(ctx context.Context) *NodesNodesDevicesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesDevicesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12638,18 +10196,12 @@ func (c *NodesNodesDevicesCreateCall) Header() http.Header {
 }
 
 func (c *NodesNodesDevicesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaldevice)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices")
@@ -12666,12 +10218,11 @@ func (c *NodesNodesDevicesCreateCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.devices.create" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesNodesDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12679,17 +10230,17 @@ func (c *NodesNodesDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPort
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -12702,38 +10253,7 @@ func (c *NodesNodesDevicesCreateCall) Do(opts ...googleapi.CallOption) (*SasPort
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a device under a node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}/devices",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.nodes.devices.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "request": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.devices.createSigned":
 
 type NodesNodesDevicesCreateSignedCall struct {
 	s                                  *Service
@@ -12755,23 +10275,21 @@ func (r *NodesNodesDevicesService) CreateSigned(parent string, sasportalcreatesi
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesDevicesCreateSignedCall) Fields(s ...googleapi.Field) *NodesNodesDevicesCreateSignedCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesDevicesCreateSignedCall) Context(ctx context.Context) *NodesNodesDevicesCreateSignedCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesDevicesCreateSignedCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12780,18 +10298,12 @@ func (c *NodesNodesDevicesCreateSignedCall) Header() http.Header {
 }
 
 func (c *NodesNodesDevicesCreateSignedCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalcreatesigneddevicerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/devices:createSigned")
@@ -12808,12 +10320,11 @@ func (c *NodesNodesDevicesCreateSignedCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.devices.createSigned" call.
-// Exactly one of *SasPortalDevice or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalDevice.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalDevice.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *NodesNodesDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*SasPortalDevice, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12821,17 +10332,17 @@ func (c *NodesNodesDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*S
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalDevice{
 		ServerResponse: googleapi.ServerResponse{
@@ -12844,38 +10355,7 @@ func (c *NodesNodesDevicesCreateSignedCall) Do(opts ...googleapi.CallOption) (*S
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a signed device under a node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}/devices:createSigned",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.nodes.devices.createSigned",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices:createSigned",
-	//   "request": {
-	//     "$ref": "SasPortalCreateSignedDeviceRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalDevice"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.devices.list":
 
 type NodesNodesDevicesListCall struct {
 	s            *Service
@@ -12895,59 +10375,55 @@ func (r *NodesNodesDevicesService) List(parent string) *NodesNodesDevicesListCal
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have one of the following formats: "sn=123454" or
-// "display_name=MyDevice". sn corresponds to serial number of the
-// device. The filter is case insensitive.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have one of the following formats: "sn=123454" or
+// "display_name=MyDevice". sn corresponds to serial number of the device. The
+// filter is case insensitive.
 func (c *NodesNodesDevicesListCall) Filter(filter string) *NodesNodesDevicesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of devices to return in the response. If empty or zero, all devices
-// will be listed. Must be in the range [0, 1000].
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// devices to return in the response. If empty or zero, all devices will be
+// listed. Must be in the range [0, 1000].
 func (c *NodesNodesDevicesListCall) PageSize(pageSize int64) *NodesNodesDevicesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListDevices that indicates where
-// this listing should continue from.
+// returned from a previous call to ListDevices that indicates where this
+// listing should continue from.
 func (c *NodesNodesDevicesListCall) PageToken(pageToken string) *NodesNodesDevicesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesDevicesListCall) Fields(s ...googleapi.Field) *NodesNodesDevicesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesNodesDevicesListCall) IfNoneMatch(entityTag string) *NodesNodesDevicesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesDevicesListCall) Context(ctx context.Context) *NodesNodesDevicesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesDevicesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12956,12 +10432,7 @@ func (c *NodesNodesDevicesListCall) Header() http.Header {
 }
 
 func (c *NodesNodesDevicesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -12982,12 +10453,11 @@ func (c *NodesNodesDevicesListCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.devices.list" call.
-// Exactly one of *SasPortalListDevicesResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalListDevicesResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalListDevicesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *NodesNodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListDevicesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12995,17 +10465,17 @@ func (c *NodesNodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListDevicesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -13018,48 +10488,6 @@ func (c *NodesNodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists devices under a node or customer.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}/devices",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.nodes.devices.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have one of the following formats: \"sn=123454\" or \"display_name=MyDevice\". sn corresponds to serial number of the device. The filter is case insensitive.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of devices to return in the response. If empty or zero, all devices will be listed. Must be in the range [0, 1000].",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListDevices that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The name of the parent resource.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/devices",
-	//   "response": {
-	//     "$ref": "SasPortalListDevicesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -13067,7 +10495,7 @@ func (c *NodesNodesDevicesListCall) Do(opts ...googleapi.CallOption) (*SasPortal
 // The provided context supersedes any context provided to the Context method.
 func (c *NodesNodesDevicesListCall) Pages(ctx context.Context, f func(*SasPortalListDevicesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -13082,8 +10510,6 @@ func (c *NodesNodesDevicesListCall) Pages(ctx context.Context, f func(*SasPortal
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.nodes.create":
 
 type NodesNodesNodesCreateCall struct {
 	s             *Service
@@ -13105,23 +10531,21 @@ func (r *NodesNodesNodesService) Create(parent string, sasportalnode *SasPortalN
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesNodesCreateCall) Fields(s ...googleapi.Field) *NodesNodesNodesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesNodesCreateCall) Context(ctx context.Context) *NodesNodesNodesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesNodesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13130,18 +10554,12 @@ func (c *NodesNodesNodesCreateCall) Header() http.Header {
 }
 
 func (c *NodesNodesNodesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalnode)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/{+parent}/nodes")
@@ -13158,12 +10576,10 @@ func (c *NodesNodesNodesCreateCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.nodes.create" call.
-// Exactly one of *SasPortalNode or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalNode.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalNode.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *NodesNodesNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortalNode, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13171,17 +10587,17 @@ func (c *NodesNodesNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalNode{
 		ServerResponse: googleapi.ServerResponse{
@@ -13194,38 +10610,7 @@ func (c *NodesNodesNodesCreateCall) Do(opts ...googleapi.CallOption) (*SasPortal
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new node.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}/nodes",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.nodes.nodes.nodes.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent resource name where the node is to be created.",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/nodes",
-	//   "request": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalNode"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.nodes.nodes.nodes.list":
 
 type NodesNodesNodesListCall struct {
 	s            *Service
@@ -13245,58 +10630,54 @@ func (r *NodesNodesNodesService) List(parent string) *NodesNodesNodesListCall {
 	return c
 }
 
-// Filter sets the optional parameter "filter": The filter expression.
-// The filter should have the following format: "DIRECT_CHILDREN" or
-// format: "direct_children". The filter is case insensitive. If empty,
-// then no nodes are filtered.
+// Filter sets the optional parameter "filter": The filter expression. The
+// filter should have the following format: "DIRECT_CHILDREN" or format:
+// "direct_children". The filter is case insensitive. If empty, then no nodes
+// are filtered.
 func (c *NodesNodesNodesListCall) Filter(filter string) *NodesNodesNodesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of nodes to return in the response.
+// PageSize sets the optional parameter "pageSize": The maximum number of nodes
+// to return in the response.
 func (c *NodesNodesNodesListCall) PageSize(pageSize int64) *NodesNodesNodesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A pagination token
-// returned from a previous call to ListNodes that indicates where this
-// listing should continue from.
+// returned from a previous call to ListNodes that indicates where this listing
+// should continue from.
 func (c *NodesNodesNodesListCall) PageToken(pageToken string) *NodesNodesNodesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *NodesNodesNodesListCall) Fields(s ...googleapi.Field) *NodesNodesNodesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *NodesNodesNodesListCall) IfNoneMatch(entityTag string) *NodesNodesNodesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *NodesNodesNodesListCall) Context(ctx context.Context) *NodesNodesNodesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *NodesNodesNodesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13305,12 +10686,7 @@ func (c *NodesNodesNodesListCall) Header() http.Header {
 }
 
 func (c *NodesNodesNodesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -13331,12 +10707,11 @@ func (c *NodesNodesNodesListCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "prod_tt_sasportal.nodes.nodes.nodes.list" call.
-// Exactly one of *SasPortalListNodesResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *SasPortalListNodesResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *SasPortalListNodesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *NodesNodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalListNodesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13344,17 +10719,17 @@ func (c *NodesNodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalLi
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalListNodesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -13367,48 +10742,6 @@ func (c *NodesNodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalLi
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists nodes.",
-	//   "flatPath": "v1alpha1/nodes/{nodesId}/nodes/{nodesId1}/nodes",
-	//   "httpMethod": "GET",
-	//   "id": "prod_tt_sasportal.nodes.nodes.nodes.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The filter expression. The filter should have the following format: \"DIRECT_CHILDREN\" or format: \"direct_children\". The filter is case insensitive. If empty, then no nodes are filtered.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of nodes to return in the response.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A pagination token returned from a previous call to ListNodes that indicates where this listing should continue from.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name, for example, \"nodes/1\".",
-	//       "location": "path",
-	//       "pattern": "^nodes/[^/]+/nodes/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1alpha1/{+parent}/nodes",
-	//   "response": {
-	//     "$ref": "SasPortalListNodesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -13416,7 +10749,7 @@ func (c *NodesNodesNodesListCall) Do(opts ...googleapi.CallOption) (*SasPortalLi
 // The provided context supersedes any context provided to the Context method.
 func (c *NodesNodesNodesListCall) Pages(ctx context.Context, f func(*SasPortalListNodesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -13432,8 +10765,6 @@ func (c *NodesNodesNodesListCall) Pages(ctx context.Context, f func(*SasPortalLi
 	}
 }
 
-// method id "prod_tt_sasportal.policies.get":
-
 type PoliciesGetCall struct {
 	s                         *Service
 	sasportalgetpolicyrequest *SasPortalGetPolicyRequest
@@ -13442,8 +10773,8 @@ type PoliciesGetCall struct {
 	header_                   http.Header
 }
 
-// Get: Gets the access control policy for a resource. Returns an empty
-// policy if the resource exists and does not have a policy set.
+// Get: Gets the access control policy for a resource. Returns an empty policy
+// if the resource exists and does not have a policy set.
 func (r *PoliciesService) Get(sasportalgetpolicyrequest *SasPortalGetPolicyRequest) *PoliciesGetCall {
 	c := &PoliciesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.sasportalgetpolicyrequest = sasportalgetpolicyrequest
@@ -13451,23 +10782,21 @@ func (r *PoliciesService) Get(sasportalgetpolicyrequest *SasPortalGetPolicyReque
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *PoliciesGetCall) Fields(s ...googleapi.Field) *PoliciesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *PoliciesGetCall) Context(ctx context.Context) *PoliciesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *PoliciesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13476,18 +10805,12 @@ func (c *PoliciesGetCall) Header() http.Header {
 }
 
 func (c *PoliciesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalgetpolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/policies:get")
@@ -13501,12 +10824,11 @@ func (c *PoliciesGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.policies.get" call.
-// Exactly one of *SasPortalPolicy or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalPolicy.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalPolicy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *PoliciesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalPolicy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13514,17 +10836,17 @@ func (c *PoliciesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalPolicy, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalPolicy{
 		ServerResponse: googleapi.ServerResponse{
@@ -13537,28 +10859,7 @@ func (c *PoliciesGetCall) Do(opts ...googleapi.CallOption) (*SasPortalPolicy, er
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-	//   "flatPath": "v1alpha1/policies:get",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.policies.get",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1alpha1/policies:get",
-	//   "request": {
-	//     "$ref": "SasPortalGetPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalPolicy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.policies.set":
 
 type PoliciesSetCall struct {
 	s                         *Service
@@ -13568,8 +10869,8 @@ type PoliciesSetCall struct {
 	header_                   http.Header
 }
 
-// Set: Sets the access control policy on the specified resource.
-// Replaces any existing policy.
+// Set: Sets the access control policy on the specified resource. Replaces any
+// existing policy.
 func (r *PoliciesService) Set(sasportalsetpolicyrequest *SasPortalSetPolicyRequest) *PoliciesSetCall {
 	c := &PoliciesSetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.sasportalsetpolicyrequest = sasportalsetpolicyrequest
@@ -13577,23 +10878,21 @@ func (r *PoliciesService) Set(sasportalsetpolicyrequest *SasPortalSetPolicyReque
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *PoliciesSetCall) Fields(s ...googleapi.Field) *PoliciesSetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *PoliciesSetCall) Context(ctx context.Context) *PoliciesSetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *PoliciesSetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13602,18 +10901,12 @@ func (c *PoliciesSetCall) Header() http.Header {
 }
 
 func (c *PoliciesSetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportalsetpolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/policies:set")
@@ -13627,12 +10920,11 @@ func (c *PoliciesSetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.policies.set" call.
-// Exactly one of *SasPortalPolicy or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SasPortalPolicy.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalPolicy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *PoliciesSetCall) Do(opts ...googleapi.CallOption) (*SasPortalPolicy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13640,17 +10932,17 @@ func (c *PoliciesSetCall) Do(opts ...googleapi.CallOption) (*SasPortalPolicy, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalPolicy{
 		ServerResponse: googleapi.ServerResponse{
@@ -13663,28 +10955,7 @@ func (c *PoliciesSetCall) Do(opts ...googleapi.CallOption) (*SasPortalPolicy, er
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
-	//   "flatPath": "v1alpha1/policies:set",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.policies.set",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1alpha1/policies:set",
-	//   "request": {
-	//     "$ref": "SasPortalSetPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalPolicy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }
-
-// method id "prod_tt_sasportal.policies.test":
 
 type PoliciesTestCall struct {
 	s                               *Service
@@ -13694,8 +10965,7 @@ type PoliciesTestCall struct {
 	header_                         http.Header
 }
 
-// Test: Returns permissions that a caller has on the specified
-// resource.
+// Test: Returns permissions that a caller has on the specified resource.
 func (r *PoliciesService) Test(sasportaltestpermissionsrequest *SasPortalTestPermissionsRequest) *PoliciesTestCall {
 	c := &PoliciesTestCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.sasportaltestpermissionsrequest = sasportaltestpermissionsrequest
@@ -13703,23 +10973,21 @@ func (r *PoliciesService) Test(sasportaltestpermissionsrequest *SasPortalTestPer
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *PoliciesTestCall) Fields(s ...googleapi.Field) *PoliciesTestCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *PoliciesTestCall) Context(ctx context.Context) *PoliciesTestCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *PoliciesTestCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13728,18 +10996,12 @@ func (c *PoliciesTestCall) Header() http.Header {
 }
 
 func (c *PoliciesTestCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sasportaltestpermissionsrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1alpha1/policies:test")
@@ -13753,12 +11015,11 @@ func (c *PoliciesTestCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "prod_tt_sasportal.policies.test" call.
-// Exactly one of *SasPortalTestPermissionsResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *SasPortalTestPermissionsResponse.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SasPortalTestPermissionsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *PoliciesTestCall) Do(opts ...googleapi.CallOption) (*SasPortalTestPermissionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13766,17 +11027,17 @@ func (c *PoliciesTestCall) Do(opts ...googleapi.CallOption) (*SasPortalTestPermi
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SasPortalTestPermissionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -13789,23 +11050,4 @@ func (c *PoliciesTestCall) Do(opts ...googleapi.CallOption) (*SasPortalTestPermi
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns permissions that a caller has on the specified resource.",
-	//   "flatPath": "v1alpha1/policies:test",
-	//   "httpMethod": "POST",
-	//   "id": "prod_tt_sasportal.policies.test",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1alpha1/policies:test",
-	//   "request": {
-	//     "$ref": "SasPortalTestPermissionsRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SasPortalTestPermissionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/sasportal"
-	//   ]
-	// }
-
 }

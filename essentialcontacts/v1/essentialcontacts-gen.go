@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package essentialcontacts provides access to the Essential Contacts API.
 //
 // For product documentation, see: https://cloud.google.com/essentialcontacts/docs/
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,24 +28,26 @@
 //	ctx := context.Background()
 //	essentialcontactsService, err := essentialcontacts.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	essentialcontactsService, err := essentialcontacts.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	essentialcontactsService, err := essentialcontacts.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package essentialcontacts // import "google.golang.org/api/essentialcontacts/v1"
 
 import (
@@ -71,17 +84,19 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "essentialcontacts:v1"
 const apiName = "essentialcontacts"
 const apiVersion = "v1"
 const basePath = "https://essentialcontacts.googleapis.com/"
+const basePathTemplate = "https://essentialcontacts.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://essentialcontacts.mtls.googleapis.com/"
 
 // OAuth2 scopes used by this API.
 const (
-	// See, edit, configure, and delete your Google Cloud data and see the
-	// email address for your Google Account.
+	// See, edit, configure, and delete your Google Cloud data and see the email
+	// address for your Google Account.
 	CloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
 )
 
@@ -93,7 +108,9 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -206,246 +223,203 @@ type ProjectsContactsService struct {
 	s *Service
 }
 
-// GoogleCloudEssentialcontactsV1ComputeContactsResponse: Response
-// message for the ComputeContacts method.
+// GoogleCloudEssentialcontactsV1ComputeContactsResponse: Response message for
+// the ComputeContacts method.
 type GoogleCloudEssentialcontactsV1ComputeContactsResponse struct {
-	// Contacts: All contacts for the resource that are subscribed to the
-	// specified notification categories, including contacts inherited from
-	// any parent resources.
+	// Contacts: All contacts for the resource that are subscribed to the specified
+	// notification categories, including contacts inherited from any parent
+	// resources.
 	Contacts []*GoogleCloudEssentialcontactsV1Contact `json:"contacts,omitempty"`
-
 	// NextPageToken: If there are more results than those appearing in this
 	// response, then `next_page_token` is included. To get the next set of
-	// results, call this method again using the value of `next_page_token`
-	// as `page_token` and the rest of the parameters the same as the
-	// original request.
+	// results, call this method again using the value of `next_page_token` as
+	// `page_token` and the rest of the parameters the same as the original
+	// request.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Contacts") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Contacts") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Contacts") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudEssentialcontactsV1ComputeContactsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudEssentialcontactsV1ComputeContactsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudEssentialcontactsV1Contact: A contact that will receive
 // notifications from Google Cloud.
 type GoogleCloudEssentialcontactsV1Contact struct {
-	// Email: Required. The email address to send notifications to. The
-	// email address does not need to be a Google Account.
+	// Email: Required. The email address to send notifications to. The email
+	// address does not need to be a Google Account.
 	Email string `json:"email,omitempty"`
-
-	// LanguageTag: Required. The preferred language for notifications, as a
-	// ISO 639-1 language code. See Supported languages
+	// LanguageTag: Required. The preferred language for notifications, as a ISO
+	// 639-1 language code. See Supported languages
 	// (https://cloud.google.com/resource-manager/docs/managing-notification-contacts#supported-languages)
 	// for a list of supported languages.
 	LanguageTag string `json:"languageTag,omitempty"`
-
 	// Name: Output only. The identifier for the contact. Format:
 	// {resource_type}/{resource_id}/contacts/{contact_id}
 	Name string `json:"name,omitempty"`
-
-	// NotificationCategorySubscriptions: Required. The categories of
-	// notifications that the contact will receive communications for.
+	// NotificationCategorySubscriptions: Required. The categories of notifications
+	// that the contact will receive communications for.
 	//
 	// Possible values:
 	//   "NOTIFICATION_CATEGORY_UNSPECIFIED" - Notification category is
 	// unrecognized or unspecified.
-	//   "ALL" - All notifications related to the resource, including
-	// notifications pertaining to categories added in the future.
-	//   "SUSPENSION" - Notifications related to imminent account
-	// suspension.
+	//   "ALL" - All notifications related to the resource, including notifications
+	// pertaining to categories added in the future.
+	//   "SUSPENSION" - Notifications related to imminent account suspension.
 	//   "SECURITY" - Notifications related to security/privacy incidents,
 	// notifications, and vulnerabilities.
-	//   "TECHNICAL" - Notifications related to technical events and issues
-	// such as outages, errors, or bugs.
-	//   "BILLING" - Notifications related to billing and payments
-	// notifications, price updates, errors, or credits.
+	//   "TECHNICAL" - Notifications related to technical events and issues such as
+	// outages, errors, or bugs.
+	//   "BILLING" - Notifications related to billing and payments notifications,
+	// price updates, errors, or credits.
 	//   "LEGAL" - Notifications related to enforcement actions, regulatory
 	// compliance, or government notices.
-	//   "PRODUCT_UPDATES" - Notifications related to new versions, product
-	// terms updates, or deprecations.
+	//   "PRODUCT_UPDATES" - Notifications related to new versions, product terms
+	// updates, or deprecations.
 	//   "TECHNICAL_INCIDENTS" - Child category of TECHNICAL. If assigned,
 	// technical incident notifications will go to these contacts instead of
 	// TECHNICAL.
 	NotificationCategorySubscriptions []string `json:"notificationCategorySubscriptions,omitempty"`
-
 	// ValidateTime: The last time the validation_state was updated, either
-	// manually or automatically. A contact is considered stale if its
-	// validation state was updated more than 1 year ago.
+	// manually or automatically. A contact is considered stale if its validation
+	// state was updated more than 1 year ago.
 	ValidateTime string `json:"validateTime,omitempty"`
-
-	// ValidationState: The validity of the contact. A contact is considered
-	// valid if it is the correct recipient for notifications for a
-	// particular resource.
+	// ValidationState: The validity of the contact. A contact is considered valid
+	// if it is the correct recipient for notifications for a particular resource.
 	//
 	// Possible values:
 	//   "VALIDATION_STATE_UNSPECIFIED" - The validation state is unknown or
 	// unspecified.
-	//   "VALID" - The contact is marked as valid. This is usually done
-	// manually by the contact admin. All new contacts begin in the valid
-	// state.
-	//   "INVALID" - The contact is considered invalid. This may become the
-	// state if the contact's email is found to be unreachable.
+	//   "VALID" - The contact is marked as valid. This is usually done manually by
+	// the contact admin. All new contacts begin in the valid state.
+	//   "INVALID" - The contact is considered invalid. This may become the state
+	// if the contact's email is found to be unreachable.
 	ValidationState string `json:"validationState,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Email") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Email") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Email") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudEssentialcontactsV1Contact) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudEssentialcontactsV1Contact
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudEssentialcontactsV1ListContactsResponse: Response message
-// for the ListContacts method.
+// GoogleCloudEssentialcontactsV1ListContactsResponse: Response message for the
+// ListContacts method.
 type GoogleCloudEssentialcontactsV1ListContactsResponse struct {
 	// Contacts: The contacts for the specified resource.
 	Contacts []*GoogleCloudEssentialcontactsV1Contact `json:"contacts,omitempty"`
-
 	// NextPageToken: If there are more results than those appearing in this
 	// response, then `next_page_token` is included. To get the next set of
-	// results, call this method again using the value of `next_page_token`
-	// as `page_token` and the rest of the parameters the same as the
-	// original request.
+	// results, call this method again using the value of `next_page_token` as
+	// `page_token` and the rest of the parameters the same as the original
+	// request.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Contacts") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Contacts") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Contacts") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudEssentialcontactsV1ListContactsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudEssentialcontactsV1ListContactsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudEssentialcontactsV1SendTestMessageRequest: Request message
-// for the SendTestMessage method.
+// GoogleCloudEssentialcontactsV1SendTestMessageRequest: Request message for
+// the SendTestMessage method.
 type GoogleCloudEssentialcontactsV1SendTestMessageRequest struct {
-	// Contacts: Required. The list of names of the contacts to send a test
-	// message to. Format:
-	// organizations/{organization_id}/contacts/{contact_id},
+	// Contacts: Required. The list of names of the contacts to send a test message
+	// to. Format: organizations/{organization_id}/contacts/{contact_id},
 	// folders/{folder_id}/contacts/{contact_id} or
 	// projects/{project_id}/contacts/{contact_id}
 	Contacts []string `json:"contacts,omitempty"`
-
-	// NotificationCategory: Required. The notification category to send the
-	// test message for. All contacts must be subscribed to this category.
+	// NotificationCategory: Required. The notification category to send the test
+	// message for. All contacts must be subscribed to this category.
 	//
 	// Possible values:
 	//   "NOTIFICATION_CATEGORY_UNSPECIFIED" - Notification category is
 	// unrecognized or unspecified.
-	//   "ALL" - All notifications related to the resource, including
-	// notifications pertaining to categories added in the future.
-	//   "SUSPENSION" - Notifications related to imminent account
-	// suspension.
+	//   "ALL" - All notifications related to the resource, including notifications
+	// pertaining to categories added in the future.
+	//   "SUSPENSION" - Notifications related to imminent account suspension.
 	//   "SECURITY" - Notifications related to security/privacy incidents,
 	// notifications, and vulnerabilities.
-	//   "TECHNICAL" - Notifications related to technical events and issues
-	// such as outages, errors, or bugs.
-	//   "BILLING" - Notifications related to billing and payments
-	// notifications, price updates, errors, or credits.
+	//   "TECHNICAL" - Notifications related to technical events and issues such as
+	// outages, errors, or bugs.
+	//   "BILLING" - Notifications related to billing and payments notifications,
+	// price updates, errors, or credits.
 	//   "LEGAL" - Notifications related to enforcement actions, regulatory
 	// compliance, or government notices.
-	//   "PRODUCT_UPDATES" - Notifications related to new versions, product
-	// terms updates, or deprecations.
+	//   "PRODUCT_UPDATES" - Notifications related to new versions, product terms
+	// updates, or deprecations.
 	//   "TECHNICAL_INCIDENTS" - Child category of TECHNICAL. If assigned,
 	// technical incident notifications will go to these contacts instead of
 	// TECHNICAL.
 	NotificationCategory string `json:"notificationCategory,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Contacts") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Contacts") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Contacts") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudEssentialcontactsV1SendTestMessageRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudEssentialcontactsV1SendTestMessageRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleProtobufEmpty: A generic empty message that you can re-use to
-// avoid defining duplicated empty messages in your APIs. A typical
-// example is to use it as the request or the response type of an API
-// method. For instance: service Foo { rpc Bar(google.protobuf.Empty)
-// returns (google.protobuf.Empty); }
+// GoogleProtobufEmpty: A generic empty message that you can re-use to avoid
+// defining duplicated empty messages in your APIs. A typical example is to use
+// it as the request or the response type of an API method. For instance:
+// service Foo { rpc Bar(google.protobuf.Empty) returns
+// (google.protobuf.Empty); }
 type GoogleProtobufEmpty struct {
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
 }
-
-// method id "essentialcontacts.folders.contacts.compute":
 
 type FoldersContactsComputeCall struct {
 	s            *Service
@@ -456,9 +430,9 @@ type FoldersContactsComputeCall struct {
 	header_      http.Header
 }
 
-// Compute: Lists all contacts for the resource that are subscribed to
-// the specified notification categories, including contacts inherited
-// from any parent resources.
+// Compute: Lists all contacts for the resource that are subscribed to the
+// specified notification categories, including contacts inherited from any
+// parent resources.
 //
 //   - parent: The name of the resource to compute contacts for. Format:
 //     organizations/{organization_id}, folders/{folder_id} or
@@ -469,10 +443,10 @@ func (r *FoldersContactsService) Compute(parent string) *FoldersContactsComputeC
 	return c
 }
 
-// NotificationCategories sets the optional parameter
-// "notificationCategories": The categories of notifications to compute
-// contacts for. If ALL is included in this list, contacts subscribed to
-// any notification category will be returned.
+// NotificationCategories sets the optional parameter "notificationCategories":
+// The categories of notifications to compute contacts for. If ALL is included
+// in this list, contacts subscribed to any notification category will be
+// returned.
 //
 // Possible values:
 //
@@ -480,33 +454,30 @@ func (r *FoldersContactsService) Compute(parent string) *FoldersContactsComputeC
 //
 // unrecognized or unspecified.
 //
-//	"ALL" - All notifications related to the resource, including
+//	"ALL" - All notifications related to the resource, including notifications
 //
-// notifications pertaining to categories added in the future.
+// pertaining to categories added in the future.
 //
-//	"SUSPENSION" - Notifications related to imminent account
-//
-// suspension.
-//
+//	"SUSPENSION" - Notifications related to imminent account suspension.
 //	"SECURITY" - Notifications related to security/privacy incidents,
 //
 // notifications, and vulnerabilities.
 //
-//	"TECHNICAL" - Notifications related to technical events and issues
+//	"TECHNICAL" - Notifications related to technical events and issues such as
 //
-// such as outages, errors, or bugs.
+// outages, errors, or bugs.
 //
-//	"BILLING" - Notifications related to billing and payments
+//	"BILLING" - Notifications related to billing and payments notifications,
 //
-// notifications, price updates, errors, or credits.
+// price updates, errors, or credits.
 //
 //	"LEGAL" - Notifications related to enforcement actions, regulatory
 //
 // compliance, or government notices.
 //
-//	"PRODUCT_UPDATES" - Notifications related to new versions, product
+//	"PRODUCT_UPDATES" - Notifications related to new versions, product terms
 //
-// terms updates, or deprecations.
+// updates, or deprecations.
 //
 //	"TECHNICAL_INCIDENTS" - Child category of TECHNICAL. If assigned,
 //
@@ -517,54 +488,49 @@ func (c *FoldersContactsComputeCall) NotificationCategories(notificationCategori
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of results to return from this request. Non-positive values are
-// ignored. The presence of `next_page_token` in the response indicates
-// that more results might be available. If not specified, the default
-// page_size is 100.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// results to return from this request. Non-positive values are ignored. The
+// presence of `next_page_token` in the response indicates that more results
+// might be available. If not specified, the default page_size is 100.
 func (c *FoldersContactsComputeCall) PageSize(pageSize int64) *FoldersContactsComputeCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": If present,
-// retrieves the next batch of results from the preceding call to this
-// method. `page_token` must be the value of `next_page_token` from the
-// previous response. The values of other method parameters should be
-// identical to those in the previous call.
+// PageToken sets the optional parameter "pageToken": If present, retrieves the
+// next batch of results from the preceding call to this method. `page_token`
+// must be the value of `next_page_token` from the previous response. The
+// values of other method parameters should be identical to those in the
+// previous call.
 func (c *FoldersContactsComputeCall) PageToken(pageToken string) *FoldersContactsComputeCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *FoldersContactsComputeCall) Fields(s ...googleapi.Field) *FoldersContactsComputeCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *FoldersContactsComputeCall) IfNoneMatch(entityTag string) *FoldersContactsComputeCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *FoldersContactsComputeCall) Context(ctx context.Context) *FoldersContactsComputeCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *FoldersContactsComputeCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -573,12 +539,7 @@ func (c *FoldersContactsComputeCall) Header() http.Header {
 }
 
 func (c *FoldersContactsComputeCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -599,14 +560,11 @@ func (c *FoldersContactsComputeCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "essentialcontacts.folders.contacts.compute" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1ComputeContactsResponse
-// or error will be non-nil. Any non-2xx status code is an error.
-// Response headers are in either
-// *GoogleCloudEssentialcontactsV1ComputeContactsResponse.ServerResponse.
-// Header or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudEssentialcontactsV1ComputeContactsResponse.ServerResponse.Header
+// or (if a response was returned at all) in error.(*googleapi.Error).Header.
+// Use googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *FoldersContactsComputeCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1ComputeContactsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -614,17 +572,17 @@ func (c *FoldersContactsComputeCall) Do(opts ...googleapi.CallOption) (*GoogleCl
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1ComputeContactsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -637,71 +595,6 @@ func (c *FoldersContactsComputeCall) Do(opts ...googleapi.CallOption) (*GoogleCl
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all contacts for the resource that are subscribed to the specified notification categories, including contacts inherited from any parent resources.",
-	//   "flatPath": "v1/folders/{foldersId}/contacts:compute",
-	//   "httpMethod": "GET",
-	//   "id": "essentialcontacts.folders.contacts.compute",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "notificationCategories": {
-	//       "description": "The categories of notifications to compute contacts for. If ALL is included in this list, contacts subscribed to any notification category will be returned.",
-	//       "enum": [
-	//         "NOTIFICATION_CATEGORY_UNSPECIFIED",
-	//         "ALL",
-	//         "SUSPENSION",
-	//         "SECURITY",
-	//         "TECHNICAL",
-	//         "BILLING",
-	//         "LEGAL",
-	//         "PRODUCT_UPDATES",
-	//         "TECHNICAL_INCIDENTS"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Notification category is unrecognized or unspecified.",
-	//         "All notifications related to the resource, including notifications pertaining to categories added in the future.",
-	//         "Notifications related to imminent account suspension.",
-	//         "Notifications related to security/privacy incidents, notifications, and vulnerabilities.",
-	//         "Notifications related to technical events and issues such as outages, errors, or bugs.",
-	//         "Notifications related to billing and payments notifications, price updates, errors, or credits.",
-	//         "Notifications related to enforcement actions, regulatory compliance, or government notices.",
-	//         "Notifications related to new versions, product terms updates, or deprecations.",
-	//         "Child category of TECHNICAL. If assigned, technical incident notifications will go to these contacts instead of TECHNICAL."
-	//       ],
-	//       "location": "query",
-	//       "repeated": true,
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of results to return from this request. Non-positive values are ignored. The presence of `next_page_token` in the response indicates that more results might be available. If not specified, the default page_size is 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. If present, retrieves the next batch of results from the preceding call to this method. `page_token` must be the value of `next_page_token` from the previous response. The values of other method parameters should be identical to those in the previous call.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The name of the resource to compute contacts for. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^folders/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/contacts:compute",
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1ComputeContactsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -709,7 +602,7 @@ func (c *FoldersContactsComputeCall) Do(opts ...googleapi.CallOption) (*GoogleCl
 // The provided context supersedes any context provided to the Context method.
 func (c *FoldersContactsComputeCall) Pages(ctx context.Context, f func(*GoogleCloudEssentialcontactsV1ComputeContactsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -724,8 +617,6 @@ func (c *FoldersContactsComputeCall) Pages(ctx context.Context, f func(*GoogleCl
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "essentialcontacts.folders.contacts.create":
 
 type FoldersContactsCreateCall struct {
 	s                                     *Service
@@ -749,23 +640,21 @@ func (r *FoldersContactsService) Create(parent string, googlecloudessentialconta
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *FoldersContactsCreateCall) Fields(s ...googleapi.Field) *FoldersContactsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *FoldersContactsCreateCall) Context(ctx context.Context) *FoldersContactsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *FoldersContactsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -774,18 +663,12 @@ func (c *FoldersContactsCreateCall) Header() http.Header {
 }
 
 func (c *FoldersContactsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudessentialcontactsv1contact)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/contacts")
@@ -802,13 +685,11 @@ func (c *FoldersContactsCreateCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "essentialcontacts.folders.contacts.create" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1Contact or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleCloudEssentialcontactsV1Contact.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *FoldersContactsCreateCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1Contact, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -816,17 +697,17 @@ func (c *FoldersContactsCreateCall) Do(opts ...googleapi.CallOption) (*GoogleClo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1Contact{
 		ServerResponse: googleapi.ServerResponse{
@@ -839,38 +720,7 @@ func (c *FoldersContactsCreateCall) Do(opts ...googleapi.CallOption) (*GoogleClo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Adds a new contact for a resource.",
-	//   "flatPath": "v1/folders/{foldersId}/contacts",
-	//   "httpMethod": "POST",
-	//   "id": "essentialcontacts.folders.contacts.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The resource to save this contact for. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^folders/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/contacts",
-	//   "request": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.folders.contacts.delete":
 
 type FoldersContactsDeleteCall struct {
 	s          *Service
@@ -893,23 +743,21 @@ func (r *FoldersContactsService) Delete(name string) *FoldersContactsDeleteCall 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *FoldersContactsDeleteCall) Fields(s ...googleapi.Field) *FoldersContactsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *FoldersContactsDeleteCall) Context(ctx context.Context) *FoldersContactsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *FoldersContactsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -918,12 +766,7 @@ func (c *FoldersContactsDeleteCall) Header() http.Header {
 }
 
 func (c *FoldersContactsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -941,12 +784,11 @@ func (c *FoldersContactsDeleteCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "essentialcontacts.folders.contacts.delete" call.
-// Exactly one of *GoogleProtobufEmpty or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *FoldersContactsDeleteCall) Do(opts ...googleapi.CallOption) (*GoogleProtobufEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -954,17 +796,17 @@ func (c *FoldersContactsDeleteCall) Do(opts ...googleapi.CallOption) (*GooglePro
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleProtobufEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -977,35 +819,7 @@ func (c *FoldersContactsDeleteCall) Do(opts ...googleapi.CallOption) (*GooglePro
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a contact.",
-	//   "flatPath": "v1/folders/{foldersId}/contacts/{contactsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "essentialcontacts.folders.contacts.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the contact to delete. Format: organizations/{organization_id}/contacts/{contact_id}, folders/{folder_id}/contacts/{contact_id} or projects/{project_id}/contacts/{contact_id}",
-	//       "location": "path",
-	//       "pattern": "^folders/[^/]+/contacts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleProtobufEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.folders.contacts.get":
 
 type FoldersContactsGetCall struct {
 	s            *Service
@@ -1029,33 +843,29 @@ func (r *FoldersContactsService) Get(name string) *FoldersContactsGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *FoldersContactsGetCall) Fields(s ...googleapi.Field) *FoldersContactsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *FoldersContactsGetCall) IfNoneMatch(entityTag string) *FoldersContactsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *FoldersContactsGetCall) Context(ctx context.Context) *FoldersContactsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *FoldersContactsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1064,12 +874,7 @@ func (c *FoldersContactsGetCall) Header() http.Header {
 }
 
 func (c *FoldersContactsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1090,13 +895,11 @@ func (c *FoldersContactsGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "essentialcontacts.folders.contacts.get" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1Contact or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleCloudEssentialcontactsV1Contact.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *FoldersContactsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1Contact, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1104,17 +907,17 @@ func (c *FoldersContactsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloudE
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1Contact{
 		ServerResponse: googleapi.ServerResponse{
@@ -1127,35 +930,7 @@ func (c *FoldersContactsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloudE
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a single contact.",
-	//   "flatPath": "v1/folders/{foldersId}/contacts/{contactsId}",
-	//   "httpMethod": "GET",
-	//   "id": "essentialcontacts.folders.contacts.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the contact to retrieve. Format: organizations/{organization_id}/contacts/{contact_id}, folders/{folder_id}/contacts/{contact_id} or projects/{project_id}/contacts/{contact_id}",
-	//       "location": "path",
-	//       "pattern": "^folders/[^/]+/contacts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.folders.contacts.list":
 
 type FoldersContactsListCall struct {
 	s            *Service
@@ -1168,63 +943,57 @@ type FoldersContactsListCall struct {
 
 // List: Lists the contacts that have been set on a resource.
 //
-//   - parent: The parent resource name. Format:
-//     organizations/{organization_id}, folders/{folder_id} or
-//     projects/{project_id}.
+//   - parent: The parent resource name. Format: organizations/{organization_id},
+//     folders/{folder_id} or projects/{project_id}.
 func (r *FoldersContactsService) List(parent string) *FoldersContactsListCall {
 	c := &FoldersContactsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of results to return from this request. Non-positive values are
-// ignored. The presence of `next_page_token` in the response indicates
-// that more results might be available. If not specified, the default
-// page_size is 100.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// results to return from this request. Non-positive values are ignored. The
+// presence of `next_page_token` in the response indicates that more results
+// might be available. If not specified, the default page_size is 100.
 func (c *FoldersContactsListCall) PageSize(pageSize int64) *FoldersContactsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": If present,
-// retrieves the next batch of results from the preceding call to this
-// method. `page_token` must be the value of `next_page_token` from the
-// previous response. The values of other method parameters should be
-// identical to those in the previous call.
+// PageToken sets the optional parameter "pageToken": If present, retrieves the
+// next batch of results from the preceding call to this method. `page_token`
+// must be the value of `next_page_token` from the previous response. The
+// values of other method parameters should be identical to those in the
+// previous call.
 func (c *FoldersContactsListCall) PageToken(pageToken string) *FoldersContactsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *FoldersContactsListCall) Fields(s ...googleapi.Field) *FoldersContactsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *FoldersContactsListCall) IfNoneMatch(entityTag string) *FoldersContactsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *FoldersContactsListCall) Context(ctx context.Context) *FoldersContactsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *FoldersContactsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1233,12 +1002,7 @@ func (c *FoldersContactsListCall) Header() http.Header {
 }
 
 func (c *FoldersContactsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1259,14 +1023,11 @@ func (c *FoldersContactsListCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "essentialcontacts.folders.contacts.list" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1ListContactsResponse or
-// error will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleCloudEssentialcontactsV1ListContactsResponse.ServerResponse.Hea
-// der or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudEssentialcontactsV1ListContactsResponse.ServerResponse.Header or
+// (if a response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *FoldersContactsListCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1ListContactsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1274,17 +1035,17 @@ func (c *FoldersContactsListCall) Do(opts ...googleapi.CallOption) (*GoogleCloud
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1ListContactsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1297,43 +1058,6 @@ func (c *FoldersContactsListCall) Do(opts ...googleapi.CallOption) (*GoogleCloud
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the contacts that have been set on a resource.",
-	//   "flatPath": "v1/folders/{foldersId}/contacts",
-	//   "httpMethod": "GET",
-	//   "id": "essentialcontacts.folders.contacts.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of results to return from this request. Non-positive values are ignored. The presence of `next_page_token` in the response indicates that more results might be available. If not specified, the default page_size is 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. If present, retrieves the next batch of results from the preceding call to this method. `page_token` must be the value of `next_page_token` from the previous response. The values of other method parameters should be identical to those in the previous call.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^folders/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/contacts",
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1ListContactsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -1341,7 +1065,7 @@ func (c *FoldersContactsListCall) Do(opts ...googleapi.CallOption) (*GoogleCloud
 // The provided context supersedes any context provided to the Context method.
 func (c *FoldersContactsListCall) Pages(ctx context.Context, f func(*GoogleCloudEssentialcontactsV1ListContactsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -1357,8 +1081,6 @@ func (c *FoldersContactsListCall) Pages(ctx context.Context, f func(*GoogleCloud
 	}
 }
 
-// method id "essentialcontacts.folders.contacts.patch":
-
 type FoldersContactsPatchCall struct {
 	s                                     *Service
 	nameid                                string
@@ -1368,8 +1090,7 @@ type FoldersContactsPatchCall struct {
 	header_                               http.Header
 }
 
-// Patch: Updates a contact. Note: A contact's email address cannot be
-// changed.
+// Patch: Updates a contact. Note: A contact's email address cannot be changed.
 //
 //   - name: Output only. The identifier for the contact. Format:
 //     {resource_type}/{resource_id}/contacts/{contact_id}.
@@ -1380,8 +1101,8 @@ func (r *FoldersContactsService) Patch(nameid string, googlecloudessentialcontac
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": The update mask
-// applied to the resource. For the `FieldMask` definition, see
+// UpdateMask sets the optional parameter "updateMask": The update mask applied
+// to the resource. For the `FieldMask` definition, see
 // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
 func (c *FoldersContactsPatchCall) UpdateMask(updateMask string) *FoldersContactsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
@@ -1389,23 +1110,21 @@ func (c *FoldersContactsPatchCall) UpdateMask(updateMask string) *FoldersContact
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *FoldersContactsPatchCall) Fields(s ...googleapi.Field) *FoldersContactsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *FoldersContactsPatchCall) Context(ctx context.Context) *FoldersContactsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *FoldersContactsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1414,18 +1133,12 @@ func (c *FoldersContactsPatchCall) Header() http.Header {
 }
 
 func (c *FoldersContactsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudessentialcontactsv1contact)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -1442,13 +1155,11 @@ func (c *FoldersContactsPatchCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "essentialcontacts.folders.contacts.patch" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1Contact or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleCloudEssentialcontactsV1Contact.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *FoldersContactsPatchCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1Contact, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1456,17 +1167,17 @@ func (c *FoldersContactsPatchCall) Do(opts ...googleapi.CallOption) (*GoogleClou
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1Contact{
 		ServerResponse: googleapi.ServerResponse{
@@ -1479,44 +1190,7 @@ func (c *FoldersContactsPatchCall) Do(opts ...googleapi.CallOption) (*GoogleClou
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a contact. Note: A contact's email address cannot be changed.",
-	//   "flatPath": "v1/folders/{foldersId}/contacts/{contactsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "essentialcontacts.folders.contacts.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The identifier for the contact. Format: {resource_type}/{resource_id}/contacts/{contact_id}",
-	//       "location": "path",
-	//       "pattern": "^folders/[^/]+/contacts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Optional. The update mask applied to the resource. For the `FieldMask` definition, see https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.folders.contacts.sendTestMessage":
 
 type FoldersContactsSendTestMessageCall struct {
 	s                                                    *Service
@@ -1527,13 +1201,13 @@ type FoldersContactsSendTestMessageCall struct {
 	header_                                              http.Header
 }
 
-// SendTestMessage: Allows a contact admin to send a test message to
-// contact to verify that it has been configured correctly.
+// SendTestMessage: Allows a contact admin to send a test message to contact to
+// verify that it has been configured correctly.
 //
-//   - resource: The name of the resource to send the test message for.
-//     All contacts must either be set directly on this resource or
-//     inherited from another resource that is an ancestor of this one.
-//     Format: organizations/{organization_id}, folders/{folder_id} or
+//   - resource: The name of the resource to send the test message for. All
+//     contacts must either be set directly on this resource or inherited from
+//     another resource that is an ancestor of this one. Format:
+//     organizations/{organization_id}, folders/{folder_id} or
 //     projects/{project_id}.
 func (r *FoldersContactsService) SendTestMessage(resource string, googlecloudessentialcontactsv1sendtestmessagerequest *GoogleCloudEssentialcontactsV1SendTestMessageRequest) *FoldersContactsSendTestMessageCall {
 	c := &FoldersContactsSendTestMessageCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -1543,23 +1217,21 @@ func (r *FoldersContactsService) SendTestMessage(resource string, googlecloudess
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *FoldersContactsSendTestMessageCall) Fields(s ...googleapi.Field) *FoldersContactsSendTestMessageCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *FoldersContactsSendTestMessageCall) Context(ctx context.Context) *FoldersContactsSendTestMessageCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *FoldersContactsSendTestMessageCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1568,18 +1240,12 @@ func (c *FoldersContactsSendTestMessageCall) Header() http.Header {
 }
 
 func (c *FoldersContactsSendTestMessageCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudessentialcontactsv1sendtestmessagerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}/contacts:sendTestMessage")
@@ -1596,12 +1262,11 @@ func (c *FoldersContactsSendTestMessageCall) doRequest(alt string) (*http.Respon
 }
 
 // Do executes the "essentialcontacts.folders.contacts.sendTestMessage" call.
-// Exactly one of *GoogleProtobufEmpty or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *FoldersContactsSendTestMessageCall) Do(opts ...googleapi.CallOption) (*GoogleProtobufEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1609,17 +1274,17 @@ func (c *FoldersContactsSendTestMessageCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleProtobufEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -1632,38 +1297,7 @@ func (c *FoldersContactsSendTestMessageCall) Do(opts ...googleapi.CallOption) (*
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Allows a contact admin to send a test message to contact to verify that it has been configured correctly.",
-	//   "flatPath": "v1/folders/{foldersId}/contacts:sendTestMessage",
-	//   "httpMethod": "POST",
-	//   "id": "essentialcontacts.folders.contacts.sendTestMessage",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "Required. The name of the resource to send the test message for. All contacts must either be set directly on this resource or inherited from another resource that is an ancestor of this one. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^folders/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}/contacts:sendTestMessage",
-	//   "request": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1SendTestMessageRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleProtobufEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.organizations.contacts.compute":
 
 type OrganizationsContactsComputeCall struct {
 	s            *Service
@@ -1674,9 +1308,9 @@ type OrganizationsContactsComputeCall struct {
 	header_      http.Header
 }
 
-// Compute: Lists all contacts for the resource that are subscribed to
-// the specified notification categories, including contacts inherited
-// from any parent resources.
+// Compute: Lists all contacts for the resource that are subscribed to the
+// specified notification categories, including contacts inherited from any
+// parent resources.
 //
 //   - parent: The name of the resource to compute contacts for. Format:
 //     organizations/{organization_id}, folders/{folder_id} or
@@ -1687,10 +1321,10 @@ func (r *OrganizationsContactsService) Compute(parent string) *OrganizationsCont
 	return c
 }
 
-// NotificationCategories sets the optional parameter
-// "notificationCategories": The categories of notifications to compute
-// contacts for. If ALL is included in this list, contacts subscribed to
-// any notification category will be returned.
+// NotificationCategories sets the optional parameter "notificationCategories":
+// The categories of notifications to compute contacts for. If ALL is included
+// in this list, contacts subscribed to any notification category will be
+// returned.
 //
 // Possible values:
 //
@@ -1698,33 +1332,30 @@ func (r *OrganizationsContactsService) Compute(parent string) *OrganizationsCont
 //
 // unrecognized or unspecified.
 //
-//	"ALL" - All notifications related to the resource, including
+//	"ALL" - All notifications related to the resource, including notifications
 //
-// notifications pertaining to categories added in the future.
+// pertaining to categories added in the future.
 //
-//	"SUSPENSION" - Notifications related to imminent account
-//
-// suspension.
-//
+//	"SUSPENSION" - Notifications related to imminent account suspension.
 //	"SECURITY" - Notifications related to security/privacy incidents,
 //
 // notifications, and vulnerabilities.
 //
-//	"TECHNICAL" - Notifications related to technical events and issues
+//	"TECHNICAL" - Notifications related to technical events and issues such as
 //
-// such as outages, errors, or bugs.
+// outages, errors, or bugs.
 //
-//	"BILLING" - Notifications related to billing and payments
+//	"BILLING" - Notifications related to billing and payments notifications,
 //
-// notifications, price updates, errors, or credits.
+// price updates, errors, or credits.
 //
 //	"LEGAL" - Notifications related to enforcement actions, regulatory
 //
 // compliance, or government notices.
 //
-//	"PRODUCT_UPDATES" - Notifications related to new versions, product
+//	"PRODUCT_UPDATES" - Notifications related to new versions, product terms
 //
-// terms updates, or deprecations.
+// updates, or deprecations.
 //
 //	"TECHNICAL_INCIDENTS" - Child category of TECHNICAL. If assigned,
 //
@@ -1735,54 +1366,49 @@ func (c *OrganizationsContactsComputeCall) NotificationCategories(notificationCa
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of results to return from this request. Non-positive values are
-// ignored. The presence of `next_page_token` in the response indicates
-// that more results might be available. If not specified, the default
-// page_size is 100.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// results to return from this request. Non-positive values are ignored. The
+// presence of `next_page_token` in the response indicates that more results
+// might be available. If not specified, the default page_size is 100.
 func (c *OrganizationsContactsComputeCall) PageSize(pageSize int64) *OrganizationsContactsComputeCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": If present,
-// retrieves the next batch of results from the preceding call to this
-// method. `page_token` must be the value of `next_page_token` from the
-// previous response. The values of other method parameters should be
-// identical to those in the previous call.
+// PageToken sets the optional parameter "pageToken": If present, retrieves the
+// next batch of results from the preceding call to this method. `page_token`
+// must be the value of `next_page_token` from the previous response. The
+// values of other method parameters should be identical to those in the
+// previous call.
 func (c *OrganizationsContactsComputeCall) PageToken(pageToken string) *OrganizationsContactsComputeCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsContactsComputeCall) Fields(s ...googleapi.Field) *OrganizationsContactsComputeCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *OrganizationsContactsComputeCall) IfNoneMatch(entityTag string) *OrganizationsContactsComputeCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsContactsComputeCall) Context(ctx context.Context) *OrganizationsContactsComputeCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsContactsComputeCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1791,12 +1417,7 @@ func (c *OrganizationsContactsComputeCall) Header() http.Header {
 }
 
 func (c *OrganizationsContactsComputeCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -1817,14 +1438,11 @@ func (c *OrganizationsContactsComputeCall) doRequest(alt string) (*http.Response
 }
 
 // Do executes the "essentialcontacts.organizations.contacts.compute" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1ComputeContactsResponse
-// or error will be non-nil. Any non-2xx status code is an error.
-// Response headers are in either
-// *GoogleCloudEssentialcontactsV1ComputeContactsResponse.ServerResponse.
-// Header or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudEssentialcontactsV1ComputeContactsResponse.ServerResponse.Header
+// or (if a response was returned at all) in error.(*googleapi.Error).Header.
+// Use googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *OrganizationsContactsComputeCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1ComputeContactsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -1832,17 +1450,17 @@ func (c *OrganizationsContactsComputeCall) Do(opts ...googleapi.CallOption) (*Go
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1ComputeContactsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1855,71 +1473,6 @@ func (c *OrganizationsContactsComputeCall) Do(opts ...googleapi.CallOption) (*Go
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all contacts for the resource that are subscribed to the specified notification categories, including contacts inherited from any parent resources.",
-	//   "flatPath": "v1/organizations/{organizationsId}/contacts:compute",
-	//   "httpMethod": "GET",
-	//   "id": "essentialcontacts.organizations.contacts.compute",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "notificationCategories": {
-	//       "description": "The categories of notifications to compute contacts for. If ALL is included in this list, contacts subscribed to any notification category will be returned.",
-	//       "enum": [
-	//         "NOTIFICATION_CATEGORY_UNSPECIFIED",
-	//         "ALL",
-	//         "SUSPENSION",
-	//         "SECURITY",
-	//         "TECHNICAL",
-	//         "BILLING",
-	//         "LEGAL",
-	//         "PRODUCT_UPDATES",
-	//         "TECHNICAL_INCIDENTS"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Notification category is unrecognized or unspecified.",
-	//         "All notifications related to the resource, including notifications pertaining to categories added in the future.",
-	//         "Notifications related to imminent account suspension.",
-	//         "Notifications related to security/privacy incidents, notifications, and vulnerabilities.",
-	//         "Notifications related to technical events and issues such as outages, errors, or bugs.",
-	//         "Notifications related to billing and payments notifications, price updates, errors, or credits.",
-	//         "Notifications related to enforcement actions, regulatory compliance, or government notices.",
-	//         "Notifications related to new versions, product terms updates, or deprecations.",
-	//         "Child category of TECHNICAL. If assigned, technical incident notifications will go to these contacts instead of TECHNICAL."
-	//       ],
-	//       "location": "query",
-	//       "repeated": true,
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of results to return from this request. Non-positive values are ignored. The presence of `next_page_token` in the response indicates that more results might be available. If not specified, the default page_size is 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. If present, retrieves the next batch of results from the preceding call to this method. `page_token` must be the value of `next_page_token` from the previous response. The values of other method parameters should be identical to those in the previous call.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The name of the resource to compute contacts for. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/contacts:compute",
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1ComputeContactsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -1927,7 +1480,7 @@ func (c *OrganizationsContactsComputeCall) Do(opts ...googleapi.CallOption) (*Go
 // The provided context supersedes any context provided to the Context method.
 func (c *OrganizationsContactsComputeCall) Pages(ctx context.Context, f func(*GoogleCloudEssentialcontactsV1ComputeContactsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -1942,8 +1495,6 @@ func (c *OrganizationsContactsComputeCall) Pages(ctx context.Context, f func(*Go
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "essentialcontacts.organizations.contacts.create":
 
 type OrganizationsContactsCreateCall struct {
 	s                                     *Service
@@ -1967,23 +1518,21 @@ func (r *OrganizationsContactsService) Create(parent string, googlecloudessentia
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsContactsCreateCall) Fields(s ...googleapi.Field) *OrganizationsContactsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsContactsCreateCall) Context(ctx context.Context) *OrganizationsContactsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsContactsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -1992,18 +1541,12 @@ func (c *OrganizationsContactsCreateCall) Header() http.Header {
 }
 
 func (c *OrganizationsContactsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudessentialcontactsv1contact)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/contacts")
@@ -2020,13 +1563,11 @@ func (c *OrganizationsContactsCreateCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "essentialcontacts.organizations.contacts.create" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1Contact or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleCloudEssentialcontactsV1Contact.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *OrganizationsContactsCreateCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1Contact, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2034,17 +1575,17 @@ func (c *OrganizationsContactsCreateCall) Do(opts ...googleapi.CallOption) (*Goo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1Contact{
 		ServerResponse: googleapi.ServerResponse{
@@ -2057,38 +1598,7 @@ func (c *OrganizationsContactsCreateCall) Do(opts ...googleapi.CallOption) (*Goo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Adds a new contact for a resource.",
-	//   "flatPath": "v1/organizations/{organizationsId}/contacts",
-	//   "httpMethod": "POST",
-	//   "id": "essentialcontacts.organizations.contacts.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The resource to save this contact for. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/contacts",
-	//   "request": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.organizations.contacts.delete":
 
 type OrganizationsContactsDeleteCall struct {
 	s          *Service
@@ -2111,23 +1621,21 @@ func (r *OrganizationsContactsService) Delete(name string) *OrganizationsContact
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsContactsDeleteCall) Fields(s ...googleapi.Field) *OrganizationsContactsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsContactsDeleteCall) Context(ctx context.Context) *OrganizationsContactsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsContactsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2136,12 +1644,7 @@ func (c *OrganizationsContactsDeleteCall) Header() http.Header {
 }
 
 func (c *OrganizationsContactsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -2159,12 +1662,11 @@ func (c *OrganizationsContactsDeleteCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "essentialcontacts.organizations.contacts.delete" call.
-// Exactly one of *GoogleProtobufEmpty or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *OrganizationsContactsDeleteCall) Do(opts ...googleapi.CallOption) (*GoogleProtobufEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2172,17 +1674,17 @@ func (c *OrganizationsContactsDeleteCall) Do(opts ...googleapi.CallOption) (*Goo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleProtobufEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -2195,35 +1697,7 @@ func (c *OrganizationsContactsDeleteCall) Do(opts ...googleapi.CallOption) (*Goo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a contact.",
-	//   "flatPath": "v1/organizations/{organizationsId}/contacts/{contactsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "essentialcontacts.organizations.contacts.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the contact to delete. Format: organizations/{organization_id}/contacts/{contact_id}, folders/{folder_id}/contacts/{contact_id} or projects/{project_id}/contacts/{contact_id}",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+/contacts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleProtobufEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.organizations.contacts.get":
 
 type OrganizationsContactsGetCall struct {
 	s            *Service
@@ -2247,33 +1721,29 @@ func (r *OrganizationsContactsService) Get(name string) *OrganizationsContactsGe
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsContactsGetCall) Fields(s ...googleapi.Field) *OrganizationsContactsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *OrganizationsContactsGetCall) IfNoneMatch(entityTag string) *OrganizationsContactsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsContactsGetCall) Context(ctx context.Context) *OrganizationsContactsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsContactsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2282,12 +1752,7 @@ func (c *OrganizationsContactsGetCall) Header() http.Header {
 }
 
 func (c *OrganizationsContactsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -2308,13 +1773,11 @@ func (c *OrganizationsContactsGetCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "essentialcontacts.organizations.contacts.get" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1Contact or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleCloudEssentialcontactsV1Contact.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *OrganizationsContactsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1Contact, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2322,17 +1785,17 @@ func (c *OrganizationsContactsGetCall) Do(opts ...googleapi.CallOption) (*Google
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1Contact{
 		ServerResponse: googleapi.ServerResponse{
@@ -2345,35 +1808,7 @@ func (c *OrganizationsContactsGetCall) Do(opts ...googleapi.CallOption) (*Google
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a single contact.",
-	//   "flatPath": "v1/organizations/{organizationsId}/contacts/{contactsId}",
-	//   "httpMethod": "GET",
-	//   "id": "essentialcontacts.organizations.contacts.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the contact to retrieve. Format: organizations/{organization_id}/contacts/{contact_id}, folders/{folder_id}/contacts/{contact_id} or projects/{project_id}/contacts/{contact_id}",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+/contacts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.organizations.contacts.list":
 
 type OrganizationsContactsListCall struct {
 	s            *Service
@@ -2386,63 +1821,57 @@ type OrganizationsContactsListCall struct {
 
 // List: Lists the contacts that have been set on a resource.
 //
-//   - parent: The parent resource name. Format:
-//     organizations/{organization_id}, folders/{folder_id} or
-//     projects/{project_id}.
+//   - parent: The parent resource name. Format: organizations/{organization_id},
+//     folders/{folder_id} or projects/{project_id}.
 func (r *OrganizationsContactsService) List(parent string) *OrganizationsContactsListCall {
 	c := &OrganizationsContactsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of results to return from this request. Non-positive values are
-// ignored. The presence of `next_page_token` in the response indicates
-// that more results might be available. If not specified, the default
-// page_size is 100.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// results to return from this request. Non-positive values are ignored. The
+// presence of `next_page_token` in the response indicates that more results
+// might be available. If not specified, the default page_size is 100.
 func (c *OrganizationsContactsListCall) PageSize(pageSize int64) *OrganizationsContactsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": If present,
-// retrieves the next batch of results from the preceding call to this
-// method. `page_token` must be the value of `next_page_token` from the
-// previous response. The values of other method parameters should be
-// identical to those in the previous call.
+// PageToken sets the optional parameter "pageToken": If present, retrieves the
+// next batch of results from the preceding call to this method. `page_token`
+// must be the value of `next_page_token` from the previous response. The
+// values of other method parameters should be identical to those in the
+// previous call.
 func (c *OrganizationsContactsListCall) PageToken(pageToken string) *OrganizationsContactsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsContactsListCall) Fields(s ...googleapi.Field) *OrganizationsContactsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *OrganizationsContactsListCall) IfNoneMatch(entityTag string) *OrganizationsContactsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsContactsListCall) Context(ctx context.Context) *OrganizationsContactsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsContactsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2451,12 +1880,7 @@ func (c *OrganizationsContactsListCall) Header() http.Header {
 }
 
 func (c *OrganizationsContactsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -2477,14 +1901,11 @@ func (c *OrganizationsContactsListCall) doRequest(alt string) (*http.Response, e
 }
 
 // Do executes the "essentialcontacts.organizations.contacts.list" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1ListContactsResponse or
-// error will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleCloudEssentialcontactsV1ListContactsResponse.ServerResponse.Hea
-// der or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudEssentialcontactsV1ListContactsResponse.ServerResponse.Header or
+// (if a response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *OrganizationsContactsListCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1ListContactsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2492,17 +1913,17 @@ func (c *OrganizationsContactsListCall) Do(opts ...googleapi.CallOption) (*Googl
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1ListContactsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -2515,43 +1936,6 @@ func (c *OrganizationsContactsListCall) Do(opts ...googleapi.CallOption) (*Googl
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the contacts that have been set on a resource.",
-	//   "flatPath": "v1/organizations/{organizationsId}/contacts",
-	//   "httpMethod": "GET",
-	//   "id": "essentialcontacts.organizations.contacts.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of results to return from this request. Non-positive values are ignored. The presence of `next_page_token` in the response indicates that more results might be available. If not specified, the default page_size is 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. If present, retrieves the next batch of results from the preceding call to this method. `page_token` must be the value of `next_page_token` from the previous response. The values of other method parameters should be identical to those in the previous call.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/contacts",
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1ListContactsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -2559,7 +1943,7 @@ func (c *OrganizationsContactsListCall) Do(opts ...googleapi.CallOption) (*Googl
 // The provided context supersedes any context provided to the Context method.
 func (c *OrganizationsContactsListCall) Pages(ctx context.Context, f func(*GoogleCloudEssentialcontactsV1ListContactsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -2575,8 +1959,6 @@ func (c *OrganizationsContactsListCall) Pages(ctx context.Context, f func(*Googl
 	}
 }
 
-// method id "essentialcontacts.organizations.contacts.patch":
-
 type OrganizationsContactsPatchCall struct {
 	s                                     *Service
 	nameid                                string
@@ -2586,8 +1968,7 @@ type OrganizationsContactsPatchCall struct {
 	header_                               http.Header
 }
 
-// Patch: Updates a contact. Note: A contact's email address cannot be
-// changed.
+// Patch: Updates a contact. Note: A contact's email address cannot be changed.
 //
 //   - name: Output only. The identifier for the contact. Format:
 //     {resource_type}/{resource_id}/contacts/{contact_id}.
@@ -2598,8 +1979,8 @@ func (r *OrganizationsContactsService) Patch(nameid string, googlecloudessential
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": The update mask
-// applied to the resource. For the `FieldMask` definition, see
+// UpdateMask sets the optional parameter "updateMask": The update mask applied
+// to the resource. For the `FieldMask` definition, see
 // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
 func (c *OrganizationsContactsPatchCall) UpdateMask(updateMask string) *OrganizationsContactsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
@@ -2607,23 +1988,21 @@ func (c *OrganizationsContactsPatchCall) UpdateMask(updateMask string) *Organiza
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsContactsPatchCall) Fields(s ...googleapi.Field) *OrganizationsContactsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsContactsPatchCall) Context(ctx context.Context) *OrganizationsContactsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsContactsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2632,18 +2011,12 @@ func (c *OrganizationsContactsPatchCall) Header() http.Header {
 }
 
 func (c *OrganizationsContactsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudessentialcontactsv1contact)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -2660,13 +2033,11 @@ func (c *OrganizationsContactsPatchCall) doRequest(alt string) (*http.Response, 
 }
 
 // Do executes the "essentialcontacts.organizations.contacts.patch" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1Contact or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleCloudEssentialcontactsV1Contact.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *OrganizationsContactsPatchCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1Contact, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2674,17 +2045,17 @@ func (c *OrganizationsContactsPatchCall) Do(opts ...googleapi.CallOption) (*Goog
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1Contact{
 		ServerResponse: googleapi.ServerResponse{
@@ -2697,44 +2068,7 @@ func (c *OrganizationsContactsPatchCall) Do(opts ...googleapi.CallOption) (*Goog
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a contact. Note: A contact's email address cannot be changed.",
-	//   "flatPath": "v1/organizations/{organizationsId}/contacts/{contactsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "essentialcontacts.organizations.contacts.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The identifier for the contact. Format: {resource_type}/{resource_id}/contacts/{contact_id}",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+/contacts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Optional. The update mask applied to the resource. For the `FieldMask` definition, see https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.organizations.contacts.sendTestMessage":
 
 type OrganizationsContactsSendTestMessageCall struct {
 	s                                                    *Service
@@ -2745,13 +2079,13 @@ type OrganizationsContactsSendTestMessageCall struct {
 	header_                                              http.Header
 }
 
-// SendTestMessage: Allows a contact admin to send a test message to
-// contact to verify that it has been configured correctly.
+// SendTestMessage: Allows a contact admin to send a test message to contact to
+// verify that it has been configured correctly.
 //
-//   - resource: The name of the resource to send the test message for.
-//     All contacts must either be set directly on this resource or
-//     inherited from another resource that is an ancestor of this one.
-//     Format: organizations/{organization_id}, folders/{folder_id} or
+//   - resource: The name of the resource to send the test message for. All
+//     contacts must either be set directly on this resource or inherited from
+//     another resource that is an ancestor of this one. Format:
+//     organizations/{organization_id}, folders/{folder_id} or
 //     projects/{project_id}.
 func (r *OrganizationsContactsService) SendTestMessage(resource string, googlecloudessentialcontactsv1sendtestmessagerequest *GoogleCloudEssentialcontactsV1SendTestMessageRequest) *OrganizationsContactsSendTestMessageCall {
 	c := &OrganizationsContactsSendTestMessageCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -2761,23 +2095,21 @@ func (r *OrganizationsContactsService) SendTestMessage(resource string, googlecl
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsContactsSendTestMessageCall) Fields(s ...googleapi.Field) *OrganizationsContactsSendTestMessageCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsContactsSendTestMessageCall) Context(ctx context.Context) *OrganizationsContactsSendTestMessageCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsContactsSendTestMessageCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2786,18 +2118,12 @@ func (c *OrganizationsContactsSendTestMessageCall) Header() http.Header {
 }
 
 func (c *OrganizationsContactsSendTestMessageCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudessentialcontactsv1sendtestmessagerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}/contacts:sendTestMessage")
@@ -2814,12 +2140,11 @@ func (c *OrganizationsContactsSendTestMessageCall) doRequest(alt string) (*http.
 }
 
 // Do executes the "essentialcontacts.organizations.contacts.sendTestMessage" call.
-// Exactly one of *GoogleProtobufEmpty or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *OrganizationsContactsSendTestMessageCall) Do(opts ...googleapi.CallOption) (*GoogleProtobufEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2827,17 +2152,17 @@ func (c *OrganizationsContactsSendTestMessageCall) Do(opts ...googleapi.CallOpti
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleProtobufEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -2850,38 +2175,7 @@ func (c *OrganizationsContactsSendTestMessageCall) Do(opts ...googleapi.CallOpti
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Allows a contact admin to send a test message to contact to verify that it has been configured correctly.",
-	//   "flatPath": "v1/organizations/{organizationsId}/contacts:sendTestMessage",
-	//   "httpMethod": "POST",
-	//   "id": "essentialcontacts.organizations.contacts.sendTestMessage",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "Required. The name of the resource to send the test message for. All contacts must either be set directly on this resource or inherited from another resource that is an ancestor of this one. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}/contacts:sendTestMessage",
-	//   "request": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1SendTestMessageRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleProtobufEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.projects.contacts.compute":
 
 type ProjectsContactsComputeCall struct {
 	s            *Service
@@ -2892,9 +2186,9 @@ type ProjectsContactsComputeCall struct {
 	header_      http.Header
 }
 
-// Compute: Lists all contacts for the resource that are subscribed to
-// the specified notification categories, including contacts inherited
-// from any parent resources.
+// Compute: Lists all contacts for the resource that are subscribed to the
+// specified notification categories, including contacts inherited from any
+// parent resources.
 //
 //   - parent: The name of the resource to compute contacts for. Format:
 //     organizations/{organization_id}, folders/{folder_id} or
@@ -2905,10 +2199,10 @@ func (r *ProjectsContactsService) Compute(parent string) *ProjectsContactsComput
 	return c
 }
 
-// NotificationCategories sets the optional parameter
-// "notificationCategories": The categories of notifications to compute
-// contacts for. If ALL is included in this list, contacts subscribed to
-// any notification category will be returned.
+// NotificationCategories sets the optional parameter "notificationCategories":
+// The categories of notifications to compute contacts for. If ALL is included
+// in this list, contacts subscribed to any notification category will be
+// returned.
 //
 // Possible values:
 //
@@ -2916,33 +2210,30 @@ func (r *ProjectsContactsService) Compute(parent string) *ProjectsContactsComput
 //
 // unrecognized or unspecified.
 //
-//	"ALL" - All notifications related to the resource, including
+//	"ALL" - All notifications related to the resource, including notifications
 //
-// notifications pertaining to categories added in the future.
+// pertaining to categories added in the future.
 //
-//	"SUSPENSION" - Notifications related to imminent account
-//
-// suspension.
-//
+//	"SUSPENSION" - Notifications related to imminent account suspension.
 //	"SECURITY" - Notifications related to security/privacy incidents,
 //
 // notifications, and vulnerabilities.
 //
-//	"TECHNICAL" - Notifications related to technical events and issues
+//	"TECHNICAL" - Notifications related to technical events and issues such as
 //
-// such as outages, errors, or bugs.
+// outages, errors, or bugs.
 //
-//	"BILLING" - Notifications related to billing and payments
+//	"BILLING" - Notifications related to billing and payments notifications,
 //
-// notifications, price updates, errors, or credits.
+// price updates, errors, or credits.
 //
 //	"LEGAL" - Notifications related to enforcement actions, regulatory
 //
 // compliance, or government notices.
 //
-//	"PRODUCT_UPDATES" - Notifications related to new versions, product
+//	"PRODUCT_UPDATES" - Notifications related to new versions, product terms
 //
-// terms updates, or deprecations.
+// updates, or deprecations.
 //
 //	"TECHNICAL_INCIDENTS" - Child category of TECHNICAL. If assigned,
 //
@@ -2953,54 +2244,49 @@ func (c *ProjectsContactsComputeCall) NotificationCategories(notificationCategor
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of results to return from this request. Non-positive values are
-// ignored. The presence of `next_page_token` in the response indicates
-// that more results might be available. If not specified, the default
-// page_size is 100.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// results to return from this request. Non-positive values are ignored. The
+// presence of `next_page_token` in the response indicates that more results
+// might be available. If not specified, the default page_size is 100.
 func (c *ProjectsContactsComputeCall) PageSize(pageSize int64) *ProjectsContactsComputeCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": If present,
-// retrieves the next batch of results from the preceding call to this
-// method. `page_token` must be the value of `next_page_token` from the
-// previous response. The values of other method parameters should be
-// identical to those in the previous call.
+// PageToken sets the optional parameter "pageToken": If present, retrieves the
+// next batch of results from the preceding call to this method. `page_token`
+// must be the value of `next_page_token` from the previous response. The
+// values of other method parameters should be identical to those in the
+// previous call.
 func (c *ProjectsContactsComputeCall) PageToken(pageToken string) *ProjectsContactsComputeCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsContactsComputeCall) Fields(s ...googleapi.Field) *ProjectsContactsComputeCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsContactsComputeCall) IfNoneMatch(entityTag string) *ProjectsContactsComputeCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsContactsComputeCall) Context(ctx context.Context) *ProjectsContactsComputeCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsContactsComputeCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3009,12 +2295,7 @@ func (c *ProjectsContactsComputeCall) Header() http.Header {
 }
 
 func (c *ProjectsContactsComputeCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -3035,14 +2316,11 @@ func (c *ProjectsContactsComputeCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "essentialcontacts.projects.contacts.compute" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1ComputeContactsResponse
-// or error will be non-nil. Any non-2xx status code is an error.
-// Response headers are in either
-// *GoogleCloudEssentialcontactsV1ComputeContactsResponse.ServerResponse.
-// Header or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudEssentialcontactsV1ComputeContactsResponse.ServerResponse.Header
+// or (if a response was returned at all) in error.(*googleapi.Error).Header.
+// Use googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsContactsComputeCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1ComputeContactsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3050,17 +2328,17 @@ func (c *ProjectsContactsComputeCall) Do(opts ...googleapi.CallOption) (*GoogleC
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1ComputeContactsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -3073,71 +2351,6 @@ func (c *ProjectsContactsComputeCall) Do(opts ...googleapi.CallOption) (*GoogleC
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all contacts for the resource that are subscribed to the specified notification categories, including contacts inherited from any parent resources.",
-	//   "flatPath": "v1/projects/{projectsId}/contacts:compute",
-	//   "httpMethod": "GET",
-	//   "id": "essentialcontacts.projects.contacts.compute",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "notificationCategories": {
-	//       "description": "The categories of notifications to compute contacts for. If ALL is included in this list, contacts subscribed to any notification category will be returned.",
-	//       "enum": [
-	//         "NOTIFICATION_CATEGORY_UNSPECIFIED",
-	//         "ALL",
-	//         "SUSPENSION",
-	//         "SECURITY",
-	//         "TECHNICAL",
-	//         "BILLING",
-	//         "LEGAL",
-	//         "PRODUCT_UPDATES",
-	//         "TECHNICAL_INCIDENTS"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Notification category is unrecognized or unspecified.",
-	//         "All notifications related to the resource, including notifications pertaining to categories added in the future.",
-	//         "Notifications related to imminent account suspension.",
-	//         "Notifications related to security/privacy incidents, notifications, and vulnerabilities.",
-	//         "Notifications related to technical events and issues such as outages, errors, or bugs.",
-	//         "Notifications related to billing and payments notifications, price updates, errors, or credits.",
-	//         "Notifications related to enforcement actions, regulatory compliance, or government notices.",
-	//         "Notifications related to new versions, product terms updates, or deprecations.",
-	//         "Child category of TECHNICAL. If assigned, technical incident notifications will go to these contacts instead of TECHNICAL."
-	//       ],
-	//       "location": "query",
-	//       "repeated": true,
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of results to return from this request. Non-positive values are ignored. The presence of `next_page_token` in the response indicates that more results might be available. If not specified, the default page_size is 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. If present, retrieves the next batch of results from the preceding call to this method. `page_token` must be the value of `next_page_token` from the previous response. The values of other method parameters should be identical to those in the previous call.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The name of the resource to compute contacts for. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/contacts:compute",
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1ComputeContactsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -3145,7 +2358,7 @@ func (c *ProjectsContactsComputeCall) Do(opts ...googleapi.CallOption) (*GoogleC
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsContactsComputeCall) Pages(ctx context.Context, f func(*GoogleCloudEssentialcontactsV1ComputeContactsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -3160,8 +2373,6 @@ func (c *ProjectsContactsComputeCall) Pages(ctx context.Context, f func(*GoogleC
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "essentialcontacts.projects.contacts.create":
 
 type ProjectsContactsCreateCall struct {
 	s                                     *Service
@@ -3185,23 +2396,21 @@ func (r *ProjectsContactsService) Create(parent string, googlecloudessentialcont
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsContactsCreateCall) Fields(s ...googleapi.Field) *ProjectsContactsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsContactsCreateCall) Context(ctx context.Context) *ProjectsContactsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsContactsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3210,18 +2419,12 @@ func (c *ProjectsContactsCreateCall) Header() http.Header {
 }
 
 func (c *ProjectsContactsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudessentialcontactsv1contact)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/contacts")
@@ -3238,13 +2441,11 @@ func (c *ProjectsContactsCreateCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "essentialcontacts.projects.contacts.create" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1Contact or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleCloudEssentialcontactsV1Contact.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsContactsCreateCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1Contact, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3252,17 +2453,17 @@ func (c *ProjectsContactsCreateCall) Do(opts ...googleapi.CallOption) (*GoogleCl
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1Contact{
 		ServerResponse: googleapi.ServerResponse{
@@ -3275,38 +2476,7 @@ func (c *ProjectsContactsCreateCall) Do(opts ...googleapi.CallOption) (*GoogleCl
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Adds a new contact for a resource.",
-	//   "flatPath": "v1/projects/{projectsId}/contacts",
-	//   "httpMethod": "POST",
-	//   "id": "essentialcontacts.projects.contacts.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The resource to save this contact for. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/contacts",
-	//   "request": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.projects.contacts.delete":
 
 type ProjectsContactsDeleteCall struct {
 	s          *Service
@@ -3329,23 +2499,21 @@ func (r *ProjectsContactsService) Delete(name string) *ProjectsContactsDeleteCal
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsContactsDeleteCall) Fields(s ...googleapi.Field) *ProjectsContactsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsContactsDeleteCall) Context(ctx context.Context) *ProjectsContactsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsContactsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3354,12 +2522,7 @@ func (c *ProjectsContactsDeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsContactsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -3377,12 +2540,11 @@ func (c *ProjectsContactsDeleteCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "essentialcontacts.projects.contacts.delete" call.
-// Exactly one of *GoogleProtobufEmpty or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsContactsDeleteCall) Do(opts ...googleapi.CallOption) (*GoogleProtobufEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3390,17 +2552,17 @@ func (c *ProjectsContactsDeleteCall) Do(opts ...googleapi.CallOption) (*GooglePr
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleProtobufEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -3413,35 +2575,7 @@ func (c *ProjectsContactsDeleteCall) Do(opts ...googleapi.CallOption) (*GooglePr
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a contact.",
-	//   "flatPath": "v1/projects/{projectsId}/contacts/{contactsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "essentialcontacts.projects.contacts.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the contact to delete. Format: organizations/{organization_id}/contacts/{contact_id}, folders/{folder_id}/contacts/{contact_id} or projects/{project_id}/contacts/{contact_id}",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/contacts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleProtobufEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.projects.contacts.get":
 
 type ProjectsContactsGetCall struct {
 	s            *Service
@@ -3465,33 +2599,29 @@ func (r *ProjectsContactsService) Get(name string) *ProjectsContactsGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsContactsGetCall) Fields(s ...googleapi.Field) *ProjectsContactsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsContactsGetCall) IfNoneMatch(entityTag string) *ProjectsContactsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsContactsGetCall) Context(ctx context.Context) *ProjectsContactsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsContactsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3500,12 +2630,7 @@ func (c *ProjectsContactsGetCall) Header() http.Header {
 }
 
 func (c *ProjectsContactsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -3526,13 +2651,11 @@ func (c *ProjectsContactsGetCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "essentialcontacts.projects.contacts.get" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1Contact or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleCloudEssentialcontactsV1Contact.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsContactsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1Contact, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3540,17 +2663,17 @@ func (c *ProjectsContactsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloud
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1Contact{
 		ServerResponse: googleapi.ServerResponse{
@@ -3563,35 +2686,7 @@ func (c *ProjectsContactsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloud
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a single contact.",
-	//   "flatPath": "v1/projects/{projectsId}/contacts/{contactsId}",
-	//   "httpMethod": "GET",
-	//   "id": "essentialcontacts.projects.contacts.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the contact to retrieve. Format: organizations/{organization_id}/contacts/{contact_id}, folders/{folder_id}/contacts/{contact_id} or projects/{project_id}/contacts/{contact_id}",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/contacts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.projects.contacts.list":
 
 type ProjectsContactsListCall struct {
 	s            *Service
@@ -3604,63 +2699,57 @@ type ProjectsContactsListCall struct {
 
 // List: Lists the contacts that have been set on a resource.
 //
-//   - parent: The parent resource name. Format:
-//     organizations/{organization_id}, folders/{folder_id} or
-//     projects/{project_id}.
+//   - parent: The parent resource name. Format: organizations/{organization_id},
+//     folders/{folder_id} or projects/{project_id}.
 func (r *ProjectsContactsService) List(parent string) *ProjectsContactsListCall {
 	c := &ProjectsContactsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of results to return from this request. Non-positive values are
-// ignored. The presence of `next_page_token` in the response indicates
-// that more results might be available. If not specified, the default
-// page_size is 100.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// results to return from this request. Non-positive values are ignored. The
+// presence of `next_page_token` in the response indicates that more results
+// might be available. If not specified, the default page_size is 100.
 func (c *ProjectsContactsListCall) PageSize(pageSize int64) *ProjectsContactsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": If present,
-// retrieves the next batch of results from the preceding call to this
-// method. `page_token` must be the value of `next_page_token` from the
-// previous response. The values of other method parameters should be
-// identical to those in the previous call.
+// PageToken sets the optional parameter "pageToken": If present, retrieves the
+// next batch of results from the preceding call to this method. `page_token`
+// must be the value of `next_page_token` from the previous response. The
+// values of other method parameters should be identical to those in the
+// previous call.
 func (c *ProjectsContactsListCall) PageToken(pageToken string) *ProjectsContactsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsContactsListCall) Fields(s ...googleapi.Field) *ProjectsContactsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsContactsListCall) IfNoneMatch(entityTag string) *ProjectsContactsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsContactsListCall) Context(ctx context.Context) *ProjectsContactsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsContactsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3669,12 +2758,7 @@ func (c *ProjectsContactsListCall) Header() http.Header {
 }
 
 func (c *ProjectsContactsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -3695,14 +2779,11 @@ func (c *ProjectsContactsListCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "essentialcontacts.projects.contacts.list" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1ListContactsResponse or
-// error will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleCloudEssentialcontactsV1ListContactsResponse.ServerResponse.Hea
-// der or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudEssentialcontactsV1ListContactsResponse.ServerResponse.Header or
+// (if a response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsContactsListCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1ListContactsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3710,17 +2791,17 @@ func (c *ProjectsContactsListCall) Do(opts ...googleapi.CallOption) (*GoogleClou
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1ListContactsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -3733,43 +2814,6 @@ func (c *ProjectsContactsListCall) Do(opts ...googleapi.CallOption) (*GoogleClou
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the contacts that have been set on a resource.",
-	//   "flatPath": "v1/projects/{projectsId}/contacts",
-	//   "httpMethod": "GET",
-	//   "id": "essentialcontacts.projects.contacts.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of results to return from this request. Non-positive values are ignored. The presence of `next_page_token` in the response indicates that more results might be available. If not specified, the default page_size is 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. If present, retrieves the next batch of results from the preceding call to this method. `page_token` must be the value of `next_page_token` from the previous response. The values of other method parameters should be identical to those in the previous call.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource name. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/contacts",
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1ListContactsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -3777,7 +2821,7 @@ func (c *ProjectsContactsListCall) Do(opts ...googleapi.CallOption) (*GoogleClou
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsContactsListCall) Pages(ctx context.Context, f func(*GoogleCloudEssentialcontactsV1ListContactsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -3793,8 +2837,6 @@ func (c *ProjectsContactsListCall) Pages(ctx context.Context, f func(*GoogleClou
 	}
 }
 
-// method id "essentialcontacts.projects.contacts.patch":
-
 type ProjectsContactsPatchCall struct {
 	s                                     *Service
 	nameid                                string
@@ -3804,8 +2846,7 @@ type ProjectsContactsPatchCall struct {
 	header_                               http.Header
 }
 
-// Patch: Updates a contact. Note: A contact's email address cannot be
-// changed.
+// Patch: Updates a contact. Note: A contact's email address cannot be changed.
 //
 //   - name: Output only. The identifier for the contact. Format:
 //     {resource_type}/{resource_id}/contacts/{contact_id}.
@@ -3816,8 +2857,8 @@ func (r *ProjectsContactsService) Patch(nameid string, googlecloudessentialconta
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": The update mask
-// applied to the resource. For the `FieldMask` definition, see
+// UpdateMask sets the optional parameter "updateMask": The update mask applied
+// to the resource. For the `FieldMask` definition, see
 // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
 func (c *ProjectsContactsPatchCall) UpdateMask(updateMask string) *ProjectsContactsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
@@ -3825,23 +2866,21 @@ func (c *ProjectsContactsPatchCall) UpdateMask(updateMask string) *ProjectsConta
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsContactsPatchCall) Fields(s ...googleapi.Field) *ProjectsContactsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsContactsPatchCall) Context(ctx context.Context) *ProjectsContactsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsContactsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3850,18 +2889,12 @@ func (c *ProjectsContactsPatchCall) Header() http.Header {
 }
 
 func (c *ProjectsContactsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudessentialcontactsv1contact)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -3878,13 +2911,11 @@ func (c *ProjectsContactsPatchCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "essentialcontacts.projects.contacts.patch" call.
-// Exactly one of *GoogleCloudEssentialcontactsV1Contact or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleCloudEssentialcontactsV1Contact.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsContactsPatchCall) Do(opts ...googleapi.CallOption) (*GoogleCloudEssentialcontactsV1Contact, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3892,17 +2923,17 @@ func (c *ProjectsContactsPatchCall) Do(opts ...googleapi.CallOption) (*GoogleClo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudEssentialcontactsV1Contact{
 		ServerResponse: googleapi.ServerResponse{
@@ -3915,44 +2946,7 @@ func (c *ProjectsContactsPatchCall) Do(opts ...googleapi.CallOption) (*GoogleClo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a contact. Note: A contact's email address cannot be changed.",
-	//   "flatPath": "v1/projects/{projectsId}/contacts/{contactsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "essentialcontacts.projects.contacts.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The identifier for the contact. Format: {resource_type}/{resource_id}/contacts/{contact_id}",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/contacts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Optional. The update mask applied to the resource. For the `FieldMask` definition, see https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1Contact"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "essentialcontacts.projects.contacts.sendTestMessage":
 
 type ProjectsContactsSendTestMessageCall struct {
 	s                                                    *Service
@@ -3963,13 +2957,13 @@ type ProjectsContactsSendTestMessageCall struct {
 	header_                                              http.Header
 }
 
-// SendTestMessage: Allows a contact admin to send a test message to
-// contact to verify that it has been configured correctly.
+// SendTestMessage: Allows a contact admin to send a test message to contact to
+// verify that it has been configured correctly.
 //
-//   - resource: The name of the resource to send the test message for.
-//     All contacts must either be set directly on this resource or
-//     inherited from another resource that is an ancestor of this one.
-//     Format: organizations/{organization_id}, folders/{folder_id} or
+//   - resource: The name of the resource to send the test message for. All
+//     contacts must either be set directly on this resource or inherited from
+//     another resource that is an ancestor of this one. Format:
+//     organizations/{organization_id}, folders/{folder_id} or
 //     projects/{project_id}.
 func (r *ProjectsContactsService) SendTestMessage(resource string, googlecloudessentialcontactsv1sendtestmessagerequest *GoogleCloudEssentialcontactsV1SendTestMessageRequest) *ProjectsContactsSendTestMessageCall {
 	c := &ProjectsContactsSendTestMessageCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -3979,23 +2973,21 @@ func (r *ProjectsContactsService) SendTestMessage(resource string, googlecloudes
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsContactsSendTestMessageCall) Fields(s ...googleapi.Field) *ProjectsContactsSendTestMessageCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsContactsSendTestMessageCall) Context(ctx context.Context) *ProjectsContactsSendTestMessageCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsContactsSendTestMessageCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4004,18 +2996,12 @@ func (c *ProjectsContactsSendTestMessageCall) Header() http.Header {
 }
 
 func (c *ProjectsContactsSendTestMessageCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudessentialcontactsv1sendtestmessagerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}/contacts:sendTestMessage")
@@ -4032,12 +3018,11 @@ func (c *ProjectsContactsSendTestMessageCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "essentialcontacts.projects.contacts.sendTestMessage" call.
-// Exactly one of *GoogleProtobufEmpty or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleProtobufEmpty.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsContactsSendTestMessageCall) Do(opts ...googleapi.CallOption) (*GoogleProtobufEmpty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4045,17 +3030,17 @@ func (c *ProjectsContactsSendTestMessageCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleProtobufEmpty{
 		ServerResponse: googleapi.ServerResponse{
@@ -4068,33 +3053,4 @@ func (c *ProjectsContactsSendTestMessageCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Allows a contact admin to send a test message to contact to verify that it has been configured correctly.",
-	//   "flatPath": "v1/projects/{projectsId}/contacts:sendTestMessage",
-	//   "httpMethod": "POST",
-	//   "id": "essentialcontacts.projects.contacts.sendTestMessage",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "Required. The name of the resource to send the test message for. All contacts must either be set directly on this resource or inherited from another resource that is an ancestor of this one. Format: organizations/{organization_id}, folders/{folder_id} or projects/{project_id}",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}/contacts:sendTestMessage",
-	//   "request": {
-	//     "$ref": "GoogleCloudEssentialcontactsV1SendTestMessageRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleProtobufEmpty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }

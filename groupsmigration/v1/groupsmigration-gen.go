@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package groupsmigration provides access to the Groups Migration API.
 //
 // For product documentation, see: https://developers.google.com/google-apps/groups-migration/
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,24 +28,26 @@
 //	ctx := context.Background()
 //	groupsmigrationService, err := groupsmigration.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	groupsmigrationService, err := groupsmigration.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	groupsmigrationService, err := groupsmigration.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package groupsmigration // import "google.golang.org/api/groupsmigration/v1"
 
 import (
@@ -71,11 +84,13 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "groupsmigration:v1"
 const apiName = "groupsmigration"
 const apiVersion = "v1"
 const basePath = "https://groupsmigration.googleapis.com/"
+const basePathTemplate = "https://groupsmigration.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://groupsmigration.mtls.googleapis.com/"
 
 // OAuth2 scopes used by this API.
@@ -92,7 +107,9 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -149,38 +166,28 @@ type ArchiveService struct {
 type Groups struct {
 	// Kind: The kind of insert resource this is.
 	Kind string `json:"kind,omitempty"`
-
 	// ResponseCode: The status of the insert request.
 	ResponseCode string `json:"responseCode,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Kind") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Kind") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Kind") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Kind") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Groups) MarshalJSON() ([]byte, error) {
 	type NoMethod Groups
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
-
-// method id "groupsmigration.archive.insert":
 
 type ArchiveInsertCall struct {
 	s          *Service
@@ -200,54 +207,51 @@ func (r *ArchiveService) Insert(groupId string) *ArchiveInsertCall {
 	return c
 }
 
-// Media specifies the media to upload in one or more chunks. The chunk
-// size may be controlled by supplying a MediaOption generated by
+// Media specifies the media to upload in one or more chunks. The chunk size
+// may be controlled by supplying a MediaOption generated by
 // googleapi.ChunkSize. The chunk size defaults to
-// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
-// upload request will be determined by sniffing the contents of r,
-// unless a MediaOption generated by googleapi.ContentType is
-// supplied.
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the upload
+// request will be determined by sniffing the contents of r, unless a
+// MediaOption generated by googleapi.ContentType is supplied.
 // At most one of Media and ResumableMedia may be set.
 func (c *ArchiveInsertCall) Media(r io.Reader, options ...googleapi.MediaOption) *ArchiveInsertCall {
 	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be
-// canceled with ctx.
+// ResumableMedia specifies the media to upload in chunks and can be canceled
+// with ctx.
 //
 // Deprecated: use Media instead.
 //
-// At most one of Media and ResumableMedia may be set. mediaType
-// identifies the MIME media type of the upload, such as "image/png". If
-// mediaType is "", it will be auto-detected. The provided ctx will
-// supersede any context previously provided to the Context method.
+// At most one of Media and ResumableMedia may be set. mediaType identifies the
+// MIME media type of the upload, such as "image/png". If mediaType is "", it
+// will be auto-detected. The provided ctx will supersede any context
+// previously provided to the Context method.
 func (c *ArchiveInsertCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *ArchiveInsertCall {
 	c.ctx_ = ctx
 	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called
-// after every chunk. It should be a low-latency function in order to
-// not slow down the upload operation. This should only be called when
-// using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called after every
+// chunk. It should be a low-latency function in order to not slow down the
+// upload operation. This should only be called when using ResumableMedia (as
+// opposed to Media).
 func (c *ArchiveInsertCall) ProgressUpdater(pu googleapi.ProgressUpdater) *ArchiveInsertCall {
 	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ArchiveInsertCall) Fields(s ...googleapi.Field) *ArchiveInsertCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 // This context will supersede any context previously provided to the
 // ResumableMedia method.
 func (c *ArchiveInsertCall) Context(ctx context.Context) *ArchiveInsertCall {
@@ -255,8 +259,8 @@ func (c *ArchiveInsertCall) Context(ctx context.Context) *ArchiveInsertCall {
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ArchiveInsertCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -265,12 +269,7 @@ func (c *ArchiveInsertCall) Header() http.Header {
 }
 
 func (c *ArchiveInsertCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -299,12 +298,10 @@ func (c *ArchiveInsertCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "groupsmigration.archive.insert" call.
-// Exactly one of *Groups or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Groups.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Groups.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ArchiveInsertCall) Do(opts ...googleapi.CallOption) (*Groups, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -312,17 +309,17 @@ func (c *ArchiveInsertCall) Do(opts ...googleapi.CallOption) (*Groups, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -338,7 +335,7 @@ func (c *ArchiveInsertCall) Do(opts ...googleapi.CallOption) (*Groups, error) {
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &Groups{
@@ -352,42 +349,4 @@ func (c *ArchiveInsertCall) Do(opts ...googleapi.CallOption) (*Groups, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Inserts a new mail into the archive of the Google group.",
-	//   "flatPath": "groups/v1/groups/{groupId}/archive",
-	//   "httpMethod": "POST",
-	//   "id": "groupsmigration.archive.insert",
-	//   "mediaUpload": {
-	//     "accept": [
-	//       "message/rfc822"
-	//     ],
-	//     "maxSize": "26214400",
-	//     "protocols": {
-	//       "simple": {
-	//         "multipart": true,
-	//         "path": "/upload/groups/v1/groups/{groupId}/archive"
-	//       }
-	//     }
-	//   },
-	//   "parameterOrder": [
-	//     "groupId"
-	//   ],
-	//   "parameters": {
-	//     "groupId": {
-	//       "description": "The group ID",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "groups/v1/groups/{groupId}/archive",
-	//   "response": {
-	//     "$ref": "Groups"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/apps.groups.migration"
-	//   ],
-	//   "supportsMediaUpload": true
-	// }
-
 }

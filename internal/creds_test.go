@@ -6,49 +6,12 @@ package internal
 
 import (
 	"context"
+	"os"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
-
-type dummyTokenSource struct {
-	oauth2.TokenSource
-}
-
-func TestTokenSource(t *testing.T) {
-	ctx := context.Background()
-
-	// Pass in a TokenSource, get it back.
-	ts := &dummyTokenSource{}
-	ds := &DialSettings{TokenSource: ts}
-	got, err := Creds(ctx, ds)
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := &google.DefaultCredentials{TokenSource: ts}
-	if !cmp.Equal(got, want) {
-		t.Error("did not get the same TokenSource back")
-	}
-
-	// If both a file and TokenSource are passed, the file takes precedence
-	// (existing behavior).
-	// TODO(jba): make this an error?
-	ds = &DialSettings{
-		TokenSource:     ts,
-		CredentialsFile: "testdata/service-account.json",
-		DefaultScopes:   []string{"foo"},
-	}
-	got, err = Creds(ctx, ds)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if cmp.Equal(got, want) {
-		t.Error("got the same TokenSource back, wanted one from the JSON file")
-	}
-	// TODO(jba): find a way to test the call to google.DefaultTokenSource.
-}
 
 func TestDefaultServiceAccount(t *testing.T) {
 	ctx := context.Background()
@@ -112,6 +75,34 @@ func TestJWTWithScope(t *testing.T) {
 		CredentialsJSON:    []byte(validServiceAccountJSON),
 		Scopes:             []string{"foo"},
 		EnableJwtWithScope: true,
+	}
+	if _, err := Creds(ctx, ds); err != nil {
+		t.Errorf("got %v, wanted no error", err)
+	}
+}
+
+func TestJWTWithScopeAndUniverseDomain(t *testing.T) {
+	ctx := context.Background()
+
+	// Load a valid JSON file. No way to really test the contents; we just
+	// verify that there is no error.
+	ds := &DialSettings{
+		CredentialsFile:    "testdata/service-account.json",
+		Scopes:             []string{"foo"},
+		EnableJwtWithScope: true,
+		UniverseDomain:     "example.com",
+	}
+	if _, err := Creds(ctx, ds); err != nil {
+		t.Errorf("got %v, wanted no error", err)
+	}
+
+	// Load valid JSON. No way to really test the contents; we just
+	// verify that there is no error.
+	ds = &DialSettings{
+		CredentialsJSON:    []byte(validServiceAccountJSON),
+		Scopes:             []string{"foo"},
+		EnableJwtWithScope: true,
+		UniverseDomain:     "example.com",
 	}
 	if _, err := Creds(ctx, ds); err != nil {
 		t.Errorf("got %v, wanted no error", err)
@@ -199,10 +190,9 @@ const validServiceAccountJSON = `{
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dumba-504%40appspot.gserviceaccount.com"
 }`
 
-func TestQuotaProjectFromCreds(t *testing.T) {
+func TestGetQuotaProject(t *testing.T) {
 	ctx := context.Background()
-
-	cred, err := credentialsFromJSON(
+	emptyCred, err := credentialsFromJSON(
 		ctx,
 		[]byte(validServiceAccountJSON),
 		&DialSettings{
@@ -212,17 +202,13 @@ func TestQuotaProjectFromCreds(t *testing.T) {
 	if err != nil {
 		t.Fatalf("got %v, wanted no error", err)
 	}
-	if want, got := "", QuotaProjectFromCreds(cred); want != got {
-		t.Errorf("QuotaProjectFromCreds(validServiceAccountJSON): want %q, got %q", want, got)
-	}
-
 	quotaProjectJSON := []byte(`
 {
 	"type": "authorized_user",
 	"quota_project_id": "foobar"
 }`)
 
-	cred, err = credentialsFromJSON(
+	quotaCred, err := credentialsFromJSON(
 		ctx,
 		[]byte(quotaProjectJSON),
 		&DialSettings{
@@ -232,8 +218,53 @@ func TestQuotaProjectFromCreds(t *testing.T) {
 	if err != nil {
 		t.Fatalf("got %v, wanted no error", err)
 	}
-	if want, got := "foobar", QuotaProjectFromCreds(cred); want != got {
-		t.Errorf("QuotaProjectFromCreds(quotaProjectJSON): want %q, got %q", want, got)
+
+	tests := []struct {
+		name      string
+		cred      *google.Credentials
+		clientOpt string
+		env       string
+		want      string
+	}{
+		{
+			name: "empty all",
+			cred: nil,
+			want: "",
+		},
+		{
+			name: "empty cred",
+			cred: emptyCred,
+			want: "",
+		},
+		{
+			name: "from cred",
+			cred: quotaCred,
+			want: "foobar",
+		},
+		{
+			name:      "from opt",
+			cred:      quotaCred,
+			clientOpt: "clientopt",
+			want:      "clientopt",
+		},
+		{
+			name: "from env",
+			cred: quotaCred,
+			env:  "envProject",
+			want: "envProject",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldEnv := os.Getenv(quotaProjectEnvVar)
+			if tt.env != "" {
+				os.Setenv(quotaProjectEnvVar, tt.env)
+			}
+			if want, got := tt.want, GetQuotaProject(tt.cred, tt.clientOpt); want != got {
+				t.Errorf("GetQuotaProject(%v, %q): want %q, got %q", tt.cred, tt.clientOpt, want, got)
+			}
+			os.Setenv(quotaProjectEnvVar, oldEnv)
+		})
 	}
 }
 
@@ -293,5 +324,67 @@ func TestCredsWithCredentials(t *testing.T) {
 				t.Fatalf("tok.AccessToken = %q, want %q", tok.AccessToken, tc.want)
 			}
 		})
+	}
+}
+
+func TestIsSelfSignedJWTFlow(t *testing.T) {
+	tests := []struct {
+		name string
+		ds   *DialSettings
+		want bool
+	}{
+		{
+			name: "EnableJwtWithScope true",
+			ds: &DialSettings{
+				CredentialsFile:    "testdata/service-account.json",
+				Scopes:             []string{"foo"},
+				EnableJwtWithScope: true,
+			},
+			want: true,
+		},
+		{
+			name: "EnableJwtWithScope false",
+			ds: &DialSettings{
+				CredentialsFile:    "testdata/service-account.json",
+				Scopes:             []string{"foo"},
+				EnableJwtWithScope: false,
+			},
+			want: false,
+		},
+		{
+			name: "UniverseDomain",
+			ds: &DialSettings{
+				CredentialsFile:    "testdata/service-account.json",
+				Scopes:             []string{"foo"},
+				EnableJwtWithScope: false,
+				UniverseDomain:     "example.com",
+			},
+			want: true,
+		},
+		{
+			name: "UniverseDomainUserAccount",
+			ds: &DialSettings{
+				CredentialsFile:    "testdata/user-account.json",
+				Scopes:             []string{"foo"},
+				EnableJwtWithScope: false,
+				UniverseDomain:     "example.com",
+			},
+			want: false,
+		},
+	}
+
+	for _, tc := range tests {
+
+		bytes, err := os.ReadFile(tc.ds.CredentialsFile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		isSSJ, err := isSelfSignedJWTFlow(bytes, tc.ds)
+		if err != nil {
+			t.Errorf("[%s]: got %v, wanted no error", tc.name, err)
+		}
+		if isSSJ != tc.want {
+			t.Errorf("[%s]: got %t, wanted %t", tc.name, isSSJ, tc.want)
+		}
 	}
 }

@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -30,7 +29,14 @@ import (
 )
 
 const (
-	googleDiscoveryURL = "https://www.googleapis.com/discovery/v1/apis"
+	googleDiscoveryURL        = "https://www.googleapis.com/discovery/v1/apis"
+	googleDefaultUniverse     = "googleapis.com"
+	universeDomainPlaceholder = "UNIVERSE_DOMAIN"
+
+	splitFileSeperator = `// =*=*"`
+	// Size the buffer so there is room for the header and contents when
+	// splitting up large files.
+	splitFileHeaderSize = 500
 )
 
 var (
@@ -65,6 +71,27 @@ var (
 	errOldRevision = errors.New("revision pulled older than local cached revision")
 	errNoDoc       = errors.New("could not read discovery doc")
 )
+
+// skipAPIGeneration is a set of APIs to not generate when generating all clients.
+var skipAPIGeneration = map[string]bool{
+	"integrations:v1alpha": true,
+	"integrations:v1":      true,
+	"sql:v1beta4":          true,
+	"datalineage:v1":       true,
+}
+
+// skipNewAuthLibrary is a set of APIs to not migrate to cloud.google.com/go/auth.
+var skipNewAuthLibrary = map[string]bool{
+	"bigquery:v2":   true,
+	"compute:alpha": true,
+	"compute:beta":  true,
+	"compute:v1":    true,
+	"storage:v1":    true,
+}
+
+var apisToSplit = map[string]bool{
+	"compute": true,
+}
 
 // API represents an API to generate, as well as its state while it's
 // generating.
@@ -120,11 +147,6 @@ type compileError struct {
 
 func (e *compileError) Error() string {
 	return fmt.Sprintf("API %s failed to compile:\n%v", e.api.ID, e.output)
-}
-
-// skipAPIGeneration is a set of APIs to not generate when generating all clients.
-var skipAPIGeneration = map[string]bool{
-	"sql:v1beta4": true,
 }
 
 func main() {
@@ -214,7 +236,7 @@ func getAPIs() []*API {
 			log.Fatalf("-cache=true not compatible with -publiconly=false")
 		}
 		var err error
-		bytes, err = ioutil.ReadFile(apiListFile)
+		bytes, err = os.ReadFile(apiListFile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -222,7 +244,7 @@ func getAPIs() []*API {
 	} else {
 		bytes = slurpURL(*apisURL)
 		if *publicOnly {
-			if err := writeFile(apiListFile, bytes); err != nil {
+			if err := writeFile(apiListFile, "", bytes); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -275,7 +297,7 @@ func getAPIsFromFile() []*API {
 }
 
 func apiFromFile(file string) (*API, error) {
-	jsonBytes, err := ioutil.ReadFile(file)
+	jsonBytes, err := os.ReadFile(file)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading %s: %v", file, err)
 	}
@@ -296,16 +318,16 @@ func apiFromFile(file string) (*API, error) {
 func checkAndUpdateSpecFile(file string, contents []byte) error {
 	// check if file exists
 	if _, err := os.Stat(file); os.IsNotExist(err) {
-		return writeFile(file, contents)
+		return writeFile(file, "", contents)
 	}
-	existing, err := ioutil.ReadFile(file)
+	existing, err := os.ReadFile(file)
 	if err != nil {
 		return err
 	}
 	if err := isNewerRevision(existing, contents); err != nil {
 		return err
 	}
-	return writeFile(file, contents)
+	return writeFile(file, "", contents)
 }
 
 // isNewerRevision returns nil if the contents of new has a newer revision than
@@ -327,9 +349,9 @@ func isNewerRevision(old []byte, new []byte) error {
 	return nil
 }
 
-func writeFile(file string, contents []byte) error {
+func writeFile(file, pkg string, contents []byte) error {
 	// Don't write it if the contents are identical.
-	existing, err := ioutil.ReadFile(file)
+	existing, err := os.ReadFile(file)
 	if err == nil && (bytes.Equal(existing, contents) || basicallyEqual(existing, contents)) {
 		return nil
 	}
@@ -337,7 +359,49 @@ func writeFile(file string, contents []byte) error {
 	if err = os.MkdirAll(outdir, 0755); err != nil {
 		return fmt.Errorf("failed to Mkdir %s: %v", outdir, err)
 	}
-	return ioutil.WriteFile(file, contents, 0644)
+	// Don't try to split spec files, json or non-allowlisted packages
+	if pkg == "" || !apisToSplit[pkg] {
+		return os.WriteFile(file, contents, 0644)
+	}
+
+	// Split generated file out into multiple
+	bs := bytes.Split(contents, []byte(splitFileSeperator))
+	for i, b := range bs {
+		var name string
+		var newB []byte
+		if i == 0 {
+			// For the base case, use the provided inputs as is
+			name = file
+			var err error
+			newB, err = format.Source(b)
+			if err != nil {
+				return err
+			}
+		} else {
+			// determine the new file name
+			base := filepath.Dir(file)
+			fileNum := i + 1
+			name = filepath.Join(base, fmt.Sprintf("%s%d-gen.go", pkg, fileNum))
+
+			// prepend file header, package, and imports
+			var buf bytes.Buffer
+			// Size the buffer so there is room for the header and contents
+			buf.Grow(len(b) + splitFileHeaderSize)
+			splitFileHeading(&buf, pkg)
+			_, err := buf.Write(b)
+			if err != nil {
+				return err
+			}
+			newB, err = format.Source(buf.Bytes())
+			if err != nil {
+				return err
+			}
+		}
+		if err := os.WriteFile(name, newB, 0644); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 var ignoreLines = regexp.MustCompile(`(?m)^\s+"(?:etag|revision)": ".+\n`)
@@ -368,7 +432,7 @@ func slurpURL(urlStr string) []byte {
 		log.Printf("WARNING: URL %s served status code %d", urlStr, res.StatusCode)
 		return nil
 	}
-	bs, err := ioutil.ReadAll(res.Body)
+	bs, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Fatalf("Error reading body of URL %s: %v", urlStr, err)
 	}
@@ -497,6 +561,14 @@ func (a *API) apiBaseURL() string {
 	return resolveRelative(base, rel)
 }
 
+// apiBaseURLTemplate returns the value returned by apiBaseURL with the
+// Google Default Universe (googleapis.com) replaced with the placeholder
+// UNIVERSE_DOMAIN for universe domain substitution.
+func (a *API) apiBaseURLTemplate() (string, error) {
+	base := a.apiBaseURL()
+	return strings.Replace(base, googleDefaultUniverse, universeDomainPlaceholder, 1), nil
+}
+
 func (a *API) mtlsAPIBaseURL() string {
 	if a.doc.MTLSRootURL != "" {
 		return resolveRelative(a.doc.MTLSRootURL, a.doc.ServicePath)
@@ -523,7 +595,7 @@ func (a *API) jsonBytes() []byte {
 		var slurp []byte
 		var err error
 		if *useCache {
-			slurp, err = ioutil.ReadFile(a.JSONFile())
+			slurp, err = os.ReadFile(a.JSONFile())
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -577,7 +649,7 @@ func (a *API) WriteGeneratedCode() error {
 	}
 
 	code, err := a.GenerateCode()
-	errw := writeFile(genfilename, code)
+	errw := writeFile(genfilename, a.Package(), code)
 	if err == nil {
 		err = errw
 	}
@@ -585,6 +657,71 @@ func (a *API) WriteGeneratedCode() error {
 		return err
 	}
 	return nil
+}
+
+func (a *API) printPkgDocs() {
+	pkg := a.Package()
+	pn := a.pn
+
+	pn("// Package %s provides access to the %s.", pkg, a.doc.Title)
+	if r := replacementPackage.Get(pkg, a.Version); r != "" {
+		pn("//")
+		pn("// This package is DEPRECATED. Use package %s instead.", r)
+	}
+	docsLink = a.doc.DocumentationLink
+	if docsLink != "" {
+		pn("//")
+		pn("// For product documentation, see: %s", docsLink)
+	}
+	pn("//")
+	pn("// # Library status")
+	pn("//")
+	pn("// These client libraries are officially supported by Google. However, this")
+	pn("// library is considered complete and is in maintenance mode. This means")
+	pn("// that we will address critical bugs and security issues but will not add")
+	pn("// any new features.")
+	pn("// ")
+	pn("// When possible, we recommend using our newer")
+	pn("// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)")
+	pn("// that are still actively being worked and iterated on.")
+	pn("//")
+	pn("// # Creating a client")
+	pn("//")
+	pn("// Usage example:")
+	pn("//")
+	pn("//   import %q", a.Target())
+	pn("//   ...")
+	pn("//   ctx := context.Background()")
+	pn("//   %sService, err := %s.NewService(ctx)", pkg, pkg)
+	pn("//")
+	pn("// In this example, Google Application Default Credentials are used for")
+	pn("// authentication. For information on how to create and obtain Application")
+	pn("// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.")
+	pn("//")
+	pn("// # Other authentication options")
+	pn("//")
+	if len(a.doc.Auth.OAuth2Scopes) > 1 {
+		pn(`// By default, all available scopes (see "Constants") are used to authenticate.`)
+		pn(`// To restrict scopes, use [google.golang.org/api/option.WithScopes]:`)
+		pn("//")
+		// NOTE: the first scope tends to be the broadest. Use the last one to demonstrate restriction.
+		pn("//   %sService, err := %s.NewService(ctx, option.WithScopes(%s.%s))", pkg, pkg, pkg, scopeIdentifier(a.doc.Auth.OAuth2Scopes[len(a.doc.Auth.OAuth2Scopes)-1]))
+		pn("//")
+	}
+	pn("// To use an API key for authentication (note: some APIs do not support API")
+	pn("// keys), use [google.golang.org/api/option.WithAPIKey]:")
+	pn("//")
+	pn(`//   %sService, err := %s.NewService(ctx, option.WithAPIKey("AIza..."))`, pkg, pkg)
+	pn("//")
+	pn("// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth")
+	pn("// flow, use [google.golang.org/api/option.WithTokenSource]:")
+	pn("//")
+	pn("//   config := &oauth2.Config{...}")
+	pn("//   // ...")
+	pn("//   token, err := config.Exchange(ctx, ...)")
+	pn("//   %sService, err := %s.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))", pkg, pkg)
+	pn("//")
+	pn("// See [google.golang.org/api/option.ClientOption] for details on options.")
 }
 
 var docsLink string
@@ -638,51 +775,7 @@ func (a *API) GenerateCode() ([]byte, error) {
 // Code generated file. DO NOT EDIT.
 `, *copyrightYear)
 
-	pn("// Package %s provides access to the %s.", pkg, a.doc.Title)
-	if r := replacementPackage.Get(pkg, a.Version); r != "" {
-		pn("//")
-		pn("// This package is DEPRECATED. Use package %s instead.", r)
-	}
-	docsLink = a.doc.DocumentationLink
-	if docsLink != "" {
-		pn("//")
-		pn("// For product documentation, see: %s", docsLink)
-	}
-	pn("//")
-	pn("// Creating a client")
-	pn("//")
-	pn("// Usage example:")
-	pn("//")
-	pn("//   import %q", a.Target())
-	pn("//   ...")
-	pn("//   ctx := context.Background()")
-	pn("//   %sService, err := %s.NewService(ctx)", pkg, pkg)
-	pn("//")
-	pn("// In this example, Google Application Default Credentials are used for authentication.")
-	pn("//")
-	pn("// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.")
-	pn("//")
-	pn("// Other authentication options")
-	pn("//")
-	if len(a.doc.Auth.OAuth2Scopes) > 1 {
-		pn(`// By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:`)
-		pn("//")
-		// NOTE: the first scope tends to be the broadest. Use the last one to demonstrate restriction.
-		pn("//   %sService, err := %s.NewService(ctx, option.WithScopes(%s.%s))", pkg, pkg, pkg, scopeIdentifier(a.doc.Auth.OAuth2Scopes[len(a.doc.Auth.OAuth2Scopes)-1]))
-		pn("//")
-	}
-	pn("// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:")
-	pn("//")
-	pn(`//   %sService, err := %s.NewService(ctx, option.WithAPIKey("AIza..."))`, pkg, pkg)
-	pn("//")
-	pn("// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:")
-	pn("//")
-	pn("//   config := &oauth2.Config{...}")
-	pn("//   // ...")
-	pn("//   token, err := config.Exchange(ctx, ...)")
-	pn("//   %sService, err := %s.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))", pkg, pkg)
-	pn("//")
-	pn("// See https://godoc.org/google.golang.org/api/option/ for details on options.")
+	a.printPkgDocs()
 	pn("package %s // import %q", pkg, a.Target())
 	p("\n")
 	pn("import (")
@@ -732,11 +825,17 @@ func (a *API) GenerateCode() ([]byte, error) {
 	pn("var _ = strings.Replace")
 	pn("var _ = context.Canceled")
 	pn("var _ = internaloption.WithDefaultEndpoint")
+	pn("var _ = internal.Version")
 	pn("")
 	pn("const apiId = %q", a.doc.ID)
 	pn("const apiName = %q", a.doc.Name)
 	pn("const apiVersion = %q", a.doc.Version)
 	pn("const basePath = %q", a.apiBaseURL())
+	basePathTemplate, err := a.apiBaseURLTemplate()
+	if err != nil {
+		return buf.Bytes(), err
+	}
+	pn("const basePathTemplate = %q", basePathTemplate)
 	if mtlsBase := a.mtlsAPIBaseURL(); mtlsBase != "" {
 		pn("const mtlsBasePath = %q", mtlsBase)
 	}
@@ -762,8 +861,12 @@ func (a *API) GenerateCode() ([]byte, error) {
 		pn("opts = append([]option.ClientOption{scopesOption}, opts...)")
 	}
 	pn("opts = append(opts, internaloption.WithDefaultEndpoint(basePath))")
+	pn("opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))")
 	if a.mtlsAPIBaseURL() != "" {
 		pn("opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))")
+	}
+	if !skipNewAuthLibrary[a.ID] {
+		pn("opts = append(opts, internaloption.EnableNewAuthLibrary())")
 	}
 	pn("client, endpoint, err := htransport.NewClient(ctx, opts...)")
 	pn("if err != nil { return nil, err }")
@@ -820,8 +923,12 @@ func (a *API) GenerateCode() ([]byte, error) {
 	for _, meth := range a.APIMethods() {
 		meth.generateCode()
 	}
-
-	for _, res := range a.doc.Resources {
+	a.insertSplitFileComment()
+	rCnt := len(a.doc.Resources) / 2
+	for i, res := range a.doc.Resources {
+		if i == rCnt {
+			a.insertSplitFileComment()
+		}
 		a.generateResourceMethods(res)
 	}
 
@@ -830,6 +937,55 @@ func (a *API) GenerateCode() ([]byte, error) {
 		return buf.Bytes(), err
 	}
 	return clean, nil
+}
+
+func (a *API) insertSplitFileComment() {
+	if apisToSplit[a.Package()] {
+		a.pn("")
+		a.pn(splitFileSeperator)
+		a.pn("")
+	}
+}
+
+// splitFileHeading writes the file preamble used when generating a split file
+// client like compute.
+func splitFileHeading(w io.Writer, pkg string) {
+	pn := func(format string, args ...interface{}) {
+		_, err := fmt.Fprintf(w, format+"\n", args...)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	pn("// Copyright %s Google LLC.", *copyrightYear)
+	pn("// Use of this source code is governed by a BSD-style")
+	pn("// license that can be found in the LICENSE file.")
+	pn("")
+	pn("// Code generated file. DO NOT EDIT.")
+	pn("")
+	pn("package %s", pkg)
+	pn("")
+	pn("import (")
+	for _, imp := range []string{
+		"context",
+		"fmt",
+		"io",
+		"net/http",
+	} {
+		pn("  %q", imp)
+	}
+	pn("")
+	for _, imp := range []struct {
+		pkg   string
+		lname string
+	}{
+		{*gensupportPkg, "gensupport"},
+		{*googleapiPkg, "googleapi"},
+	} {
+		pn("  %s %q", imp.lname, imp.pkg)
+	}
+	pn(")")
+	pn("")
 }
 
 func (a *API) generateScopeConstants() {
@@ -1377,10 +1533,7 @@ func (s *Schema) writeSchemaStruct(api *API) {
 	}
 
 	firstFieldName := "" // used to store a struct field name for use in documentation.
-	for i, p := range s.properties() {
-		if i > 0 {
-			s.api.p("\n")
-		}
+	for _, p := range s.properties() {
 		pname := np.Get(p.GoName())
 		if pname[0] == '@' {
 			// HACK(cbro): ignore JSON-LD special fields until we can figure out
@@ -1432,25 +1585,20 @@ func (s *Schema) writeSchemaStruct(api *API) {
 
 	commentFmtStr := "%s is a list of field names (e.g. %q) to " +
 		"unconditionally include in API requests. By default, fields " +
-		"with empty or default values are omitted from API requests. However, " +
-		"any non-pointer, non-interface field appearing in %s will " +
-		"be sent to the server regardless of whether the field is " +
-		"empty or not. This may be used to include empty fields in " +
-		"Patch requests."
-	comment := fmt.Sprintf(commentFmtStr, forceSendName, firstFieldName, forceSendName)
-	s.api.p("\n")
+		"with empty or default values are omitted from API requests. See " +
+		"https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for " +
+		"more details."
+	comment := fmt.Sprintf(commentFmtStr, forceSendName, firstFieldName)
 	s.api.p("%s", asComment("\t", comment))
 
 	s.api.pn("\t%s []string `json:\"-\"`", forceSendName)
 
 	commentFmtStr = "%s is a list of field names (e.g. %q) to " +
 		"include in API requests with the JSON null value. " +
-		"By default, fields with empty values are omitted from API requests. However, " +
-		"any field with an empty value appearing in %s will be sent to the server as null. " +
-		"It is an error if a field in this list has a non-empty value. This may be used to " +
-		"include null fields in Patch requests."
-	comment = fmt.Sprintf(commentFmtStr, nullFieldsName, firstFieldName, nullFieldsName)
-	s.api.p("\n")
+		"By default, fields with empty values are omitted from API requests. " +
+		"See https://pkg.go.dev/google.golang.org/api#hdr-NullFields for " +
+		"more details."
+	comment = fmt.Sprintf(commentFmtStr, nullFieldsName, firstFieldName)
 	s.api.p("%s", asComment("\t", comment))
 
 	s.api.pn("\t%s []string `json:\"-\"`", nullFieldsName)
@@ -1468,15 +1616,15 @@ func (s *Schema) writeSchemaMarshal(forceSendFieldName, nullFieldsName string) {
 	s.api.pn("func (s *%s) MarshalJSON() ([]byte, error) {", s.GoName())
 	s.api.pn("\ttype NoMethod %s", s.GoName())
 	// pass schema as methodless type to prevent subsequent calls to MarshalJSON from recursing indefinitely.
-	s.api.pn("\traw := NoMethod(*s)")
-	s.api.pn("\treturn gensupport.MarshalJSON(raw, s.%s, s.%s)", forceSendFieldName, nullFieldsName)
+	s.api.pn("\treturn gensupport.MarshalJSON(NoMethod(*s), s.%s, s.%s)", forceSendFieldName, nullFieldsName)
 	s.api.pn("}")
 }
 
 func (s *Schema) writeSchemaUnmarshal() {
 	var floatProps []*Property
 	for _, p := range s.properties() {
-		if p.p.Schema.Type == "number" {
+		if p.p.Schema.Type == "number" ||
+			(p.p.Schema.Type == "array" && p.p.Schema.ItemSchema.Type == "number") {
 			floatProps = append(floatProps, p)
 		}
 	}
@@ -1494,6 +1642,9 @@ func (s *Schema) writeSchemaUnmarshal() {
 		if p.forcePointerType() {
 			typ = "*" + typ
 		}
+		if p.p.Schema.Type == "array" {
+			typ = "[]" + typ
+		}
 		pn("%s %s `json:\"%s\"`", p.assignedGoName, typ, p.p.Name)
 	}
 	pn("    *NoMethod") // embed the schema
@@ -1508,6 +1659,11 @@ func (s *Schema) writeSchemaUnmarshal() {
 		n := p.assignedGoName
 		if p.forcePointerType() {
 			pn("if s1.%s != nil { s.%s = (*float64)(s1.%s) }", n, n, n)
+		} else if p.p.Schema.Type == "array" {
+			pn("s.%s = make([]float64, len(s1.%s))", n, n)
+			pn("  for i := range s1.%s {", n)
+			pn("  s.%s[i] = float64(s1.%s[i])", n, n)
+			pn("}")
 		} else {
 			pn("s.%s = float64(s1.%s)", n, n)
 		}
@@ -1812,8 +1968,6 @@ func (meth *Method) generateCode() {
 	a := meth.api
 	p, pn := a.p, a.pn
 
-	pn("\n// method id %q:", meth.Id())
-
 	retType := responseType(a, meth.m)
 	if meth.IsRawResponse() {
 		retType = "*http.Response"
@@ -1916,6 +2070,9 @@ func (meth *Method) generateCode() {
 	for _, opt := range meth.OptParams() {
 		if opt.p.Location != "query" {
 			panicf("optional parameter has unsupported location %q", opt.p.Location)
+		}
+		if opt.p.Repeated && opt.p.Type == "object" {
+			panic(fmt.Sprintf("field %q: repeated fields of type message are prohibited as query parameters", opt.p.Name))
 		}
 		setter := initialCap(opt.p.Name)
 		des := opt.p.Description
@@ -2023,9 +2180,9 @@ func (meth *Method) generateCode() {
 		pn("}")
 	}
 
-	comment := "Fields allows partial responses to be retrieved. " +
-		"See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse " +
-		"for more information."
+	comment := "Fields allows partial responses to be retrieved. See " +
+		"https://developers.google.com/gdata/docs/2.0/basics#PartialResponse " +
+		"for more details."
 	p("\n%s", asComment("", comment))
 	pn("func (c *%s) Fields(s ...googleapi.Field) *%s {", callName, callName)
 	pn(`c.urlParams_.Set("fields", googleapi.CombineFields(s))`)
@@ -2034,11 +2191,9 @@ func (meth *Method) generateCode() {
 	if httpMethod == "GET" {
 		// Note that non-GET responses are excluded from supporting If-None-Match.
 		// See https://github.com/google/google-api-go-client/issues/107 for more info.
-		comment := "IfNoneMatch sets the optional parameter which makes the operation fail if " +
+		comment := "IfNoneMatch sets an optional parameter which makes the operation fail if " +
 			"the object's ETag matches the given value. This is useful for getting updates " +
-			"only after the object has changed since the last request. " +
-			"Use googleapi.IsNotModified to check whether the response error from Do " +
-			"is the result of In-None-Match."
+			"only after the object has changed since the last request."
 		p("\n%s", asComment("", comment))
 		pn("func (c *%s) IfNoneMatch(entityTag string) *%s {", callName, callName)
 		pn(" c.ifNoneMatch_ = entityTag")
@@ -2050,8 +2205,7 @@ func (meth *Method) generateCode() {
 	if meth.supportsMediaDownload() {
 		doMethod = "Do and Download methods"
 	}
-	commentFmtStr := "Context sets the context to be used in this call's %s. " +
-		"Any pending HTTP request will be aborted if the provided context is canceled."
+	commentFmtStr := "Context sets the context to be used in this call's %s."
 	comment = fmt.Sprintf(commentFmtStr, doMethod)
 	p("\n%s", asComment("", comment))
 	if meth.supportsMediaUpload() {
@@ -2064,8 +2218,8 @@ func (meth *Method) generateCode() {
 	pn("return c")
 	pn("}")
 
-	comment = "Header returns an http.Header that can be modified by the caller to add " +
-		"HTTP headers to the request."
+	comment = "Header returns a http.Header that can be modified by the " +
+		"caller to add headers to the request."
 	p("\n%s", asComment("", comment))
 	pn("func (c *%s) Header() http.Header {", callName)
 	pn(" if c.header_ == nil {")
@@ -2075,12 +2229,16 @@ func (meth *Method) generateCode() {
 	pn("}")
 
 	pn("\nfunc (c *%s) doRequest(alt string) (*http.Response, error) {", callName)
-	pn(`reqHeaders := make(http.Header)`)
-	pn(`reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)`)
-	pn("for k, v := range c.header_ {")
-	pn(" reqHeaders[k] = v")
-	pn("}")
-	pn(`reqHeaders.Set("User-Agent",c.s.userAgent())`)
+	var contentType = `""`
+	if !meth.IsRawRequest() && args.bodyArg() != nil && httpMethod != "GET" {
+		contentType = `"application/json"`
+	}
+	apiVersion := meth.m.APIVersion
+	if apiVersion == "" {
+		pn(`reqHeaders := gensupport.SetHeaders(c.s.userAgent(), %s, c.header_)`, contentType)
+	} else {
+		pn(`reqHeaders := gensupport.SetHeaders(c.s.userAgent(), %s, c.header_, "x-goog-api-version", %q)`, contentType, apiVersion)
+	}
 	if httpMethod == "GET" {
 		pn(`if c.ifNoneMatch_ != "" {`)
 		pn(` reqHeaders.Set("If-None-Match",  c.ifNoneMatch_)`)
@@ -2103,8 +2261,6 @@ func (meth *Method) generateCode() {
 				pn("body, err := googleapi.%s.JSONReader(c.%s)", style, ba.goname)
 				pn("if err != nil { return nil, err }")
 			}
-
-			pn(`reqHeaders.Set("Content-Type", "application/json")`)
 		}
 		pn(`c.urlParams_.Set("alt", alt)`)
 		pn(`c.urlParams_.Set("prettyPrint", "false")`)
@@ -2166,7 +2322,7 @@ func (meth *Method) generateCode() {
 			pn("if err := googleapi.CheckResponse(res); err != nil {")
 		}
 		pn("res.Body.Close()")
-		pn("return nil, err")
+		pn("return nil, gensupport.WrapError(err)")
 		pn("}")
 		pn("return res, nil")
 		pn("}")
@@ -2175,13 +2331,12 @@ func (meth *Method) generateCode() {
 	mapRetType := strings.HasPrefix(retTypeComma, "map[")
 	pn("\n// Do executes the %q call.", meth.m.ID)
 	if retTypeComma != "" && !mapRetType && !meth.IsRawResponse() {
-		commentFmtStr := "Exactly one of %v or error will be non-nil. " +
-			"Any non-2xx status code is an error. " +
+		commentFmtStr := "Any non-2xx status code is an error. " +
 			"Response headers are in either %v.ServerResponse.Header " +
 			"or (if a response was returned at all) in error.(*googleapi.Error).Header. " +
 			"Use googleapi.IsNotModified to check whether the returned error was because " +
 			"http.StatusNotModified was returned."
-		comment := fmt.Sprintf(commentFmtStr, retType, retType)
+		comment := fmt.Sprintf(commentFmtStr, retType)
 		p("%s", asComment("", comment))
 	}
 	pn("func (c *%s) Do(opts ...googleapi.CallOption) (%serror) {", callName, retTypeComma)
@@ -2198,15 +2353,15 @@ func (meth *Method) generateCode() {
 		if retTypeComma != "" && !mapRetType {
 			pn("if res != nil && res.StatusCode == http.StatusNotModified {")
 			pn(" if res.Body != nil { res.Body.Close() }")
-			pn(" return nil, &googleapi.Error{")
+			pn(" return nil, gensupport.WrapError(&googleapi.Error{")
 			pn("  Code: res.StatusCode,")
 			pn("  Header: res.Header,")
-			pn(" }")
+			pn(" })")
 			pn("}")
 		}
 		pn("if err != nil { return %serr }", nilRet)
 		pn("defer googleapi.CloseBody(res)")
-		pn("if err := googleapi.CheckResponse(res); err != nil { return %serr }", nilRet)
+		pn("if err := googleapi.CheckResponse(res); err != nil { return %sgensupport.WrapError(err) }", nilRet)
 		if meth.supportsMediaUpload() {
 			pn(`rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))`)
 			pn("if rx != nil {")
@@ -2223,7 +2378,7 @@ func (meth *Method) generateCode() {
 			pn(" res, err = rx.Upload(ctx)")
 			pn(" if err != nil { return %serr }", nilRet)
 			pn(" defer res.Body.Close()")
-			pn(" if err := googleapi.CheckResponse(res); err != nil { return %serr }", nilRet)
+			pn(" if err := googleapi.CheckResponse(res); err != nil { return %sgensupport.WrapError(err) }", nilRet)
 			pn("}")
 		}
 		if retTypeComma == "" {
@@ -2259,12 +2414,6 @@ func (meth *Method) generateCode() {
 			pn("return ret, nil")
 		}
 	}
-
-	bs, err := json.MarshalIndent(meth.m.JSONMap, "\t// ", "  ")
-	if err != nil {
-		panic(err)
-	}
-	pn("// %s\n", string(bs))
 	pn("}")
 
 	if ptg, rname, ok := meth.supportsPaging(); ok {
@@ -2275,7 +2424,8 @@ func (meth *Method) generateCode() {
 		pn("// The provided context supersedes any context provided to the Context method.")
 		pn("func (c *%s) Pages(ctx context.Context, f func(%s) error) error {", callName, retType)
 		pn(" c.ctx_ = ctx")
-		pn(` defer %s  // reset paging to original point`, ptg.genDeferBody())
+		// reset paging to original point
+		pn(` defer %s`, ptg.genDeferBody())
 		pn(" for {")
 		pn("  x, err := c.Do()")
 		pn("  if err != nil { return err }")
@@ -2547,7 +2697,7 @@ func asComment(pfx, c string) string {
 
 func asFuncParmeterComment(pfx, c string, addPadding bool) string {
 	var buf bytes.Buffer
-	var maxLen = 70
+	var maxLen = 77
 	var padding string
 	r := strings.NewReplacer(
 		"\n", "\n"+pfx+"// ",
@@ -2559,7 +2709,7 @@ func asFuncParmeterComment(pfx, c string, addPadding bool) string {
 		// Adjust padding for the second line if needed.
 		if addPadding && lineNum == 1 {
 			padding = "  "
-			maxLen = 68
+			maxLen = 75
 		}
 		line := c
 		if len(line) < maxLen {

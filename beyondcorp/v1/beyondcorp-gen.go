@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package beyondcorp provides access to the BeyondCorp API.
 //
 // For product documentation, see: https://cloud.google.com/
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,24 +28,26 @@
 //	ctx := context.Background()
 //	beyondcorpService, err := beyondcorp.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	beyondcorpService, err := beyondcorp.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	beyondcorpService, err := beyondcorp.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package beyondcorp // import "google.golang.org/api/beyondcorp/v1"
 
 import (
@@ -71,17 +84,19 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "beyondcorp:v1"
 const apiName = "beyondcorp"
 const apiVersion = "v1"
 const basePath = "https://beyondcorp.googleapis.com/"
+const basePathTemplate = "https://beyondcorp.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://beyondcorp.mtls.googleapis.com/"
 
 // OAuth2 scopes used by this API.
 const (
-	// See, edit, configure, and delete your Google Cloud data and see the
-	// email address for your Google Account.
+	// See, edit, configure, and delete your Google Cloud data and see the email
+	// address for your Google Account.
 	CloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
 )
 
@@ -93,7 +108,9 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -118,6 +135,7 @@ func New(client *http.Client) (*Service, error) {
 		return nil, errors.New("client is nil")
 	}
 	s := &Service{client: client, BasePath: basePath}
+	s.Organizations = NewOrganizationsService(s)
 	s.Projects = NewProjectsService(s)
 	return s, nil
 }
@@ -127,6 +145,8 @@ type Service struct {
 	BasePath  string // API endpoint base URL
 	UserAgent string // optional additional User-Agent fragment
 
+	Organizations *OrganizationsService
+
 	Projects *ProjectsService
 }
 
@@ -135,6 +155,87 @@ func (s *Service) userAgent() string {
 		return googleapi.UserAgent
 	}
 	return googleapi.UserAgent + " " + s.UserAgent
+}
+
+func NewOrganizationsService(s *Service) *OrganizationsService {
+	rs := &OrganizationsService{s: s}
+	rs.Locations = NewOrganizationsLocationsService(s)
+	return rs
+}
+
+type OrganizationsService struct {
+	s *Service
+
+	Locations *OrganizationsLocationsService
+}
+
+func NewOrganizationsLocationsService(s *Service) *OrganizationsLocationsService {
+	rs := &OrganizationsLocationsService{s: s}
+	rs.Global = NewOrganizationsLocationsGlobalService(s)
+	rs.Operations = NewOrganizationsLocationsOperationsService(s)
+	return rs
+}
+
+type OrganizationsLocationsService struct {
+	s *Service
+
+	Global *OrganizationsLocationsGlobalService
+
+	Operations *OrganizationsLocationsOperationsService
+}
+
+func NewOrganizationsLocationsGlobalService(s *Service) *OrganizationsLocationsGlobalService {
+	rs := &OrganizationsLocationsGlobalService{s: s}
+	rs.PartnerTenants = NewOrganizationsLocationsGlobalPartnerTenantsService(s)
+	return rs
+}
+
+type OrganizationsLocationsGlobalService struct {
+	s *Service
+
+	PartnerTenants *OrganizationsLocationsGlobalPartnerTenantsService
+}
+
+func NewOrganizationsLocationsGlobalPartnerTenantsService(s *Service) *OrganizationsLocationsGlobalPartnerTenantsService {
+	rs := &OrganizationsLocationsGlobalPartnerTenantsService{s: s}
+	rs.BrowserDlpRules = NewOrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesService(s)
+	rs.ProxyConfigs = NewOrganizationsLocationsGlobalPartnerTenantsProxyConfigsService(s)
+	return rs
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsService struct {
+	s *Service
+
+	BrowserDlpRules *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesService
+
+	ProxyConfigs *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsService
+}
+
+func NewOrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesService(s *Service) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesService {
+	rs := &OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesService{s: s}
+	return rs
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesService struct {
+	s *Service
+}
+
+func NewOrganizationsLocationsGlobalPartnerTenantsProxyConfigsService(s *Service) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsService {
+	rs := &OrganizationsLocationsGlobalPartnerTenantsProxyConfigsService{s: s}
+	return rs
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsProxyConfigsService struct {
+	s *Service
+}
+
+func NewOrganizationsLocationsOperationsService(s *Service) *OrganizationsLocationsOperationsService {
+	rs := &OrganizationsLocationsOperationsService{s: s}
+	return rs
+}
+
+type OrganizationsLocationsOperationsService struct {
+	s *Service
 }
 
 func NewProjectsService(s *Service) *ProjectsService {
@@ -234,66 +335,55 @@ type ProjectsLocationsOperationsService struct {
 type AllocatedConnection struct {
 	// IngressPort: Required. The ingress port of an allocated connection
 	IngressPort int64 `json:"ingressPort,omitempty"`
-
 	// PscUri: Required. The PSC uri of an allocated connection
 	PscUri string `json:"pscUri,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "IngressPort") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "IngressPort") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "IngressPort") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AllocatedConnection) MarshalJSON() ([]byte, error) {
 	type NoMethod AllocatedConnection
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // AppGateway: A BeyondCorp AppGateway resource represents a BeyondCorp
-// protected AppGateway to a remote application. It creates all the
-// necessary GCP components needed for creating a BeyondCorp protected
-// AppGateway. Multiple connectors can be authorised for a single
-// AppGateway.
+// protected AppGateway to a remote application. It creates all the necessary
+// GCP components needed for creating a BeyondCorp protected AppGateway.
+// Multiple connectors can be authorised for a single AppGateway.
 type AppGateway struct {
-	// AllocatedConnections: Output only. A list of connections allocated
-	// for the Gateway
+	// AllocatedConnections: Output only. A list of connections allocated for the
+	// Gateway
 	AllocatedConnections []*AllocatedConnection `json:"allocatedConnections,omitempty"`
-
 	// CreateTime: Output only. Timestamp when the resource was created.
 	CreateTime string `json:"createTime,omitempty"`
-
-	// DisplayName: Optional. An arbitrary user-provided name for the
-	// AppGateway. Cannot exceed 64 characters.
+	// DisplayName: Optional. An arbitrary user-provided name for the AppGateway.
+	// Cannot exceed 64 characters.
 	DisplayName string `json:"displayName,omitempty"`
-
 	// HostType: Required. The type of hosting used by the AppGateway.
 	//
 	// Possible values:
 	//   "HOST_TYPE_UNSPECIFIED" - Default value. This value is unused.
-	//   "GCP_REGIONAL_MIG" - AppGateway hosted in a GCP regional managed
-	// instance group.
+	//   "GCP_REGIONAL_MIG" - AppGateway hosted in a GCP regional managed instance
+	// group.
 	HostType string `json:"hostType,omitempty"`
-
-	// Labels: Optional. Resource labels to represent user provided
-	// metadata.
+	// Labels: Optional. Resource labels to represent user provided metadata.
 	Labels map[string]string `json:"labels,omitempty"`
-
-	// Name: Required. Unique resource name of the AppGateway. The name is
-	// ignored when creating an AppGateway.
+	// Name: Required. Unique resource name of the AppGateway. The name is ignored
+	// when creating an AppGateway.
 	Name string `json:"name,omitempty"`
-
+	// SatisfiesPzi: Output only. Reserved for future use.
+	SatisfiesPzi bool `json:"satisfiesPzi,omitempty"`
+	// SatisfiesPzs: Output only. Reserved for future use.
+	SatisfiesPzs bool `json:"satisfiesPzs,omitempty"`
 	// State: Output only. The current state of the AppGateway.
 	//
 	// Possible values:
@@ -305,399 +395,120 @@ type AppGateway struct {
 	//   "DOWN" - AppGateway is down and may be restored in the future. This
 	// happens when CCFE sends ProjectState = OFF.
 	State string `json:"state,omitempty"`
-
-	// Type: Required. The type of network connectivity used by the
-	// AppGateway.
+	// Type: Required. The type of network connectivity used by the AppGateway.
 	//
 	// Possible values:
 	//   "TYPE_UNSPECIFIED" - Default value. This value is unused.
-	//   "TCP_PROXY" - TCP Proxy based BeyondCorp Connection. API will
-	// default to this if unset.
+	//   "TCP_PROXY" - TCP Proxy based BeyondCorp Connection. API will default to
+	// this if unset.
 	Type string `json:"type,omitempty"`
-
-	// Uid: Output only. A unique identifier for the instance generated by
-	// the system.
+	// Uid: Output only. A unique identifier for the instance generated by the
+	// system.
 	Uid string `json:"uid,omitempty"`
-
-	// UpdateTime: Output only. Timestamp when the resource was last
-	// modified.
+	// UpdateTime: Output only. Timestamp when the resource was last modified.
 	UpdateTime string `json:"updateTime,omitempty"`
-
 	// Uri: Output only. Server-defined URI for this resource.
 	Uri string `json:"uri,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "AllocatedConnections") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "AllocatedConnections") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AllocatedConnections") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AllocatedConnections") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AppGateway) MarshalJSON() ([]byte, error) {
 	type NoMethod AppGateway
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// AppGatewayOperationMetadata: Represents the metadata of the
-// long-running operation.
+// AppGatewayOperationMetadata: Represents the metadata of the long-running
+// operation.
 type AppGatewayOperationMetadata struct {
 	// ApiVersion: Output only. API version used to start the operation.
 	ApiVersion string `json:"apiVersion,omitempty"`
-
 	// CreateTime: Output only. The time the operation was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// EndTime: Output only. The time the operation finished running.
 	EndTime string `json:"endTime,omitempty"`
-
 	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
 	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
 	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
 	Target string `json:"target,omitempty"`
-
 	// Verb: Output only. Name of the verb executed by the operation.
 	Verb string `json:"verb,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AppGatewayOperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod AppGatewayOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// ClientConnectorService: Message describing ClientConnectorService
-// object.
-type ClientConnectorService struct {
-	// CreateTime: Output only. [Output only] Create time stamp.
-	CreateTime string `json:"createTime,omitempty"`
-
-	// DisplayName: Optional. User-provided name. The display name should
-	// follow certain format. * Must be 6 to 30 characters in length. * Can
-	// only contain lowercase letters, numbers, and hyphens. * Must start
-	// with a letter.
-	DisplayName string `json:"displayName,omitempty"`
-
-	// Egress: Required. The details of the egress settings.
-	Egress *Egress `json:"egress,omitempty"`
-
-	// Ingress: Required. The details of the ingress settings.
-	Ingress *Ingress `json:"ingress,omitempty"`
-
-	// Name: Required. Name of resource. The name is ignored during
-	// creation.
-	Name string `json:"name,omitempty"`
-
-	// State: Output only. The operational state of the
-	// ClientConnectorService.
-	//
-	// Possible values:
-	//   "STATE_UNSPECIFIED" - Default value. This value is unused.
-	//   "CREATING" - ClientConnectorService is being created.
-	//   "UPDATING" - ClientConnectorService is being updated.
-	//   "DELETING" - ClientConnectorService is being deleted.
-	//   "RUNNING" - ClientConnectorService is running.
-	//   "DOWN" - ClientConnectorService is down and may be restored in the
-	// future. This happens when CCFE sends ProjectState = OFF.
-	//   "ERROR" - ClientConnectorService encountered an error and is in an
-	// indeterministic state.
-	State string `json:"state,omitempty"`
-
-	// UpdateTime: Output only. [Output only] Update time stamp.
-	UpdateTime string `json:"updateTime,omitempty"`
-
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
-	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "CreateTime") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "CreateTime") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *ClientConnectorService) MarshalJSON() ([]byte, error) {
-	type NoMethod ClientConnectorService
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// ClientConnectorServiceOperationMetadata: Represents the metadata of
-// the long-running operation.
-type ClientConnectorServiceOperationMetadata struct {
-	// ApiVersion: Output only. API version used to start the operation.
-	ApiVersion string `json:"apiVersion,omitempty"`
-
-	// CreateTime: Output only. The time the operation was created.
-	CreateTime string `json:"createTime,omitempty"`
-
-	// EndTime: Output only. The time the operation finished running.
-	EndTime string `json:"endTime,omitempty"`
-
-	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
-	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
-	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
-	Target string `json:"target,omitempty"`
-
-	// Verb: Output only. Name of the verb executed by the operation.
-	Verb string `json:"verb,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *ClientConnectorServiceOperationMetadata) MarshalJSON() ([]byte, error) {
-	type NoMethod ClientConnectorServiceOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// ClientGateway: Message describing ClientGateway object.
-type ClientGateway struct {
-	// ClientConnectorService: Output only. The client connector service
-	// name that the client gateway is associated to. Client Connector
-	// Services, named as follows:
-	// `projects/{project_id}/locations/{location_id}/client_connector_servic
-	// es/{client_connector_service_id}`.
-	ClientConnectorService string `json:"clientConnectorService,omitempty"`
-
-	// CreateTime: Output only. [Output only] Create time stamp.
-	CreateTime string `json:"createTime,omitempty"`
-
-	// Id: Output only. A unique identifier for the instance generated by
-	// the system.
-	Id string `json:"id,omitempty"`
-
-	// Name: Required. name of resource. The name is ignored during
-	// creation.
-	Name string `json:"name,omitempty"`
-
-	// State: Output only. The operational state of the gateway.
-	//
-	// Possible values:
-	//   "STATE_UNSPECIFIED" - Default value. This value is unused.
-	//   "CREATING" - Gateway is being created.
-	//   "UPDATING" - Gateway is being updated.
-	//   "DELETING" - Gateway is being deleted.
-	//   "RUNNING" - Gateway is running.
-	//   "DOWN" - Gateway is down and may be restored in the future. This
-	// happens when CCFE sends ProjectState = OFF.
-	//   "ERROR" - ClientGateway encountered an error and is in
-	// indeterministic state.
-	State string `json:"state,omitempty"`
-
-	// UpdateTime: Output only. [Output only] Update time stamp.
-	UpdateTime string `json:"updateTime,omitempty"`
-
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
-	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "ClientConnectorService") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ClientConnectorService")
-	// to include in API requests with the JSON null value. By default,
-	// fields with empty values are omitted from API requests. However, any
-	// field with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *ClientGateway) MarshalJSON() ([]byte, error) {
-	type NoMethod ClientGateway
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// ClientGatewayOperationMetadata: Represents the metadata of the
-// long-running operation.
-type ClientGatewayOperationMetadata struct {
-	// ApiVersion: Output only. API version used to start the operation.
-	ApiVersion string `json:"apiVersion,omitempty"`
-
-	// CreateTime: Output only. The time the operation was created.
-	CreateTime string `json:"createTime,omitempty"`
-
-	// EndTime: Output only. The time the operation finished running.
-	EndTime string `json:"endTime,omitempty"`
-
-	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have been
-	// cancelled successfully have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
-	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
-	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
-	Target string `json:"target,omitempty"`
-
-	// Verb: Output only. Name of the verb executed by the operation.
-	Verb string `json:"verb,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *ClientGatewayOperationMetadata) MarshalJSON() ([]byte, error) {
-	type NoMethod ClientGatewayOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // CloudSecurityZerotrustApplinkAppConnectorProtoConnectionConfig:
 // ConnectionConfig represents a Connection Configuration object.
 type CloudSecurityZerotrustApplinkAppConnectorProtoConnectionConfig struct {
-	// ApplicationEndpoint: application_endpoint is the endpoint of the
-	// application the form of host:port. For example, "localhost:80".
+	// ApplicationEndpoint: application_endpoint is the endpoint of the application
+	// the form of host:port. For example, "localhost:80".
 	ApplicationEndpoint string `json:"applicationEndpoint,omitempty"`
-
 	// ApplicationName: application_name represents the given name of the
 	// application the connection is connecting with.
 	ApplicationName string `json:"applicationName,omitempty"`
-
-	// Gateway: gateway lists all instances running a gateway in GCP. They
-	// all connect to a connector on the host.
+	// Gateway: gateway lists all instances running a gateway in GCP. They all
+	// connect to a connector on the host.
 	Gateway []*CloudSecurityZerotrustApplinkAppConnectorProtoGateway `json:"gateway,omitempty"`
-
-	// Name: name is the unique ID for each connection. TODO(b/190732451)
-	// returns connection name from user-specified name in config. Now, name
-	// = ${application_name}:${application_endpoint}
+	// Name: name is the unique ID for each connection. TODO(b/190732451) returns
+	// connection name from user-specified name in config. Now, name =
+	// ${application_name}:${application_endpoint}
 	Name string `json:"name,omitempty"`
-
-	// Project: project represents the consumer project the connection
-	// belongs to.
+	// Project: project represents the consumer project the connection belongs to.
 	Project string `json:"project,omitempty"`
-
 	// TunnelsPerGateway: tunnels_per_gateway reflects the number of tunnels
 	// between a connector and a gateway.
 	TunnelsPerGateway int64 `json:"tunnelsPerGateway,omitempty"`
-
 	// UserPort: user_port specifies the reserved port on gateways for user
 	// connections.
 	UserPort int64 `json:"userPort,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "ApplicationEndpoint")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "ApplicationEndpoint") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApplicationEndpoint") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "ApplicationEndpoint") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *CloudSecurityZerotrustApplinkAppConnectorProtoConnectionConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod CloudSecurityZerotrustApplinkAppConnectorProtoConnectionConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // CloudSecurityZerotrustApplinkAppConnectorProtoConnectorDetails:
@@ -705,219 +516,96 @@ func (s *CloudSecurityZerotrustApplinkAppConnectorProtoConnectionConfig) Marshal
 type CloudSecurityZerotrustApplinkAppConnectorProtoConnectorDetails struct {
 }
 
-// CloudSecurityZerotrustApplinkAppConnectorProtoGateway: Gateway
-// represents a GCE VM Instance endpoint for use by IAP TCP.
+// CloudSecurityZerotrustApplinkAppConnectorProtoGateway: Gateway represents a
+// GCE VM Instance endpoint for use by IAP TCP.
 type CloudSecurityZerotrustApplinkAppConnectorProtoGateway struct {
-	// Interface: interface specifies the network interface of the gateway
-	// to connect to.
+	// Interface: interface specifies the network interface of the gateway to
+	// connect to.
 	Interface string `json:"interface,omitempty"`
-
-	// Name: name is the name of an instance running a gateway. It is the
-	// unique ID for a gateway. All gateways under the same connection have
-	// the same prefix. It is derived from the gateway URL. For example,
-	// name=${instance} assuming a gateway URL.
-	// https://www.googleapis.com/compute/${version}/projects/${project}/zones/${zone}/instances/${instance}
-	Name string `json:"name,omitempty"`
-
-	// Port: port specifies the port of the gateway for tunnel connections
-	// from the connectors.
-	Port int64 `json:"port,omitempty"`
-
-	// Project: project is the tenant project the gateway belongs to.
-	// Different from the project in the connection, it is a BeyondCorpAPI
-	// internally created project to manage all the gateways. It is sharing
-	// the same network with the consumer project user owned. It is derived
-	// from the gateway URL. For example, project=${project} assuming a
+	// Name: name is the name of an instance running a gateway. It is the unique ID
+	// for a gateway. All gateways under the same connection have the same prefix.
+	// It is derived from the gateway URL. For example, name=${instance} assuming a
 	// gateway URL.
 	// https://www.googleapis.com/compute/${version}/projects/${project}/zones/${zone}/instances/${instance}
+	Name string `json:"name,omitempty"`
+	// Port: port specifies the port of the gateway for tunnel connections from the
+	// connectors.
+	Port int64 `json:"port,omitempty"`
+	// Project: project is the tenant project the gateway belongs to. Different
+	// from the project in the connection, it is a BeyondCorpAPI internally created
+	// project to manage all the gateways. It is sharing the same network with the
+	// consumer project user owned. It is derived from the gateway URL. For
+	// example, project=${project} assuming a gateway URL.
+	// https://www.googleapis.com/compute/${version}/projects/${project}/zones/${zone}/instances/${instance}
 	Project string `json:"project,omitempty"`
-
 	// SelfLink: self_link is the gateway URL in the form
 	// https://www.googleapis.com/compute/${version}/projects/${project}/zones/${zone}/instances/${instance}
 	SelfLink string `json:"selfLink,omitempty"`
-
-	// Zone: zone represents the zone the instance belongs. It is derived
-	// from the gateway URL. For example, zone=${zone} assuming a gateway
-	// URL.
+	// Zone: zone represents the zone the instance belongs. It is derived from the
+	// gateway URL. For example, zone=${zone} assuming a gateway URL.
 	// https://www.googleapis.com/compute/${version}/projects/${project}/zones/${zone}/instances/${instance}
 	Zone string `json:"zone,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Interface") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Interface") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Interface") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *CloudSecurityZerotrustApplinkAppConnectorProtoGateway) MarshalJSON() ([]byte, error) {
 	type NoMethod CloudSecurityZerotrustApplinkAppConnectorProtoGateway
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// CloudSecurityZerotrustApplinkLogagentProtoLogAgentDetails:
-// LogAgentDetails reflects the details of a log agent.
+// CloudSecurityZerotrustApplinkLogagentProtoLogAgentDetails: LogAgentDetails
+// reflects the details of a log agent.
 type CloudSecurityZerotrustApplinkLogagentProtoLogAgentDetails struct {
 }
 
-// Config: The basic ingress config for ClientGateways.
-type Config struct {
-	// DestinationRoutes: Required. The settings used to configure basic
-	// ClientGateways.
-	DestinationRoutes []*DestinationRoute `json:"destinationRoutes,omitempty"`
-
-	// TransportProtocol: Required. Immutable. The transport protocol used
-	// between the client and the server.
-	//
-	// Possible values:
-	//   "TRANSPORT_PROTOCOL_UNSPECIFIED" - Default value. This value is
-	// unused.
-	//   "TCP" - TCP protocol.
-	TransportProtocol string `json:"transportProtocol,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "DestinationRoutes")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DestinationRoutes") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *Config) MarshalJSON() ([]byte, error) {
-	type NoMethod Config
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// DestinationRoute: The setting used to configure ClientGateways. It is
-// adding routes to the client's routing table after the connection is
-// established.
-type DestinationRoute struct {
-	// Address: Required. The network address of the subnet for which the
-	// packet is routed to the ClientGateway.
-	Address string `json:"address,omitempty"`
-
-	// Netmask: Required. The network mask of the subnet for which the
-	// packet is routed to the ClientGateway.
-	Netmask string `json:"netmask,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Address") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Address") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *DestinationRoute) MarshalJSON() ([]byte, error) {
-	type NoMethod DestinationRoute
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// Egress: The details of the egress info. One of the following options
-// should be set.
-type Egress struct {
-	// PeeredVpc: A VPC from the consumer project.
-	PeeredVpc *PeeredVpc `json:"peeredVpc,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "PeeredVpc") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "PeeredVpc") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *Egress) MarshalJSON() ([]byte, error) {
-	type NoMethod Egress
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
 // Empty: A generic empty message that you can re-use to avoid defining
-// duplicated empty messages in your APIs. A typical example is to use
-// it as the request or the response type of an API method. For
-// instance: service Foo { rpc Bar(google.protobuf.Empty) returns
-// (google.protobuf.Empty); }
+// duplicated empty messages in your APIs. A typical example is to use it as
+// the request or the response type of an API method. For instance: service Foo
+// { rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
 type Empty struct {
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
 }
 
 // GoogleCloudBeyondcorpAppconnectionsV1AppConnection: A BeyondCorp
-// AppConnection resource represents a BeyondCorp protected
-// AppConnection to a remote application. It creates all the necessary
-// GCP components needed for creating a BeyondCorp protected
-// AppConnection. Multiple connectors can be authorised for a single
-// AppConnection.
+// AppConnection resource represents a BeyondCorp protected AppConnection to a
+// remote application. It creates all the necessary GCP components needed for
+// creating a BeyondCorp protected AppConnection. Multiple connectors can be
+// authorised for a single AppConnection.
 type GoogleCloudBeyondcorpAppconnectionsV1AppConnection struct {
-	// ApplicationEndpoint: Required. Address of the remote application
-	// endpoint for the BeyondCorp AppConnection.
+	// ApplicationEndpoint: Required. Address of the remote application endpoint
+	// for the BeyondCorp AppConnection.
 	ApplicationEndpoint *GoogleCloudBeyondcorpAppconnectionsV1AppConnectionApplicationEndpoint `json:"applicationEndpoint,omitempty"`
-
 	// Connectors: Optional. List of
-	// [google.cloud.beyondcorp.v1main.Connector.name] that are authorised
-	// to be associated with this AppConnection.
+	// [google.cloud.beyondcorp.v1main.Connector.name] that are authorised to be
+	// associated with this AppConnection.
 	Connectors []string `json:"connectors,omitempty"`
-
 	// CreateTime: Output only. Timestamp when the resource was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// DisplayName: Optional. An arbitrary user-provided name for the
 	// AppConnection. Cannot exceed 64 characters.
 	DisplayName string `json:"displayName,omitempty"`
-
 	// Gateway: Optional. Gateway used by the AppConnection.
 	Gateway *GoogleCloudBeyondcorpAppconnectionsV1AppConnectionGateway `json:"gateway,omitempty"`
-
-	// Labels: Optional. Resource labels to represent user provided
-	// metadata.
+	// Labels: Optional. Resource labels to represent user provided metadata.
 	Labels map[string]string `json:"labels,omitempty"`
-
-	// Name: Required. Unique resource name of the AppConnection. The name
-	// is ignored when creating a AppConnection.
+	// Name: Required. Unique resource name of the AppConnection. The name is
+	// ignored when creating a AppConnection.
 	Name string `json:"name,omitempty"`
-
+	// SatisfiesPzi: Output only. Reserved for future use.
+	SatisfiesPzi bool `json:"satisfiesPzi,omitempty"`
+	// SatisfiesPzs: Output only. Reserved for future use.
+	SatisfiesPzs bool `json:"satisfiesPzs,omitempty"`
 	// State: Output only. The current state of the AppConnection.
 	//
 	// Possible values:
@@ -926,138 +614,104 @@ type GoogleCloudBeyondcorpAppconnectionsV1AppConnection struct {
 	//   "CREATED" - AppConnection has been created.
 	//   "UPDATING" - AppConnection's configuration is being updated.
 	//   "DELETING" - AppConnection is being deleted.
-	//   "DOWN" - AppConnection is down and may be restored in the future.
-	// This happens when CCFE sends ProjectState = OFF.
+	//   "DOWN" - AppConnection is down and may be restored in the future. This
+	// happens when CCFE sends ProjectState = OFF.
 	State string `json:"state,omitempty"`
-
-	// Type: Required. The type of network connectivity used by the
-	// AppConnection.
+	// Type: Required. The type of network connectivity used by the AppConnection.
 	//
 	// Possible values:
 	//   "TYPE_UNSPECIFIED" - Default value. This value is unused.
-	//   "TCP_PROXY" - TCP Proxy based BeyondCorp AppConnection. API will
-	// default to this if unset.
+	//   "TCP_PROXY" - TCP Proxy based BeyondCorp AppConnection. API will default
+	// to this if unset.
 	Type string `json:"type,omitempty"`
-
-	// Uid: Output only. A unique identifier for the instance generated by
-	// the system.
+	// Uid: Output only. A unique identifier for the instance generated by the
+	// system.
 	Uid string `json:"uid,omitempty"`
-
-	// UpdateTime: Output only. Timestamp when the resource was last
-	// modified.
+	// UpdateTime: Output only. Timestamp when the resource was last modified.
 	UpdateTime string `json:"updateTime,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "ApplicationEndpoint")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "ApplicationEndpoint") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApplicationEndpoint") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "ApplicationEndpoint") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectionsV1AppConnection) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectionsV1AppConnection
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpAppconnectionsV1AppConnectionApplicationEndpoint:
-//
-//	ApplicationEndpoint represents a remote application endpoint.
+// ApplicationEndpoint represents a remote application endpoint.
 type GoogleCloudBeyondcorpAppconnectionsV1AppConnectionApplicationEndpoint struct {
-	// Host: Required. Hostname or IP address of the remote application
-	// endpoint.
+	// Host: Required. Hostname or IP address of the remote application endpoint.
 	Host string `json:"host,omitempty"`
-
 	// Port: Required. Port of the remote application endpoint.
 	Port int64 `json:"port,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Host") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Host") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Host") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Host") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectionsV1AppConnectionApplicationEndpoint) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectionsV1AppConnectionApplicationEndpoint
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpAppconnectionsV1AppConnectionGateway: Gateway
-// represents a user facing component that serves as an entrance to
-// enable connectivity.
+// represents a user facing component that serves as an entrance to enable
+// connectivity.
 type GoogleCloudBeyondcorpAppconnectionsV1AppConnectionGateway struct {
 	// AppGateway: Required. AppGateway name in following format:
-	// `projects/{project_id}/locations/{location_id}/appgateways/{gateway_id
-	// }`
+	// `projects/{project_id}/locations/{location_id}/appgateways/{gateway_id}`
 	AppGateway string `json:"appGateway,omitempty"`
-
-	// IngressPort: Output only. Ingress port reserved on the gateways for
-	// this AppConnection, if not specified or zero, the default port is
-	// 19443.
+	// IngressPort: Output only. Ingress port reserved on the gateways for this
+	// AppConnection, if not specified or zero, the default port is 19443.
 	IngressPort int64 `json:"ingressPort,omitempty"`
-
 	// L7psc: Output only. L7 private service connection for this resource.
 	L7psc string `json:"l7psc,omitempty"`
-
 	// Type: Required. The type of hosting used by the gateway.
 	//
 	// Possible values:
 	//   "TYPE_UNSPECIFIED" - Default value. This value is unused.
-	//   "GCP_REGIONAL_MIG" - Gateway hosted in a GCP regional managed
-	// instance group.
+	//   "GCP_REGIONAL_MIG" - Gateway hosted in a GCP regional managed instance
+	// group.
 	Type string `json:"type,omitempty"`
-
 	// Uri: Output only. Server-defined URI for this resource.
 	Uri string `json:"uri,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AppGateway") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AppGateway") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AppGateway") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectionsV1AppConnectionGateway) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectionsV1AppConnectionGateway
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpAppconnectionsV1AppConnectionOperationMetadata:
@@ -1065,253 +719,192 @@ func (s *GoogleCloudBeyondcorpAppconnectionsV1AppConnectionGateway) MarshalJSON(
 type GoogleCloudBeyondcorpAppconnectionsV1AppConnectionOperationMetadata struct {
 	// ApiVersion: Output only. API version used to start the operation.
 	ApiVersion string `json:"apiVersion,omitempty"`
-
 	// CreateTime: Output only. The time the operation was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// EndTime: Output only. The time the operation finished running.
 	EndTime string `json:"endTime,omitempty"`
-
 	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
 	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
 	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
 	Target string `json:"target,omitempty"`
-
 	// Verb: Output only. Name of the verb executed by the operation.
 	Verb string `json:"verb,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectionsV1AppConnectionOperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectionsV1AppConnectionOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse:
-// Response message for BeyondCorp.ListAppConnections.
+// GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse: Response
+// message for BeyondCorp.ListAppConnections.
 type GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse struct {
 	// AppConnections: A list of BeyondCorp AppConnections in the project.
 	AppConnections []*GoogleCloudBeyondcorpAppconnectionsV1AppConnection `json:"appConnections,omitempty"`
-
-	// NextPageToken: A token to retrieve the next page of results, or empty
-	// if there are no more results in the list.
+	// NextPageToken: A token to retrieve the next page of results, or empty if
+	// there are no more results in the list.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Unreachable: A list of locations that could not be reached.
 	Unreachable []string `json:"unreachable,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "AppConnections") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AppConnections") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AppConnections") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse:
-// Response message for BeyondCorp.ResolveAppConnections.
+// GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse: Response
+// message for BeyondCorp.ResolveAppConnections.
 type GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse struct {
-	// AppConnectionDetails: A list of BeyondCorp AppConnections with
-	// details in the project.
+	// AppConnectionDetails: A list of BeyondCorp AppConnections with details in
+	// the project.
 	AppConnectionDetails []*GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponseAppConnectionDetails `json:"appConnectionDetails,omitempty"`
-
-	// NextPageToken: A token to retrieve the next page of results, or empty
-	// if there are no more results in the list.
+	// NextPageToken: A token to retrieve the next page of results, or empty if
+	// there are no more results in the list.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Unreachable: A list of locations that could not be reached.
 	Unreachable []string `json:"unreachable,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "AppConnectionDetails") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "AppConnectionDetails") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AppConnectionDetails") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AppConnectionDetails") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponseAppC
-// onnectionDetails: Details of the AppConnection.
+// GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponseAppConnecti
+// onDetails: Details of the AppConnection.
 type GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponseAppConnectionDetails struct {
 	// AppConnection: A BeyondCorp AppConnection in the project.
 	AppConnection *GoogleCloudBeyondcorpAppconnectionsV1AppConnection `json:"appConnection,omitempty"`
-
-	// RecentMigVms: If type=GCP_REGIONAL_MIG, contains most recent VM
-	// instances, like
-	// `https://www.googleapis.com/compute/v1/projects/{project_id}/zones/{zo
-	// ne_id}/instances/{instance_id}`.
+	// RecentMigVms: If type=GCP_REGIONAL_MIG, contains most recent VM instances,
+	// like
+	// `https://www.googleapis.com/compute/v1/projects/{project_id}/zones/{zone_id}/
+	// instances/{instance_id}`.
 	RecentMigVms []string `json:"recentMigVms,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AppConnection") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AppConnection") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AppConnection") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponseAppConnectionDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponseAppConnectionDetails
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectionsV1alphaAppConnectionOperationMetada
-// ta: Represents the metadata of the long-running operation.
+// GoogleCloudBeyondcorpAppconnectionsV1alphaAppConnectionOperationMetadata:
+// Represents the metadata of the long-running operation.
 type GoogleCloudBeyondcorpAppconnectionsV1alphaAppConnectionOperationMetadata struct {
 	// ApiVersion: Output only. API version used to start the operation.
 	ApiVersion string `json:"apiVersion,omitempty"`
-
 	// CreateTime: Output only. The time the operation was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// EndTime: Output only. The time the operation finished running.
 	EndTime string `json:"endTime,omitempty"`
-
 	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
 	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
 	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
 	Target string `json:"target,omitempty"`
-
 	// Verb: Output only. Name of the verb executed by the operation.
 	Verb string `json:"verb,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectionsV1alphaAppConnectionOperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectionsV1alphaAppConnectionOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1AppConnector: A BeyondCorp
-// connector resource that represents an application facing component
-// deployed proximal to and with direct access to the application
-// instances. It is used to establish connectivity between the remote
-// enterprise environment and GCP. It initiates connections to the
-// applications and can proxy the data from users over the connection.
+// GoogleCloudBeyondcorpAppconnectorsV1AppConnector: A BeyondCorp connector
+// resource that represents an application facing component deployed proximal
+// to and with direct access to the application instances. It is used to
+// establish connectivity between the remote enterprise environment and GCP. It
+// initiates connections to the applications and can proxy the data from users
+// over the connection.
 type GoogleCloudBeyondcorpAppconnectorsV1AppConnector struct {
 	// CreateTime: Output only. Timestamp when the resource was created.
 	CreateTime string `json:"createTime,omitempty"`
-
-	// DisplayName: Optional. An arbitrary user-provided name for the
-	// AppConnector. Cannot exceed 64 characters.
+	// DisplayName: Optional. An arbitrary user-provided name for the AppConnector.
+	// Cannot exceed 64 characters.
 	DisplayName string `json:"displayName,omitempty"`
-
-	// Labels: Optional. Resource labels to represent user provided
-	// metadata.
+	// Labels: Optional. Resource labels to represent user provided metadata.
 	Labels map[string]string `json:"labels,omitempty"`
-
 	// Name: Required. Unique resource name of the AppConnector. The name is
 	// ignored when creating a AppConnector.
 	Name string `json:"name,omitempty"`
-
-	// PrincipalInfo: Required. Principal information about the Identity of
-	// the AppConnector.
+	// PrincipalInfo: Required. Principal information about the Identity of the
+	// AppConnector.
 	PrincipalInfo *GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfo `json:"principalInfo,omitempty"`
-
 	// ResourceInfo: Optional. Resource info of the connector.
 	ResourceInfo *GoogleCloudBeyondcorpAppconnectorsV1ResourceInfo `json:"resourceInfo,omitempty"`
-
 	// State: Output only. The current state of the AppConnector.
 	//
 	// Possible values:
@@ -1320,88 +913,67 @@ type GoogleCloudBeyondcorpAppconnectorsV1AppConnector struct {
 	//   "CREATED" - AppConnector has been created.
 	//   "UPDATING" - AppConnector's configuration is being updated.
 	//   "DELETING" - AppConnector is being deleted.
-	//   "DOWN" - AppConnector is down and may be restored in the future.
-	// This happens when CCFE sends ProjectState = OFF.
+	//   "DOWN" - AppConnector is down and may be restored in the future. This
+	// happens when CCFE sends ProjectState = OFF.
 	State string `json:"state,omitempty"`
-
-	// Uid: Output only. A unique identifier for the instance generated by
-	// the system.
+	// Uid: Output only. A unique identifier for the instance generated by the
+	// system.
 	Uid string `json:"uid,omitempty"`
-
-	// UpdateTime: Output only. Timestamp when the resource was last
-	// modified.
+	// UpdateTime: Output only. Timestamp when the resource was last modified.
 	UpdateTime string `json:"updateTime,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "CreateTime") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "CreateTime") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "CreateTime") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1AppConnector) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1AppConnector
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpAppconnectorsV1AppConnectorInstanceConfig:
-// AppConnectorInstanceConfig defines the instance config of a
-// AppConnector.
+// AppConnectorInstanceConfig defines the instance config of a AppConnector.
 type GoogleCloudBeyondcorpAppconnectorsV1AppConnectorInstanceConfig struct {
 	// ImageConfig: ImageConfig defines the GCR images to run for the remote
 	// agent's control plane.
 	ImageConfig *GoogleCloudBeyondcorpAppconnectorsV1ImageConfig `json:"imageConfig,omitempty"`
-
 	// InstanceConfig: The SLM instance agent configuration.
 	InstanceConfig googleapi.RawMessage `json:"instanceConfig,omitempty"`
-
-	// NotificationConfig: NotificationConfig defines the notification
-	// mechanism that the remote instance should subscribe to in order to
-	// receive notification.
+	// NotificationConfig: NotificationConfig defines the notification mechanism
+	// that the remote instance should subscribe to in order to receive
+	// notification.
 	NotificationConfig *GoogleCloudBeyondcorpAppconnectorsV1NotificationConfig `json:"notificationConfig,omitempty"`
-
-	// SequenceNumber: Required. A monotonically increasing number generated
-	// and maintained by the API provider. Every time a config changes in
-	// the backend, the sequenceNumber should be bumped up to reflect the
-	// change.
+	// SequenceNumber: Required. A monotonically increasing number generated and
+	// maintained by the API provider. Every time a config changes in the backend,
+	// the sequenceNumber should be bumped up to reflect the change.
 	SequenceNumber int64 `json:"sequenceNumber,omitempty,string"`
-
 	// ForceSendFields is a list of field names (e.g. "ImageConfig") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ImageConfig") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ImageConfig") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1AppConnectorInstanceConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1AppConnectorInstanceConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpAppconnectorsV1AppConnectorOperationMetadata:
@@ -1409,110 +981,84 @@ func (s *GoogleCloudBeyondcorpAppconnectorsV1AppConnectorInstanceConfig) Marshal
 type GoogleCloudBeyondcorpAppconnectorsV1AppConnectorOperationMetadata struct {
 	// ApiVersion: Output only. API version used to start the operation.
 	ApiVersion string `json:"apiVersion,omitempty"`
-
 	// CreateTime: Output only. The time the operation was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// EndTime: Output only. The time the operation finished running.
 	EndTime string `json:"endTime,omitempty"`
-
 	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
 	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
 	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
 	Target string `json:"target,omitempty"`
-
 	// Verb: Output only. Name of the verb executed by the operation.
 	Verb string `json:"verb,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1AppConnectorOperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1AppConnectorOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfo:
-// PrincipalInfo represents an Identity oneof.
+// GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfo: PrincipalInfo
+// represents an Identity oneof.
 type GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfo struct {
 	// ServiceAccount: A GCP service account.
 	ServiceAccount *GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfoServiceAccount `json:"serviceAccount,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ServiceAccount") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ServiceAccount") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "ServiceAccount") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfo) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfo
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfoServiceAc
-// count: ServiceAccount represents a GCP service account.
+// GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfoServiceAccount:
+// ServiceAccount represents a GCP service account.
 type GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfoServiceAccount struct {
 	// Email: Email address of the service account.
 	Email string `json:"email,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Email") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Email") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Email") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfoServiceAccount) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfoServiceAccount
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpAppconnectorsV1ContainerHealthDetails:
@@ -1520,371 +1066,287 @@ func (s *GoogleCloudBeyondcorpAppconnectorsV1AppConnectorPrincipalInfoServiceAcc
 type GoogleCloudBeyondcorpAppconnectorsV1ContainerHealthDetails struct {
 	// CurrentConfigVersion: The version of the current config.
 	CurrentConfigVersion string `json:"currentConfigVersion,omitempty"`
-
 	// ErrorMsg: The latest error message.
 	ErrorMsg string `json:"errorMsg,omitempty"`
-
 	// ExpectedConfigVersion: The version of the expected config.
 	ExpectedConfigVersion string `json:"expectedConfigVersion,omitempty"`
-
 	// ExtendedStatus: The extended status. Such as ExitCode, StartedAt,
 	// FinishedAt, etc.
 	ExtendedStatus map[string]string `json:"extendedStatus,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "CurrentConfigVersion") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "CurrentConfigVersion") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "CurrentConfigVersion") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "CurrentConfigVersion") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1ContainerHealthDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1ContainerHealthDetails
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1ImageConfig: ImageConfig defines
-// the control plane images to run.
+// GoogleCloudBeyondcorpAppconnectorsV1ImageConfig: ImageConfig defines the
+// control plane images to run.
 type GoogleCloudBeyondcorpAppconnectorsV1ImageConfig struct {
-	// StableImage: The stable image that the remote agent will fallback to
-	// if the target image fails. Format would be a gcr image path, e.g.:
+	// StableImage: The stable image that the remote agent will fallback to if the
+	// target image fails. Format would be a gcr image path, e.g.:
 	// gcr.io/PROJECT-ID/my-image:tag1
 	StableImage string `json:"stableImage,omitempty"`
-
-	// TargetImage: The initial image the remote agent will attempt to run
-	// for the control plane. Format would be a gcr image path, e.g.:
+	// TargetImage: The initial image the remote agent will attempt to run for the
+	// control plane. Format would be a gcr image path, e.g.:
 	// gcr.io/PROJECT-ID/my-image:tag1
 	TargetImage string `json:"targetImage,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "StableImage") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "StableImage") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "StableImage") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1ImageConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1ImageConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse:
-// Response message for BeyondCorp.ListAppConnectors.
+// GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse: Response
+// message for BeyondCorp.ListAppConnectors.
 type GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse struct {
 	// AppConnectors: A list of BeyondCorp AppConnectors in the project.
 	AppConnectors []*GoogleCloudBeyondcorpAppconnectorsV1AppConnector `json:"appConnectors,omitempty"`
-
-	// NextPageToken: A token to retrieve the next page of results, or empty
-	// if there are no more results in the list.
+	// NextPageToken: A token to retrieve the next page of results, or empty if
+	// there are no more results in the list.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Unreachable: A list of locations that could not be reached.
 	Unreachable []string `json:"unreachable,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "AppConnectors") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AppConnectors") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AppConnectors") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1NotificationConfig:
-// NotificationConfig defines the mechanisms to notify instance agent.
+// GoogleCloudBeyondcorpAppconnectorsV1NotificationConfig: NotificationConfig
+// defines the mechanisms to notify instance agent.
 type GoogleCloudBeyondcorpAppconnectorsV1NotificationConfig struct {
-	// PubsubNotification: Cloud Pub/Sub Configuration to receive
-	// notifications.
+	// PubsubNotification: Cloud Pub/Sub Configuration to receive notifications.
 	PubsubNotification *GoogleCloudBeyondcorpAppconnectorsV1NotificationConfigCloudPubSubNotificationConfig `json:"pubsubNotification,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "PubsubNotification")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "PubsubNotification") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "PubsubNotification") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "PubsubNotification") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1NotificationConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1NotificationConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1NotificationConfigCloudPubSubNotif
-// icationConfig: The configuration for Pub/Sub messaging for the
-// AppConnector.
+// GoogleCloudBeyondcorpAppconnectorsV1NotificationConfigCloudPubSubNotification
+// Config: The configuration for Pub/Sub messaging for the AppConnector.
 type GoogleCloudBeyondcorpAppconnectorsV1NotificationConfigCloudPubSubNotificationConfig struct {
 	// PubsubSubscription: The Pub/Sub subscription the AppConnector uses to
 	// receive notifications.
 	PubsubSubscription string `json:"pubsubSubscription,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "PubsubSubscription")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "PubsubSubscription") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "PubsubSubscription") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "PubsubSubscription") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1NotificationConfigCloudPubSubNotificationConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1NotificationConfigCloudPubSubNotificationConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1RemoteAgentDetails:
-// RemoteAgentDetails reflects the details of a remote agent.
+// GoogleCloudBeyondcorpAppconnectorsV1RemoteAgentDetails: RemoteAgentDetails
+// reflects the details of a remote agent.
 type GoogleCloudBeyondcorpAppconnectorsV1RemoteAgentDetails struct {
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1ReportStatusRequest: Request
-// report the connector status.
+// GoogleCloudBeyondcorpAppconnectorsV1ReportStatusRequest: Request report the
+// connector status.
 type GoogleCloudBeyondcorpAppconnectorsV1ReportStatusRequest struct {
-	// RequestId: Optional. An optional request ID to identify requests.
-	// Specify a unique request ID so that if you must retry your request,
-	// the server will know to ignore the request if it has already been
-	// completed. The server will guarantee that for at least 60 minutes
-	// since the first request. For example, consider a situation where you
-	// make an initial request and t he request times out. If you make the
-	// request again with the same request ID, the server can check if
-	// original operation with the same request ID was received, and if so,
-	// will ignore the second request. This prevents clients from
-	// accidentally creating duplicate commitments. The request ID must be a
-	// valid UUID with the exception that zero UUID is not supported
+	// RequestId: Optional. An optional request ID to identify requests. Specify a
+	// unique request ID so that if you must retry your request, the server will
+	// know to ignore the request if it has already been completed. The server will
+	// guarantee that for at least 60 minutes since the first request. For example,
+	// consider a situation where you make an initial request and the request times
+	// out. If you make the request again with the same request ID, the server can
+	// check if original operation with the same request ID was received, and if
+	// so, will ignore the second request. This prevents clients from accidentally
+	// creating duplicate commitments. The request ID must be a valid UUID with the
+	// exception that zero UUID is not supported
 	// (00000000-0000-0000-0000-000000000000).
 	RequestId string `json:"requestId,omitempty"`
-
 	// ResourceInfo: Required. Resource info of the connector.
 	ResourceInfo *GoogleCloudBeyondcorpAppconnectorsV1ResourceInfo `json:"resourceInfo,omitempty"`
-
-	// ValidateOnly: Optional. If set, validates request by executing a
-	// dry-run which would not alter the resource in any way.
+	// ValidateOnly: Optional. If set, validates request by executing a dry-run
+	// which would not alter the resource in any way.
 	ValidateOnly bool `json:"validateOnly,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "RequestId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "RequestId") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "RequestId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1ReportStatusRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1ReportStatusRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse:
-// Response message for BeyondCorp.ResolveInstanceConfig.
+// GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse: Response
+// message for BeyondCorp.ResolveInstanceConfig.
 type GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse struct {
 	// InstanceConfig: AppConnectorInstanceConfig.
 	InstanceConfig *GoogleCloudBeyondcorpAppconnectorsV1AppConnectorInstanceConfig `json:"instanceConfig,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "InstanceConfig") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "InstanceConfig") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "InstanceConfig") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1ResourceInfo: ResourceInfo
-// represents the information/status of an app connector resource. Such
-// as: - remote_agent - container - runtime - appgateway - appconnector
-// - appconnection - tunnel - logagent
+// GoogleCloudBeyondcorpAppconnectorsV1ResourceInfo: ResourceInfo represents
+// the information/status of an app connector resource. Such as: - remote_agent
+// - container - runtime - appgateway - appconnector - appconnection - tunnel -
+// logagent
 type GoogleCloudBeyondcorpAppconnectorsV1ResourceInfo struct {
 	// Id: Required. Unique Id for the resource.
 	Id string `json:"id,omitempty"`
-
-	// Resource: Specific details for the resource. This is for internal use
-	// only.
+	// Resource: Specific details for the resource. This is for internal use only.
 	Resource googleapi.RawMessage `json:"resource,omitempty"`
-
-	// Status: Overall health status. Overall status is derived based on the
-	// status of each sub level resources.
+	// Status: Overall health status. Overall status is derived based on the status
+	// of each sub level resources.
 	//
 	// Possible values:
-	//   "HEALTH_STATUS_UNSPECIFIED" - Health status is unknown: not
-	// initialized or failed to retrieve.
+	//   "HEALTH_STATUS_UNSPECIFIED" - Health status is unknown: not initialized or
+	// failed to retrieve.
 	//   "HEALTHY" - The resource is healthy.
 	//   "UNHEALTHY" - The resource is unhealthy.
 	//   "UNRESPONSIVE" - The resource is unresponsive.
 	//   "DEGRADED" - Some sub-resources are UNHEALTHY.
 	Status string `json:"status,omitempty"`
-
 	// Sub: List of Info for the sub level resources.
 	Sub []*GoogleCloudBeyondcorpAppconnectorsV1ResourceInfo `json:"sub,omitempty"`
-
-	// Time: The timestamp to collect the info. It is suggested to be set by
-	// the topmost level resource only.
+	// Time: The timestamp to collect the info. It is suggested to be set by the
+	// topmost level resource only.
 	Time string `json:"time,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Id") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Id") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Id") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Id") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1ResourceInfo) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1ResourceInfo
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnectorOperationMetadata
-// : Represents the metadata of the long-running operation.
+// GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnectorOperationMetadata:
+// Represents the metadata of the long-running operation.
 type GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnectorOperationMetadata struct {
 	// ApiVersion: Output only. API version used to start the operation.
 	ApiVersion string `json:"apiVersion,omitempty"`
-
 	// CreateTime: Output only. The time the operation was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// EndTime: Output only. The time the operation finished running.
 	EndTime string `json:"endTime,omitempty"`
-
 	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
 	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
 	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
 	Target string `json:"target,omitempty"`
-
 	// Verb: Output only. Name of the verb executed by the operation.
 	Verb string `json:"verb,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnectorOperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnectorOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpAppconnectorsV1alphaContainerHealthDetails:
@@ -1892,40 +1354,29 @@ func (s *GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnectorOperationMetadata)
 type GoogleCloudBeyondcorpAppconnectorsV1alphaContainerHealthDetails struct {
 	// CurrentConfigVersion: The version of the current config.
 	CurrentConfigVersion string `json:"currentConfigVersion,omitempty"`
-
 	// ErrorMsg: The latest error message.
 	ErrorMsg string `json:"errorMsg,omitempty"`
-
 	// ExpectedConfigVersion: The version of the expected config.
 	ExpectedConfigVersion string `json:"expectedConfigVersion,omitempty"`
-
 	// ExtendedStatus: The extended status. Such as ExitCode, StartedAt,
 	// FinishedAt, etc.
 	ExtendedStatus map[string]string `json:"extendedStatus,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "CurrentConfigVersion") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "CurrentConfigVersion") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "CurrentConfigVersion") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "CurrentConfigVersion") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppconnectorsV1alphaContainerHealthDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppconnectorsV1alphaContainerHealthDetails
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpAppconnectorsV1alphaRemoteAgentDetails:
@@ -1938,156 +1389,38 @@ type GoogleCloudBeyondcorpAppconnectorsV1alphaRemoteAgentDetails struct {
 type GoogleCloudBeyondcorpAppgatewaysV1alphaAppGatewayOperationMetadata struct {
 	// ApiVersion: Output only. API version used to start the operation.
 	ApiVersion string `json:"apiVersion,omitempty"`
-
 	// CreateTime: Output only. The time the operation was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// EndTime: Output only. The time the operation finished running.
 	EndTime string `json:"endTime,omitempty"`
-
 	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
 	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
 	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
 	Target string `json:"target,omitempty"`
-
 	// Verb: Output only. Name of the verb executed by the operation.
 	Verb string `json:"verb,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpAppgatewaysV1alphaAppGatewayOperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpAppgatewaysV1alphaAppGatewayOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// GoogleCloudBeyondcorpClientconnectorservicesV1alphaClientConnectorServ
-// iceOperationMetadata: Represents the metadata of the long-running
-// operation.
-type GoogleCloudBeyondcorpClientconnectorservicesV1alphaClientConnectorServiceOperationMetadata struct {
-	// ApiVersion: Output only. API version used to start the operation.
-	ApiVersion string `json:"apiVersion,omitempty"`
-
-	// CreateTime: Output only. The time the operation was created.
-	CreateTime string `json:"createTime,omitempty"`
-
-	// EndTime: Output only. The time the operation finished running.
-	EndTime string `json:"endTime,omitempty"`
-
-	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
-	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
-	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
-	Target string `json:"target,omitempty"`
-
-	// Verb: Output only. Name of the verb executed by the operation.
-	Verb string `json:"verb,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *GoogleCloudBeyondcorpClientconnectorservicesV1alphaClientConnectorServiceOperationMetadata) MarshalJSON() ([]byte, error) {
-	type NoMethod GoogleCloudBeyondcorpClientconnectorservicesV1alphaClientConnectorServiceOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// GoogleCloudBeyondcorpClientgatewaysV1alphaClientGatewayOperationMetada
-// ta: Represents the metadata of the long-running operation.
-type GoogleCloudBeyondcorpClientgatewaysV1alphaClientGatewayOperationMetadata struct {
-	// ApiVersion: Output only. API version used to start the operation.
-	ApiVersion string `json:"apiVersion,omitempty"`
-
-	// CreateTime: Output only. The time the operation was created.
-	CreateTime string `json:"createTime,omitempty"`
-
-	// EndTime: Output only. The time the operation finished running.
-	EndTime string `json:"endTime,omitempty"`
-
-	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have been
-	// cancelled successfully have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
-	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
-	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
-	Target string `json:"target,omitempty"`
-
-	// Verb: Output only. Name of the verb executed by the operation.
-	Verb string `json:"verb,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *GoogleCloudBeyondcorpClientgatewaysV1alphaClientGatewayOperationMetadata) MarshalJSON() ([]byte, error) {
-	type NoMethod GoogleCloudBeyondcorpClientgatewaysV1alphaClientGatewayOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpConnectionsV1alphaConnectionOperationMetadata:
@@ -2095,103 +1428,77 @@ func (s *GoogleCloudBeyondcorpClientgatewaysV1alphaClientGatewayOperationMetadat
 type GoogleCloudBeyondcorpConnectionsV1alphaConnectionOperationMetadata struct {
 	// ApiVersion: Output only. API version used to start the operation.
 	ApiVersion string `json:"apiVersion,omitempty"`
-
 	// CreateTime: Output only. The time the operation was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// EndTime: Output only. The time the operation finished running.
 	EndTime string `json:"endTime,omitempty"`
-
 	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
 	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
 	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
 	Target string `json:"target,omitempty"`
-
 	// Verb: Output only. Name of the verb executed by the operation.
 	Verb string `json:"verb,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpConnectionsV1alphaConnectionOperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpConnectionsV1alphaConnectionOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpConnectorsV1alphaConnectorOperationMetadata:
-// Represents the metadata of the long-running operation.
+// GoogleCloudBeyondcorpConnectorsV1alphaConnectorOperationMetadata: Represents
+// the metadata of the long-running operation.
 type GoogleCloudBeyondcorpConnectorsV1alphaConnectorOperationMetadata struct {
 	// ApiVersion: Output only. API version used to start the operation.
 	ApiVersion string `json:"apiVersion,omitempty"`
-
 	// CreateTime: Output only. The time the operation was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// EndTime: Output only. The time the operation finished running.
 	EndTime string `json:"endTime,omitempty"`
-
 	// RequestedCancellation: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have
-	// successfully been cancelled have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
 	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
-
-	// StatusMessage: Output only. Human-readable status of the operation,
-	// if any.
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
 	StatusMessage string `json:"statusMessage,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
 	Target string `json:"target,omitempty"`
-
 	// Verb: Output only. Name of the verb executed by the operation.
 	Verb string `json:"verb,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpConnectorsV1alphaConnectorOperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpConnectorsV1alphaConnectorOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudBeyondcorpConnectorsV1alphaContainerHealthDetails:
@@ -2199,199 +1506,272 @@ func (s *GoogleCloudBeyondcorpConnectorsV1alphaConnectorOperationMetadata) Marsh
 type GoogleCloudBeyondcorpConnectorsV1alphaContainerHealthDetails struct {
 	// CurrentConfigVersion: The version of the current config.
 	CurrentConfigVersion string `json:"currentConfigVersion,omitempty"`
-
 	// ErrorMsg: The latest error message.
 	ErrorMsg string `json:"errorMsg,omitempty"`
-
 	// ExpectedConfigVersion: The version of the expected config.
 	ExpectedConfigVersion string `json:"expectedConfigVersion,omitempty"`
-
 	// ExtendedStatus: The extended status. Such as ExitCode, StartedAt,
 	// FinishedAt, etc.
 	ExtendedStatus map[string]string `json:"extendedStatus,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "CurrentConfigVersion") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "CurrentConfigVersion") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "CurrentConfigVersion") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "CurrentConfigVersion") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudBeyondcorpConnectorsV1alphaContainerHealthDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudBeyondcorpConnectorsV1alphaContainerHealthDetails
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudBeyondcorpConnectorsV1alphaRemoteAgentDetails:
-// RemoteAgentDetails reflects the details of a remote agent.
+// GoogleCloudBeyondcorpConnectorsV1alphaRemoteAgentDetails: RemoteAgentDetails
+// reflects the details of a remote agent.
 type GoogleCloudBeyondcorpConnectorsV1alphaRemoteAgentDetails struct {
+}
+
+// GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerServiceOperationMetadata:
+// Represents the metadata of the long-running operation.
+type GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerServiceOperationMetadata struct {
+	// ApiVersion: Output only. API version used to start the operation.
+	ApiVersion string `json:"apiVersion,omitempty"`
+	// CreateTime: Output only. The time the operation was created.
+	CreateTime string `json:"createTime,omitempty"`
+	// EndTime: Output only. The time the operation finished running.
+	EndTime string `json:"endTime,omitempty"`
+	// RequestedCancellation: Output only. Identifies whether the caller has
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
+	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
+	StatusMessage string `json:"statusMessage,omitempty"`
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
+	Target string `json:"target,omitempty"`
+	// Verb: Output only. Name of the verb executed by the operation.
+	Verb string `json:"verb,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerServiceOperationMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerServiceOperationMetadata
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// GoogleCloudBeyondcorpPartnerservicesV1mainPartnerServiceOperationMetadata:
+// Represents the metadata of the long-running operation.
+type GoogleCloudBeyondcorpPartnerservicesV1mainPartnerServiceOperationMetadata struct {
+	// ApiVersion: Output only. API version used to start the operation.
+	ApiVersion string `json:"apiVersion,omitempty"`
+	// CreateTime: Output only. The time the operation was created.
+	CreateTime string `json:"createTime,omitempty"`
+	// EndTime: Output only. The time the operation finished running.
+	EndTime string `json:"endTime,omitempty"`
+	// RequestedCancellation: Output only. Identifies whether the caller has
+	// requested cancellation of the operation. Operations that have successfully
+	// been cancelled have Operation.error value with a google.rpc.Status.code of
+	// 1, corresponding to `Code.CANCELLED`.
+	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
+	StatusMessage string `json:"statusMessage,omitempty"`
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
+	Target string `json:"target,omitempty"`
+	// Verb: Output only. Name of the verb executed by the operation.
+	Verb string `json:"verb,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *GoogleCloudBeyondcorpPartnerservicesV1mainPartnerServiceOperationMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod GoogleCloudBeyondcorpPartnerservicesV1mainPartnerServiceOperationMetadata
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// GoogleCloudBeyondcorpSecuritygatewaysV1alphaSecurityGatewayOperationMetadata:
+//
+//	Represents the metadata of the long-running operation.
+type GoogleCloudBeyondcorpSecuritygatewaysV1alphaSecurityGatewayOperationMetadata struct {
+	// ApiVersion: Output only. API version used to start the operation.
+	ApiVersion string `json:"apiVersion,omitempty"`
+	// CreateTime: Output only. The time the operation was created.
+	CreateTime string `json:"createTime,omitempty"`
+	// EndTime: Output only. The time the operation finished running.
+	EndTime string `json:"endTime,omitempty"`
+	// RequestedCancellation: Output only. Identifies whether the user has
+	// requested cancellation of the operation. Operations that have been cancelled
+	// successfully have Operation.error value with a google.rpc.Status.code of 1,
+	// corresponding to `Code.CANCELLED`.
+	RequestedCancellation bool `json:"requestedCancellation,omitempty"`
+	// StatusMessage: Output only. Human-readable status of the operation, if any.
+	StatusMessage string `json:"statusMessage,omitempty"`
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
+	Target string `json:"target,omitempty"`
+	// Verb: Output only. Name of the verb executed by the operation.
+	Verb string `json:"verb,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *GoogleCloudBeyondcorpSecuritygatewaysV1alphaSecurityGatewayOperationMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod GoogleCloudBeyondcorpSecuritygatewaysV1alphaSecurityGatewayOperationMetadata
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleCloudLocationListLocationsResponse: The response message for
 // Locations.ListLocations.
 type GoogleCloudLocationListLocationsResponse struct {
-	// Locations: A list of locations that matches the specified filter in
-	// the request.
+	// Locations: A list of locations that matches the specified filter in the
+	// request.
 	Locations []*GoogleCloudLocationLocation `json:"locations,omitempty"`
-
 	// NextPageToken: The standard List next-page token.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Locations") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Locations") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Locations") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudLocationListLocationsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudLocationListLocationsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleCloudLocationLocation: A resource that represents Google Cloud
-// Platform location.
+// GoogleCloudLocationLocation: A resource that represents a Google Cloud
+// location.
 type GoogleCloudLocationLocation struct {
-	// DisplayName: The friendly name for this location, typically a nearby
-	// city name. For example, "Tokyo".
+	// DisplayName: The friendly name for this location, typically a nearby city
+	// name. For example, "Tokyo".
 	DisplayName string `json:"displayName,omitempty"`
-
 	// Labels: Cross-service attributes for the location. For example
 	// {"cloud.googleapis.com/region": "us-east1"}
 	Labels map[string]string `json:"labels,omitempty"`
-
-	// LocationId: The canonical id for this location. For example:
-	// "us-east1".
+	// LocationId: The canonical id for this location. For example: "us-east1".
 	LocationId string `json:"locationId,omitempty"`
-
-	// Metadata: Service-specific metadata. For example the available
-	// capacity at the given location.
+	// Metadata: Service-specific metadata. For example the available capacity at
+	// the given location.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
-
 	// Name: Resource name for the location, which may vary between
 	// implementations. For example:
 	// "projects/example-project/locations/us-east1"
 	Name string `json:"name,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "DisplayName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DisplayName") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "DisplayName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleCloudLocationLocation) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleCloudLocationLocation
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamV1AuditConfig: Specifies the audit configuration for a
-// service. The configuration determines which permission types are
-// logged, and what identities, if any, are exempted from logging. An
-// AuditConfig must have one or more AuditLogConfigs. If there are
-// AuditConfigs for both `allServices` and a specific service, the union
-// of the two AuditConfigs is used for that service: the log_types
-// specified in each AuditConfig are enabled, and the exempted_members
-// in each AuditLogConfig are exempted. Example Policy with multiple
-// AuditConfigs: { "audit_configs": [ { "service": "allServices",
-// "audit_log_configs": [ { "log_type": "DATA_READ", "exempted_members":
-// [ "user:jose@example.com" ] }, { "log_type": "DATA_WRITE" }, {
-// "log_type": "ADMIN_READ" } ] }, { "service":
-// "sampleservice.googleapis.com", "audit_log_configs": [ { "log_type":
-// "DATA_READ" }, { "log_type": "DATA_WRITE", "exempted_members": [
-// "user:aliya@example.com" ] } ] } ] } For sampleservice, this policy
-// enables DATA_READ, DATA_WRITE and ADMIN_READ logging. It also exempts
-// `jose@example.com` from DATA_READ logging, and `aliya@example.com`
-// from DATA_WRITE logging.
+// GoogleIamV1AuditConfig: Specifies the audit configuration for a service. The
+// configuration determines which permission types are logged, and what
+// identities, if any, are exempted from logging. An AuditConfig must have one
+// or more AuditLogConfigs. If there are AuditConfigs for both `allServices`
+// and a specific service, the union of the two AuditConfigs is used for that
+// service: the log_types specified in each AuditConfig are enabled, and the
+// exempted_members in each AuditLogConfig are exempted. Example Policy with
+// multiple AuditConfigs: { "audit_configs": [ { "service": "allServices",
+// "audit_log_configs": [ { "log_type": "DATA_READ", "exempted_members": [
+// "user:jose@example.com" ] }, { "log_type": "DATA_WRITE" }, { "log_type":
+// "ADMIN_READ" } ] }, { "service": "sampleservice.googleapis.com",
+// "audit_log_configs": [ { "log_type": "DATA_READ" }, { "log_type":
+// "DATA_WRITE", "exempted_members": [ "user:aliya@example.com" ] } ] } ] } For
+// sampleservice, this policy enables DATA_READ, DATA_WRITE and ADMIN_READ
+// logging. It also exempts `jose@example.com` from DATA_READ logging, and
+// `aliya@example.com` from DATA_WRITE logging.
 type GoogleIamV1AuditConfig struct {
-	// AuditLogConfigs: The configuration for logging of each type of
-	// permission.
+	// AuditLogConfigs: The configuration for logging of each type of permission.
 	AuditLogConfigs []*GoogleIamV1AuditLogConfig `json:"auditLogConfigs,omitempty"`
-
-	// Service: Specifies a service that will be enabled for audit logging.
-	// For example, `storage.googleapis.com`, `cloudsql.googleapis.com`.
-	// `allServices` is a special value that covers all services.
+	// Service: Specifies a service that will be enabled for audit logging. For
+	// example, `storage.googleapis.com`, `cloudsql.googleapis.com`. `allServices`
+	// is a special value that covers all services.
 	Service string `json:"service,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AuditLogConfigs") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AuditLogConfigs") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AuditLogConfigs") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamV1AuditConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamV1AuditConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamV1AuditLogConfig: Provides the configuration for logging a
-// type of permissions. Example: { "audit_log_configs": [ { "log_type":
-// "DATA_READ", "exempted_members": [ "user:jose@example.com" ] }, {
-// "log_type": "DATA_WRITE" } ] } This enables 'DATA_READ' and
-// 'DATA_WRITE' logging, while exempting jose@example.com from DATA_READ
-// logging.
+// GoogleIamV1AuditLogConfig: Provides the configuration for logging a type of
+// permissions. Example: { "audit_log_configs": [ { "log_type": "DATA_READ",
+// "exempted_members": [ "user:jose@example.com" ] }, { "log_type":
+// "DATA_WRITE" } ] } This enables 'DATA_READ' and 'DATA_WRITE' logging, while
+// exempting jose@example.com from DATA_READ logging.
 type GoogleIamV1AuditLogConfig struct {
-	// ExemptedMembers: Specifies the identities that do not cause logging
-	// for this type of permission. Follows the same format of
-	// Binding.members.
+	// ExemptedMembers: Specifies the identities that do not cause logging for this
+	// type of permission. Follows the same format of Binding.members.
 	ExemptedMembers []string `json:"exemptedMembers,omitempty"`
-
 	// LogType: The log type that this config enables.
 	//
 	// Possible values:
@@ -2400,322 +1780,295 @@ type GoogleIamV1AuditLogConfig struct {
 	//   "DATA_WRITE" - Data writes. Example: CloudSQL Users create
 	//   "DATA_READ" - Data reads. Example: CloudSQL Users list
 	LogType string `json:"logType,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ExemptedMembers") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ExemptedMembers") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "ExemptedMembers") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamV1AuditLogConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamV1AuditLogConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamV1Binding: Associates `members`, or principals, with a
-// `role`.
+// GoogleIamV1Binding: Associates `members`, or principals, with a `role`.
 type GoogleIamV1Binding struct {
 	// Condition: The condition that is associated with this binding. If the
-	// condition evaluates to `true`, then this binding applies to the
-	// current request. If the condition evaluates to `false`, then this
-	// binding does not apply to the current request. However, a different
-	// role binding might grant the same role to one or more of the
-	// principals in this binding. To learn which resources support
-	// conditions in their IAM policies, see the IAM documentation
+	// condition evaluates to `true`, then this binding applies to the current
+	// request. If the condition evaluates to `false`, then this binding does not
+	// apply to the current request. However, a different role binding might grant
+	// the same role to one or more of the principals in this binding. To learn
+	// which resources support conditions in their IAM policies, see the IAM
+	// documentation
 	// (https://cloud.google.com/iam/help/conditions/resource-policies).
 	Condition *GoogleTypeExpr `json:"condition,omitempty"`
-
-	// Members: Specifies the principals requesting access for a Google
-	// Cloud resource. `members` can have the following values: *
-	// `allUsers`: A special identifier that represents anyone who is on the
-	// internet; with or without a Google account. *
-	// `allAuthenticatedUsers`: A special identifier that represents anyone
-	// who is authenticated with a Google account or a service account. Does
-	// not include identities that come from external identity providers
-	// (IdPs) through identity federation. * `user:{emailid}`: An email
+	// Members: Specifies the principals requesting access for a Google Cloud
+	// resource. `members` can have the following values: * `allUsers`: A special
+	// identifier that represents anyone who is on the internet; with or without a
+	// Google account. * `allAuthenticatedUsers`: A special identifier that
+	// represents anyone who is authenticated with a Google account or a service
+	// account. Does not include identities that come from external identity
+	// providers (IdPs) through identity federation. * `user:{emailid}`: An email
 	// address that represents a specific Google account. For example,
-	// `alice@example.com` . * `serviceAccount:{emailid}`: An email address
-	// that represents a Google service account. For example,
+	// `alice@example.com` . * `serviceAccount:{emailid}`: An email address that
+	// represents a Google service account. For example,
 	// `my-other-app@appspot.gserviceaccount.com`. *
-	// `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`:
-	//  An identifier for a Kubernetes service account
+	// `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`: An
+	// identifier for a Kubernetes service account
 	// (https://cloud.google.com/kubernetes-engine/docs/how-to/kubernetes-service-accounts).
-	// For example, `my-project.svc.id.goog[my-namespace/my-kubernetes-sa]`.
-	// * `group:{emailid}`: An email address that represents a Google group.
-	// For example, `admins@example.com`. *
-	// `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus
-	// unique identifier) representing a user that has been recently
-	// deleted. For example, `alice@example.com?uid=123456789012345678901`.
-	// If the user is recovered, this value reverts to `user:{emailid}` and
-	// the recovered user retains the role in the binding. *
-	// `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address
-	// (plus unique identifier) representing a service account that has been
+	// For example, `my-project.svc.id.goog[my-namespace/my-kubernetes-sa]`. *
+	// `group:{emailid}`: An email address that represents a Google group. For
+	// example, `admins@example.com`. * `domain:{domain}`: The G Suite domain
+	// (primary) that represents all the users of that domain. For example,
+	// `google.com` or `example.com`. *
+	// `principal://iam.googleapis.com/locations/global/workforcePools/{pool_id}/sub
+	// ject/{subject_attribute_value}`: A single identity in a workforce identity
+	// pool. *
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool_id}/
+	// group/{group_id}`: All workforce identities in a group. *
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool_id}/
+	// attribute.{attribute_name}/{attribute_value}`: All workforce identities with
+	// a specific attribute value. *
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool_id}/
+	// *`: All identities in a workforce identity pool. *
+	// `principal://iam.googleapis.com/projects/{project_number}/locations/global/wo
+	// rkloadIdentityPools/{pool_id}/subject/{subject_attribute_value}`: A single
+	// identity in a workload identity pool. *
+	// `principalSet://iam.googleapis.com/projects/{project_number}/locations/global
+	// /workloadIdentityPools/{pool_id}/group/{group_id}`: A workload identity pool
+	// group. *
+	// `principalSet://iam.googleapis.com/projects/{project_number}/locations/global
+	// /workloadIdentityPools/{pool_id}/attribute.{attribute_name}/{attribute_value}
+	// `: All identities in a workload identity pool with a certain attribute. *
+	// `principalSet://iam.googleapis.com/projects/{project_number}/locations/global
+	// /workloadIdentityPools/{pool_id}/*`: All identities in a workload identity
+	// pool. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus
+	// unique identifier) representing a user that has been recently deleted. For
+	// example, `alice@example.com?uid=123456789012345678901`. If the user is
+	// recovered, this value reverts to `user:{emailid}` and the recovered user
+	// retains the role in the binding. *
+	// `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus
+	// unique identifier) representing a service account that has been recently
+	// deleted. For example,
+	// `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the
+	// service account is undeleted, this value reverts to
+	// `serviceAccount:{emailid}` and the undeleted service account retains the
+	// role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email
+	// address (plus unique identifier) representing a Google group that has been
 	// recently deleted. For example,
-	// `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`.
-	// If the service account is undeleted, this value reverts to
-	// `serviceAccount:{emailid}` and the undeleted service account retains
-	// the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`:
-	// An email address (plus unique identifier) representing a Google group
-	// that has been recently deleted. For example,
-	// `admins@example.com?uid=123456789012345678901`. If the group is
-	// recovered, this value reverts to `group:{emailid}` and the recovered
-	// group retains the role in the binding. * `domain:{domain}`: The G
-	// Suite domain (primary) that represents all the users of that domain.
-	// For example, `google.com` or `example.com`.
+	// `admins@example.com?uid=123456789012345678901`. If the group is recovered,
+	// this value reverts to `group:{emailid}` and the recovered group retains the
+	// role in the binding. *
+	// `deleted:principal://iam.googleapis.com/locations/global/workforcePools/{pool
+	// _id}/subject/{subject_attribute_value}`: Deleted single identity in a
+	// workforce identity pool. For example,
+	// `deleted:principal://iam.googleapis.com/locations/global/workforcePools/my-po
+	// ol-id/subject/my-subject-attribute-value`.
 	Members []string `json:"members,omitempty"`
-
-	// Role: Role that is assigned to the list of `members`, or principals.
-	// For example, `roles/viewer`, `roles/editor`, or `roles/owner`.
+	// Role: Role that is assigned to the list of `members`, or principals. For
+	// example, `roles/viewer`, `roles/editor`, or `roles/owner`. For an overview
+	// of the IAM roles and permissions, see the IAM documentation
+	// (https://cloud.google.com/iam/docs/roles-overview). For a list of the
+	// available pre-defined roles, see here
+	// (https://cloud.google.com/iam/docs/understanding-roles).
 	Role string `json:"role,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Condition") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Condition") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Condition") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamV1Binding) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamV1Binding
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamV1Policy: An Identity and Access Management (IAM) policy,
-// which specifies access controls for Google Cloud resources. A
-// `Policy` is a collection of `bindings`. A `binding` binds one or more
-// `members`, or principals, to a single `role`. Principals can be user
-// accounts, service accounts, Google groups, and domains (such as G
-// Suite). A `role` is a named list of permissions; each `role` can be
-// an IAM predefined role or a user-created custom role. For some types
-// of Google Cloud resources, a `binding` can also specify a
-// `condition`, which is a logical expression that allows access to a
-// resource only if the expression evaluates to `true`. A condition can
-// add constraints based on attributes of the request, the resource, or
-// both. To learn which resources support conditions in their IAM
+// GoogleIamV1Policy: An Identity and Access Management (IAM) policy, which
+// specifies access controls for Google Cloud resources. A `Policy` is a
+// collection of `bindings`. A `binding` binds one or more `members`, or
+// principals, to a single `role`. Principals can be user accounts, service
+// accounts, Google groups, and domains (such as G Suite). A `role` is a named
+// list of permissions; each `role` can be an IAM predefined role or a
+// user-created custom role. For some types of Google Cloud resources, a
+// `binding` can also specify a `condition`, which is a logical expression that
+// allows access to a resource only if the expression evaluates to `true`. A
+// condition can add constraints based on attributes of the request, the
+// resource, or both. To learn which resources support conditions in their IAM
 // policies, see the IAM documentation
-// (https://cloud.google.com/iam/help/conditions/resource-policies).
-// **JSON example:** { "bindings": [ { "role":
+// (https://cloud.google.com/iam/help/conditions/resource-policies). **JSON
+// example:** ``` { "bindings": [ { "role":
 // "roles/resourcemanager.organizationAdmin", "members": [
-// "user:mike@example.com", "group:admins@example.com",
-// "domain:google.com",
-// "serviceAccount:my-project-id@appspot.gserviceaccount.com" ] }, {
-// "role": "roles/resourcemanager.organizationViewer", "members": [
+// "user:mike@example.com", "group:admins@example.com", "domain:google.com",
+// "serviceAccount:my-project-id@appspot.gserviceaccount.com" ] }, { "role":
+// "roles/resourcemanager.organizationViewer", "members": [
 // "user:eve@example.com" ], "condition": { "title": "expirable access",
 // "description": "Does not grant access after Sep 2020", "expression":
-// "request.time < timestamp('2020-10-01T00:00:00.000Z')", } } ],
-// "etag": "BwWWja0YfJA=", "version": 3 } **YAML example:** bindings: -
+// "request.time < timestamp('2020-10-01T00:00:00.000Z')", } } ], "etag":
+// "BwWWja0YfJA=", "version": 3 } ``` **YAML example:** ``` bindings: -
 // members: - user:mike@example.com - group:admins@example.com -
-// domain:google.com -
-// serviceAccount:my-project-id@appspot.gserviceaccount.com role:
-// roles/resourcemanager.organizationAdmin - members: -
+// domain:google.com - serviceAccount:my-project-id@appspot.gserviceaccount.com
+// role: roles/resourcemanager.organizationAdmin - members: -
 // user:eve@example.com role: roles/resourcemanager.organizationViewer
-// condition: title: expirable access description: Does not grant access
-// after Sep 2020 expression: request.time <
-// timestamp('2020-10-01T00:00:00.000Z') etag: BwWWja0YfJA= version: 3
-// For a description of IAM and its features, see the IAM documentation
-// (https://cloud.google.com/iam/docs/).
+// condition: title: expirable access description: Does not grant access after
+// Sep 2020 expression: request.time < timestamp('2020-10-01T00:00:00.000Z')
+// etag: BwWWja0YfJA= version: 3 ``` For a description of IAM and its features,
+// see the IAM documentation (https://cloud.google.com/iam/docs/).
 type GoogleIamV1Policy struct {
-	// AuditConfigs: Specifies cloud audit logging configuration for this
-	// policy.
+	// AuditConfigs: Specifies cloud audit logging configuration for this policy.
 	AuditConfigs []*GoogleIamV1AuditConfig `json:"auditConfigs,omitempty"`
-
-	// Bindings: Associates a list of `members`, or principals, with a
-	// `role`. Optionally, may specify a `condition` that determines how and
-	// when the `bindings` are applied. Each of the `bindings` must contain
-	// at least one principal. The `bindings` in a `Policy` can refer to up
-	// to 1,500 principals; up to 250 of these principals can be Google
-	// groups. Each occurrence of a principal counts towards these limits.
-	// For example, if the `bindings` grant 50 different roles to
-	// `user:alice@example.com`, and not to any other principal, then you
-	// can add another 1,450 principals to the `bindings` in the `Policy`.
+	// Bindings: Associates a list of `members`, or principals, with a `role`.
+	// Optionally, may specify a `condition` that determines how and when the
+	// `bindings` are applied. Each of the `bindings` must contain at least one
+	// principal. The `bindings` in a `Policy` can refer to up to 1,500 principals;
+	// up to 250 of these principals can be Google groups. Each occurrence of a
+	// principal counts towards these limits. For example, if the `bindings` grant
+	// 50 different roles to `user:alice@example.com`, and not to any other
+	// principal, then you can add another 1,450 principals to the `bindings` in
+	// the `Policy`.
 	Bindings []*GoogleIamV1Binding `json:"bindings,omitempty"`
-
-	// Etag: `etag` is used for optimistic concurrency control as a way to
-	// help prevent simultaneous updates of a policy from overwriting each
-	// other. It is strongly suggested that systems make use of the `etag`
-	// in the read-modify-write cycle to perform policy updates in order to
-	// avoid race conditions: An `etag` is returned in the response to
-	// `getIamPolicy`, and systems are expected to put that etag in the
-	// request to `setIamPolicy` to ensure that their change will be applied
-	// to the same version of the policy. **Important:** If you use IAM
-	// Conditions, you must include the `etag` field whenever you call
-	// `setIamPolicy`. If you omit this field, then IAM allows you to
-	// overwrite a version `3` policy with a version `1` policy, and all of
+	// Etag: `etag` is used for optimistic concurrency control as a way to help
+	// prevent simultaneous updates of a policy from overwriting each other. It is
+	// strongly suggested that systems make use of the `etag` in the
+	// read-modify-write cycle to perform policy updates in order to avoid race
+	// conditions: An `etag` is returned in the response to `getIamPolicy`, and
+	// systems are expected to put that etag in the request to `setIamPolicy` to
+	// ensure that their change will be applied to the same version of the policy.
+	// **Important:** If you use IAM Conditions, you must include the `etag` field
+	// whenever you call `setIamPolicy`. If you omit this field, then IAM allows
+	// you to overwrite a version `3` policy with a version `1` policy, and all of
 	// the conditions in the version `3` policy are lost.
 	Etag string `json:"etag,omitempty"`
-
-	// Version: Specifies the format of the policy. Valid values are `0`,
-	// `1`, and `3`. Requests that specify an invalid value are rejected.
-	// Any operation that affects conditional role bindings must specify
-	// version `3`. This requirement applies to the following operations: *
-	// Getting a policy that includes a conditional role binding * Adding a
-	// conditional role binding to a policy * Changing a conditional role
-	// binding in a policy * Removing any role binding, with or without a
-	// condition, from a policy that includes conditions **Important:** If
-	// you use IAM Conditions, you must include the `etag` field whenever
-	// you call `setIamPolicy`. If you omit this field, then IAM allows you
-	// to overwrite a version `3` policy with a version `1` policy, and all
-	// of the conditions in the version `3` policy are lost. If a policy
-	// does not include any conditions, operations on that policy may
-	// specify any valid version or leave the field unset. To learn which
-	// resources support conditions in their IAM policies, see the IAM
-	// documentation
+	// Version: Specifies the format of the policy. Valid values are `0`, `1`, and
+	// `3`. Requests that specify an invalid value are rejected. Any operation that
+	// affects conditional role bindings must specify version `3`. This requirement
+	// applies to the following operations: * Getting a policy that includes a
+	// conditional role binding * Adding a conditional role binding to a policy *
+	// Changing a conditional role binding in a policy * Removing any role binding,
+	// with or without a condition, from a policy that includes conditions
+	// **Important:** If you use IAM Conditions, you must include the `etag` field
+	// whenever you call `setIamPolicy`. If you omit this field, then IAM allows
+	// you to overwrite a version `3` policy with a version `1` policy, and all of
+	// the conditions in the version `3` policy are lost. If a policy does not
+	// include any conditions, operations on that policy may specify any valid
+	// version or leave the field unset. To learn which resources support
+	// conditions in their IAM policies, see the IAM documentation
 	// (https://cloud.google.com/iam/help/conditions/resource-policies).
 	Version int64 `json:"version,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "AuditConfigs") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AuditConfigs") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AuditConfigs") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamV1Policy) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamV1Policy
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamV1SetIamPolicyRequest: Request message for `SetIamPolicy`
-// method.
+// GoogleIamV1SetIamPolicyRequest: Request message for `SetIamPolicy` method.
 type GoogleIamV1SetIamPolicyRequest struct {
-	// Policy: REQUIRED: The complete policy to be applied to the
-	// `resource`. The size of the policy is limited to a few 10s of KB. An
-	// empty policy is a valid policy but certain Google Cloud services
-	// (such as Projects) might reject them.
+	// Policy: REQUIRED: The complete policy to be applied to the `resource`. The
+	// size of the policy is limited to a few 10s of KB. An empty policy is a valid
+	// policy but certain Google Cloud services (such as Projects) might reject
+	// them.
 	Policy *GoogleIamV1Policy `json:"policy,omitempty"`
-
-	// UpdateMask: OPTIONAL: A FieldMask specifying which fields of the
-	// policy to modify. Only the fields in the mask will be modified. If no
-	// mask is provided, the following default mask is used: `paths:
-	// "bindings, etag"
+	// UpdateMask: OPTIONAL: A FieldMask specifying which fields of the policy to
+	// modify. Only the fields in the mask will be modified. If no mask is
+	// provided, the following default mask is used: `paths: "bindings, etag"
 	UpdateMask string `json:"updateMask,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Policy") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Policy") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Policy") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamV1SetIamPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamV1SetIamPolicyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleIamV1TestIamPermissionsRequest: Request message for
 // `TestIamPermissions` method.
 type GoogleIamV1TestIamPermissionsRequest struct {
-	// Permissions: The set of permissions to check for the `resource`.
-	// Permissions with wildcards (such as `*` or `storage.*`) are not
-	// allowed. For more information see IAM Overview
+	// Permissions: The set of permissions to check for the `resource`. Permissions
+	// with wildcards (such as `*` or `storage.*`) are not allowed. For more
+	// information see IAM Overview
 	// (https://cloud.google.com/iam/docs/overview#permissions).
 	Permissions []string `json:"permissions,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Permissions") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Permissions") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Permissions") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamV1TestIamPermissionsRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamV1TestIamPermissionsRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleIamV1TestIamPermissionsResponse: Response message for
 // `TestIamPermissions` method.
 type GoogleIamV1TestIamPermissionsResponse struct {
-	// Permissions: A subset of `TestPermissionsRequest.permissions` that
-	// the caller is allowed.
+	// Permissions: A subset of `TestPermissionsRequest.permissions` that the
+	// caller is allowed.
 	Permissions []string `json:"permissions,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Permissions") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Permissions") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Permissions") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamV1TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamV1TestIamPermissionsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleLongrunningCancelOperationRequest: The request message for
@@ -2728,467 +2081,1747 @@ type GoogleLongrunningCancelOperationRequest struct {
 type GoogleLongrunningListOperationsResponse struct {
 	// NextPageToken: The standard List next-page token.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
-	// Operations: A list of operations that matches the specified filter in
-	// the request.
+	// Operations: A list of operations that matches the specified filter in the
+	// request.
 	Operations []*GoogleLongrunningOperation `json:"operations,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleLongrunningListOperationsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleLongrunningListOperationsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleLongrunningOperation: This resource represents a long-running
 // operation that is the result of a network API call.
 type GoogleLongrunningOperation struct {
-	// Done: If the value is `false`, it means the operation is still in
-	// progress. If `true`, the operation is completed, and either `error`
-	// or `response` is available.
+	// Done: If the value is `false`, it means the operation is still in progress.
+	// If `true`, the operation is completed, and either `error` or `response` is
+	// available.
 	Done bool `json:"done,omitempty"`
-
-	// Error: The error result of the operation in case of failure or
-	// cancellation.
+	// Error: The error result of the operation in case of failure or cancellation.
 	Error *GoogleRpcStatus `json:"error,omitempty"`
-
 	// Metadata: Service-specific metadata associated with the operation. It
-	// typically contains progress information and common metadata such as
-	// create time. Some services might not provide such metadata. Any
-	// method that returns a long-running operation should document the
-	// metadata type, if any.
+	// typically contains progress information and common metadata such as create
+	// time. Some services might not provide such metadata. Any method that returns
+	// a long-running operation should document the metadata type, if any.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
-
-	// Name: The server-assigned name, which is only unique within the same
-	// service that originally returns it. If you use the default HTTP
-	// mapping, the `name` should be a resource name ending with
-	// `operations/{unique_id}`.
+	// Name: The server-assigned name, which is only unique within the same service
+	// that originally returns it. If you use the default HTTP mapping, the `name`
+	// should be a resource name ending with `operations/{unique_id}`.
 	Name string `json:"name,omitempty"`
-
-	// Response: The normal response of the operation in case of success. If
-	// the original method returns no data on success, such as `Delete`, the
-	// response is `google.protobuf.Empty`. If the original method is
-	// standard `Get`/`Create`/`Update`, the response should be the
-	// resource. For other methods, the response should have the type
-	// `XxxResponse`, where `Xxx` is the original method name. For example,
-	// if the original method name is `TakeSnapshot()`, the inferred
-	// response type is `TakeSnapshotResponse`.
+	// Response: The normal, successful response of the operation. If the original
+	// method returns no data on success, such as `Delete`, the response is
+	// `google.protobuf.Empty`. If the original method is standard
+	// `Get`/`Create`/`Update`, the response should be the resource. For other
+	// methods, the response should have the type `XxxResponse`, where `Xxx` is the
+	// original method name. For example, if the original method name is
+	// `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
 	Response googleapi.RawMessage `json:"response,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Done") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Done") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Done") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Done") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleLongrunningOperation) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleLongrunningOperation
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleRpcStatus: The `Status` type defines a logical error model that
-// is suitable for different programming environments, including REST
-// APIs and RPC APIs. It is used by gRPC (https://github.com/grpc). Each
-// `Status` message contains three pieces of data: error code, error
-// message, and error details. You can find out more about this error
-// model and how to work with it in the API Design Guide
-// (https://cloud.google.com/apis/design/errors).
+// GoogleRpcStatus: The `Status` type defines a logical error model that is
+// suitable for different programming environments, including REST APIs and RPC
+// APIs. It is used by gRPC (https://github.com/grpc). Each `Status` message
+// contains three pieces of data: error code, error message, and error details.
+// You can find out more about this error model and how to work with it in the
+// API Design Guide (https://cloud.google.com/apis/design/errors).
 type GoogleRpcStatus struct {
-	// Code: The status code, which should be an enum value of
-	// google.rpc.Code.
+	// Code: The status code, which should be an enum value of google.rpc.Code.
 	Code int64 `json:"code,omitempty"`
-
-	// Details: A list of messages that carry the error details. There is a
-	// common set of message types for APIs to use.
+	// Details: A list of messages that carry the error details. There is a common
+	// set of message types for APIs to use.
 	Details []googleapi.RawMessage `json:"details,omitempty"`
-
-	// Message: A developer-facing error message, which should be in
-	// English. Any user-facing error message should be localized and sent
-	// in the google.rpc.Status.details field, or localized by the client.
+	// Message: A developer-facing error message, which should be in English. Any
+	// user-facing error message should be localized and sent in the
+	// google.rpc.Status.details field, or localized by the client.
 	Message string `json:"message,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Code") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Code") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Code") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Code") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleRpcStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleRpcStatus
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleTypeExpr: Represents a textual expression in the Common
-// Expression Language (CEL) syntax. CEL is a C-like expression
-// language. The syntax and semantics of CEL are documented at
-// https://github.com/google/cel-spec. Example (Comparison): title:
-// "Summary size limit" description: "Determines if a summary is less
-// than 100 chars" expression: "document.summary.size() < 100" Example
-// (Equality): title: "Requestor is owner" description: "Determines if
-// requestor is the document owner" expression: "document.owner ==
-// request.auth.claims.email" Example (Logic): title: "Public documents"
-// description: "Determine whether the document should be publicly
-// visible" expression: "document.type != 'private' && document.type !=
-// 'internal'" Example (Data Manipulation): title: "Notification string"
-// description: "Create a notification string with a timestamp."
-// expression: "'New message received at ' +
-// string(document.create_time)" The exact variables and functions that
-// may be referenced within an expression are determined by the service
-// that evaluates it. See the service documentation for additional
+// GoogleTypeExpr: Represents a textual expression in the Common Expression
+// Language (CEL) syntax. CEL is a C-like expression language. The syntax and
+// semantics of CEL are documented at https://github.com/google/cel-spec.
+// Example (Comparison): title: "Summary size limit" description: "Determines
+// if a summary is less than 100 chars" expression: "document.summary.size() <
+// 100" Example (Equality): title: "Requestor is owner" description:
+// "Determines if requestor is the document owner" expression: "document.owner
+// == request.auth.claims.email" Example (Logic): title: "Public documents"
+// description: "Determine whether the document should be publicly visible"
+// expression: "document.type != 'private' && document.type != 'internal'"
+// Example (Data Manipulation): title: "Notification string" description:
+// "Create a notification string with a timestamp." expression: "'New message
+// received at ' + string(document.create_time)" The exact variables and
+// functions that may be referenced within an expression are determined by the
+// service that evaluates it. See the service documentation for additional
 // information.
 type GoogleTypeExpr struct {
-	// Description: Optional. Description of the expression. This is a
-	// longer text which describes the expression, e.g. when hovered over it
-	// in a UI.
+	// Description: Optional. Description of the expression. This is a longer text
+	// which describes the expression, e.g. when hovered over it in a UI.
 	Description string `json:"description,omitempty"`
-
-	// Expression: Textual representation of an expression in Common
-	// Expression Language syntax.
+	// Expression: Textual representation of an expression in Common Expression
+	// Language syntax.
 	Expression string `json:"expression,omitempty"`
-
-	// Location: Optional. String indicating the location of the expression
-	// for error reporting, e.g. a file name and a position in the file.
+	// Location: Optional. String indicating the location of the expression for
+	// error reporting, e.g. a file name and a position in the file.
 	Location string `json:"location,omitempty"`
-
-	// Title: Optional. Title for the expression, i.e. a short string
-	// describing its purpose. This can be used e.g. in UIs which allow to
-	// enter the expression.
+	// Title: Optional. Title for the expression, i.e. a short string describing
+	// its purpose. This can be used e.g. in UIs which allow to enter the
+	// expression.
 	Title string `json:"title,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Description") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Description") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Description") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleTypeExpr) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleTypeExpr
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// Ingress: Settings of how to connect to the ClientGateway. One of the
-// following options should be set.
-type Ingress struct {
-	// Config: The basic ingress config for ClientGateways.
-	Config *Config `json:"config,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Config") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Config") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *Ingress) MarshalJSON() ([]byte, error) {
-	type NoMethod Ingress
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// ListAppGatewaysResponse: Response message for
-// BeyondCorp.ListAppGateways.
+// ListAppGatewaysResponse: Response message for BeyondCorp.ListAppGateways.
 type ListAppGatewaysResponse struct {
 	// AppGateways: A list of BeyondCorp AppGateways in the project.
 	AppGateways []*AppGateway `json:"appGateways,omitempty"`
-
-	// NextPageToken: A token to retrieve the next page of results, or empty
-	// if there are no more results in the list.
+	// NextPageToken: A token to retrieve the next page of results, or empty if
+	// there are no more results in the list.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Unreachable: A list of locations that could not be reached.
 	Unreachable []string `json:"unreachable,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "AppGateways") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AppGateways") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AppGateways") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListAppGatewaysResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListAppGatewaysResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// ListClientConnectorServicesResponse: Message for response to listing
-// ClientConnectorServices.
-type ListClientConnectorServicesResponse struct {
-	// ClientConnectorServices: The list of ClientConnectorService.
-	ClientConnectorServices []*ClientConnectorService `json:"clientConnectorServices,omitempty"`
-
-	// NextPageToken: A token identifying a page of results the server
-	// should return.
-	NextPageToken string `json:"nextPageToken,omitempty"`
-
-	// Unreachable: Locations that could not be reached.
-	Unreachable []string `json:"unreachable,omitempty"`
-
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
-	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "ClientConnectorServices") to unconditionally include in API
-	// requests. By default, fields with empty or default values are omitted
-	// from API requests. However, any non-pointer, non-interface field
-	// appearing in ForceSendFields will be sent to the server regardless of
-	// whether the field is empty or not. This may be used to include empty
-	// fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ClientConnectorServices")
-	// to include in API requests with the JSON null value. By default,
-	// fields with empty values are omitted from API requests. However, any
-	// field with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *ListClientConnectorServicesResponse) MarshalJSON() ([]byte, error) {
-	type NoMethod ListClientConnectorServicesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// ListClientGatewaysResponse: Message for response to listing
-// ClientGateways.
-type ListClientGatewaysResponse struct {
-	// ClientGateways: The list of ClientGateway.
-	ClientGateways []*ClientGateway `json:"clientGateways,omitempty"`
-
-	// NextPageToken: A token identifying a page of results the server
-	// should return.
-	NextPageToken string `json:"nextPageToken,omitempty"`
-
-	// Unreachable: Locations that could not be reached.
-	Unreachable []string `json:"unreachable,omitempty"`
-
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
-	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "ClientGateways") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ClientGateways") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *ListClientGatewaysResponse) MarshalJSON() ([]byte, error) {
-	type NoMethod ListClientGatewaysResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// PeeredVpc: The peered VPC owned by the consumer project.
-type PeeredVpc struct {
-	// NetworkVpc: Required. The name of the peered VPC owned by the
-	// consumer project.
-	NetworkVpc string `json:"networkVpc,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "NetworkVpc") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NetworkVpc") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *PeeredVpc) MarshalJSON() ([]byte, error) {
-	type NoMethod PeeredVpc
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// Tunnelv1ProtoTunnelerError: TunnelerError is an error proto for
-// errors returned by the connection manager.
+// Tunnelv1ProtoTunnelerError: TunnelerError is an error proto for errors
+// returned by the connection manager.
 type Tunnelv1ProtoTunnelerError struct {
 	// Err: Original raw error
 	Err string `json:"err,omitempty"`
-
-	// Retryable: retryable isn't used for now, but we may want to reuse it
-	// in the future.
+	// Retryable: retryable isn't used for now, but we may want to reuse it in the
+	// future.
 	Retryable bool `json:"retryable,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Err") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Err") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Err") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Err") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Tunnelv1ProtoTunnelerError) MarshalJSON() ([]byte, error) {
 	type NoMethod Tunnelv1ProtoTunnelerError
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// Tunnelv1ProtoTunnelerInfo: TunnelerInfo contains metadata about
-// tunneler launched by connection manager.
+// Tunnelv1ProtoTunnelerInfo: TunnelerInfo contains metadata about tunneler
+// launched by connection manager.
 type Tunnelv1ProtoTunnelerInfo struct {
 	// BackoffRetryCount: backoff_retry_count stores the number of times the
-	// tunneler has been retried by tunManager for current backoff sequence.
-	// Gets reset to 0 if time difference between 2 consecutive retries
-	// exceeds backoffRetryResetTime.
+	// tunneler has been retried by tunManager for current backoff sequence. Gets
+	// reset to 0 if time difference between 2 consecutive retries exceeds
+	// backoffRetryResetTime.
 	BackoffRetryCount int64 `json:"backoffRetryCount,omitempty"`
-
 	// Id: id is the unique id of a tunneler.
 	Id string `json:"id,omitempty"`
-
-	// LatestErr: latest_err stores the Error for the latest tunneler
-	// failure. Gets reset everytime the tunneler is retried by tunManager.
+	// LatestErr: latest_err stores the Error for the latest tunneler failure. Gets
+	// reset everytime the tunneler is retried by tunManager.
 	LatestErr *Tunnelv1ProtoTunnelerError `json:"latestErr,omitempty"`
-
-	// LatestRetryTime: latest_retry_time stores the time when the tunneler
-	// was last restarted.
+	// LatestRetryTime: latest_retry_time stores the time when the tunneler was
+	// last restarted.
 	LatestRetryTime string `json:"latestRetryTime,omitempty"`
-
-	// TotalRetryCount: total_retry_count stores the total number of times
-	// the tunneler has been retried by tunManager.
+	// TotalRetryCount: total_retry_count stores the total number of times the
+	// tunneler has been retried by tunManager.
 	TotalRetryCount int64 `json:"totalRetryCount,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "BackoffRetryCount")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "BackoffRetryCount") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "BackoffRetryCount") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "BackoffRetryCount") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Tunnelv1ProtoTunnelerInfo) MarshalJSON() ([]byte, error) {
 	type NoMethod Tunnelv1ProtoTunnelerInfo
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// method id "beyondcorp.projects.locations.get":
+type OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall struct {
+	s            *Service
+	resource     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetIamPolicy: Gets the access control policy for a resource. Returns an
+// empty policy if the resource exists and does not have a policy set.
+//
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
+func (r *OrganizationsLocationsGlobalPartnerTenantsService) GetIamPolicy(resource string) *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall {
+	c := &OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	return c
+}
+
+// OptionsRequestedPolicyVersion sets the optional parameter
+// "options.requestedPolicyVersion": The maximum policy version that will be
+// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+// an invalid value will be rejected. Requests for policies with any
+// conditional role bindings must specify version 3. Policies with no
+// conditional role bindings may specify any valid value or leave the field
+// unset. The policy in the response might use the policy version that you
+// specified, or it might use a lower policy version. For example, if you
+// specify version 3, but the policy has no conditional role bindings, the
+// response uses version 1. To learn which resources support conditions in
+// their IAM policies, see the IAM documentation
+// (https://cloud.google.com/iam/help/conditions/resource-policies).
+func (c *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall) OptionsRequestedPolicyVersion(optionsRequestedPolicyVersion int64) *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall {
+	c.urlParams_.Set("options.requestedPolicyVersion", fmt.Sprint(optionsRequestedPolicyVersion))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall) Fields(s ...googleapi.Field) *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall) IfNoneMatch(entityTag string) *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall) Context(ctx context.Context) *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:getIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.global.partnerTenants.getIamPolicy" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *OrganizationsLocationsGlobalPartnerTenantsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleIamV1Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall struct {
+	s                              *Service
+	resource                       string
+	googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest
+	urlParams_                     gensupport.URLParams
+	ctx_                           context.Context
+	header_                        http.Header
+}
+
+// SetIamPolicy: Sets the access control policy on the specified resource.
+// Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`,
+// and `PERMISSION_DENIED` errors.
+//
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
+func (r *OrganizationsLocationsGlobalPartnerTenantsService) SetIamPolicy(resource string, googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest) *OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall {
+	c := &OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.googleiamv1setiampolicyrequest = googleiamv1setiampolicyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall) Fields(s ...googleapi.Field) *OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall) Context(ctx context.Context) *OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1setiampolicyrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.global.partnerTenants.setIamPolicy" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *OrganizationsLocationsGlobalPartnerTenantsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleIamV1Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall struct {
+	s                                    *Service
+	resource                             string
+	googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest
+	urlParams_                           gensupport.URLParams
+	ctx_                                 context.Context
+	header_                              http.Header
+}
+
+// TestIamPermissions: Returns permissions that a caller has on the specified
+// resource. If the resource does not exist, this will return an empty set of
+// permissions, not a `NOT_FOUND` error. Note: This operation is designed to be
+// used for building permission-aware UIs and command-line tools, not for
+// authorization checking. This operation may "fail open" without warning.
+//
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
+func (r *OrganizationsLocationsGlobalPartnerTenantsService) TestIamPermissions(resource string, googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest) *OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall {
+	c := &OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.googleiamv1testiampermissionsrequest = googleiamv1testiampermissionsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall) Fields(s ...googleapi.Field) *OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall) Context(ctx context.Context) *OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1testiampermissionsrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.global.partnerTenants.testIamPermissions" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1TestIamPermissionsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *OrganizationsLocationsGlobalPartnerTenantsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1TestIamPermissionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleIamV1TestIamPermissionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall struct {
+	s            *Service
+	resource     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetIamPolicy: Gets the access control policy for a resource. Returns an
+// empty policy if the resource exists and does not have a policy set.
+//
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
+func (r *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesService) GetIamPolicy(resource string) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall {
+	c := &OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	return c
+}
+
+// OptionsRequestedPolicyVersion sets the optional parameter
+// "options.requestedPolicyVersion": The maximum policy version that will be
+// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+// an invalid value will be rejected. Requests for policies with any
+// conditional role bindings must specify version 3. Policies with no
+// conditional role bindings may specify any valid value or leave the field
+// unset. The policy in the response might use the policy version that you
+// specified, or it might use a lower policy version. For example, if you
+// specify version 3, but the policy has no conditional role bindings, the
+// response uses version 1. To learn which resources support conditions in
+// their IAM policies, see the IAM documentation
+// (https://cloud.google.com/iam/help/conditions/resource-policies).
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall) OptionsRequestedPolicyVersion(optionsRequestedPolicyVersion int64) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall {
+	c.urlParams_.Set("options.requestedPolicyVersion", fmt.Sprint(optionsRequestedPolicyVersion))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall) Fields(s ...googleapi.Field) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall) IfNoneMatch(entityTag string) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall) Context(ctx context.Context) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:getIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.getIamPolicy" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleIamV1Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall struct {
+	s                              *Service
+	resource                       string
+	googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest
+	urlParams_                     gensupport.URLParams
+	ctx_                           context.Context
+	header_                        http.Header
+}
+
+// SetIamPolicy: Sets the access control policy on the specified resource.
+// Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`,
+// and `PERMISSION_DENIED` errors.
+//
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
+func (r *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesService) SetIamPolicy(resource string, googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall {
+	c := &OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.googleiamv1setiampolicyrequest = googleiamv1setiampolicyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall) Fields(s ...googleapi.Field) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall) Context(ctx context.Context) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1setiampolicyrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.setIamPolicy" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleIamV1Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall struct {
+	s                                    *Service
+	resource                             string
+	googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest
+	urlParams_                           gensupport.URLParams
+	ctx_                                 context.Context
+	header_                              http.Header
+}
+
+// TestIamPermissions: Returns permissions that a caller has on the specified
+// resource. If the resource does not exist, this will return an empty set of
+// permissions, not a `NOT_FOUND` error. Note: This operation is designed to be
+// used for building permission-aware UIs and command-line tools, not for
+// authorization checking. This operation may "fail open" without warning.
+//
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
+func (r *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesService) TestIamPermissions(resource string, googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall {
+	c := &OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.googleiamv1testiampermissionsrequest = googleiamv1testiampermissionsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall) Fields(s ...googleapi.Field) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall) Context(ctx context.Context) *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1testiampermissionsrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.testIamPermissions" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1TestIamPermissionsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *OrganizationsLocationsGlobalPartnerTenantsBrowserDlpRulesTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1TestIamPermissionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleIamV1TestIamPermissionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall struct {
+	s            *Service
+	resource     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetIamPolicy: Gets the access control policy for a resource. Returns an
+// empty policy if the resource exists and does not have a policy set.
+//
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
+func (r *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsService) GetIamPolicy(resource string) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall {
+	c := &OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	return c
+}
+
+// OptionsRequestedPolicyVersion sets the optional parameter
+// "options.requestedPolicyVersion": The maximum policy version that will be
+// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+// an invalid value will be rejected. Requests for policies with any
+// conditional role bindings must specify version 3. Policies with no
+// conditional role bindings may specify any valid value or leave the field
+// unset. The policy in the response might use the policy version that you
+// specified, or it might use a lower policy version. For example, if you
+// specify version 3, but the policy has no conditional role bindings, the
+// response uses version 1. To learn which resources support conditions in
+// their IAM policies, see the IAM documentation
+// (https://cloud.google.com/iam/help/conditions/resource-policies).
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall) OptionsRequestedPolicyVersion(optionsRequestedPolicyVersion int64) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall {
+	c.urlParams_.Set("options.requestedPolicyVersion", fmt.Sprint(optionsRequestedPolicyVersion))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall) Fields(s ...googleapi.Field) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall) IfNoneMatch(entityTag string) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall) Context(ctx context.Context) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:getIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.getIamPolicy" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleIamV1Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall struct {
+	s                              *Service
+	resource                       string
+	googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest
+	urlParams_                     gensupport.URLParams
+	ctx_                           context.Context
+	header_                        http.Header
+}
+
+// SetIamPolicy: Sets the access control policy on the specified resource.
+// Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`,
+// and `PERMISSION_DENIED` errors.
+//
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
+func (r *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsService) SetIamPolicy(resource string, googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall {
+	c := &OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.googleiamv1setiampolicyrequest = googleiamv1setiampolicyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall) Fields(s ...googleapi.Field) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall) Context(ctx context.Context) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1setiampolicyrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.setIamPolicy" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleIamV1Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall struct {
+	s                                    *Service
+	resource                             string
+	googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest
+	urlParams_                           gensupport.URLParams
+	ctx_                                 context.Context
+	header_                              http.Header
+}
+
+// TestIamPermissions: Returns permissions that a caller has on the specified
+// resource. If the resource does not exist, this will return an empty set of
+// permissions, not a `NOT_FOUND` error. Note: This operation is designed to be
+// used for building permission-aware UIs and command-line tools, not for
+// authorization checking. This operation may "fail open" without warning.
+//
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
+func (r *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsService) TestIamPermissions(resource string, googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall {
+	c := &OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.googleiamv1testiampermissionsrequest = googleiamv1testiampermissionsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall) Fields(s ...googleapi.Field) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall) Context(ctx context.Context) *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1testiampermissionsrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.testIamPermissions" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1TestIamPermissionsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *OrganizationsLocationsGlobalPartnerTenantsProxyConfigsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1TestIamPermissionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleIamV1TestIamPermissionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsOperationsCancelCall struct {
+	s                                       *Service
+	name                                    string
+	googlelongrunningcanceloperationrequest *GoogleLongrunningCancelOperationRequest
+	urlParams_                              gensupport.URLParams
+	ctx_                                    context.Context
+	header_                                 http.Header
+}
+
+// Cancel: Starts asynchronous cancellation on a long-running operation. The
+// server makes a best effort to cancel the operation, but success is not
+// guaranteed. If the server doesn't support this method, it returns
+// `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or
+// other methods to check whether the cancellation succeeded or whether the
+// operation completed despite cancellation. On successful cancellation, the
+// operation is not deleted; instead, it becomes an operation with an
+// Operation.error value with a google.rpc.Status.code of 1, corresponding to
+// `Code.CANCELLED`.
+//
+// - name: The name of the operation resource to be cancelled.
+func (r *OrganizationsLocationsOperationsService) Cancel(name string, googlelongrunningcanceloperationrequest *GoogleLongrunningCancelOperationRequest) *OrganizationsLocationsOperationsCancelCall {
+	c := &OrganizationsLocationsOperationsCancelCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.googlelongrunningcanceloperationrequest = googlelongrunningcanceloperationrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsOperationsCancelCall) Fields(s ...googleapi.Field) *OrganizationsLocationsOperationsCancelCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsOperationsCancelCall) Context(ctx context.Context) *OrganizationsLocationsOperationsCancelCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsOperationsCancelCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsOperationsCancelCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlelongrunningcanceloperationrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:cancel")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.operations.cancel" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *OrganizationsLocationsOperationsCancelCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Empty{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsOperationsDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a long-running operation. This method indicates that the
+// client is no longer interested in the operation result. It does not cancel
+// the operation. If the server doesn't support this method, it returns
+// `google.rpc.Code.UNIMPLEMENTED`.
+//
+// - name: The name of the operation resource to be deleted.
+func (r *OrganizationsLocationsOperationsService) Delete(name string) *OrganizationsLocationsOperationsDeleteCall {
+	c := &OrganizationsLocationsOperationsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsOperationsDeleteCall) Fields(s ...googleapi.Field) *OrganizationsLocationsOperationsDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsOperationsDeleteCall) Context(ctx context.Context) *OrganizationsLocationsOperationsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsOperationsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsOperationsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.operations.delete" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *OrganizationsLocationsOperationsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Empty{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsOperationsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
+//
+// - name: The name of the operation resource.
+func (r *OrganizationsLocationsOperationsService) Get(name string) *OrganizationsLocationsOperationsGetCall {
+	c := &OrganizationsLocationsOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsOperationsGetCall) Fields(s ...googleapi.Field) *OrganizationsLocationsOperationsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *OrganizationsLocationsOperationsGetCall) IfNoneMatch(entityTag string) *OrganizationsLocationsOperationsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsOperationsGetCall) Context(ctx context.Context) *OrganizationsLocationsOperationsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsOperationsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsOperationsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.operations.get" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *OrganizationsLocationsOperationsGetCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleLongrunningOperation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type OrganizationsLocationsOperationsListCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists operations that match the specified filter in the request. If
+// the server doesn't support this method, it returns `UNIMPLEMENTED`.
+//
+// - name: The name of the operation's parent resource.
+func (r *OrganizationsLocationsOperationsService) List(name string) *OrganizationsLocationsOperationsListCall {
+	c := &OrganizationsLocationsOperationsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Filter sets the optional parameter "filter": The standard list filter.
+func (c *OrganizationsLocationsOperationsListCall) Filter(filter string) *OrganizationsLocationsOperationsListCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The standard list page
+// size.
+func (c *OrganizationsLocationsOperationsListCall) PageSize(pageSize int64) *OrganizationsLocationsOperationsListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The standard list page
+// token.
+func (c *OrganizationsLocationsOperationsListCall) PageToken(pageToken string) *OrganizationsLocationsOperationsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *OrganizationsLocationsOperationsListCall) Fields(s ...googleapi.Field) *OrganizationsLocationsOperationsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *OrganizationsLocationsOperationsListCall) IfNoneMatch(entityTag string) *OrganizationsLocationsOperationsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *OrganizationsLocationsOperationsListCall) Context(ctx context.Context) *OrganizationsLocationsOperationsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *OrganizationsLocationsOperationsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OrganizationsLocationsOperationsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}/operations")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "beyondcorp.organizations.locations.operations.list" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleLongrunningListOperationsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *OrganizationsLocationsOperationsListCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningListOperationsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &GoogleLongrunningListOperationsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *OrganizationsLocationsOperationsListCall) Pages(ctx context.Context, f func(*GoogleLongrunningListOperationsResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
 
 type ProjectsLocationsGetCall struct {
 	s            *Service
@@ -3209,33 +3842,29 @@ func (r *ProjectsLocationsService) Get(name string) *ProjectsLocationsGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsGetCall) Context(ctx context.Context) *ProjectsLocationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3244,12 +3873,7 @@ func (c *ProjectsLocationsGetCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -3270,12 +3894,11 @@ func (c *ProjectsLocationsGetCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "beyondcorp.projects.locations.get" call.
-// Exactly one of *GoogleCloudLocationLocation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleCloudLocationLocation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleCloudLocationLocation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloudLocationLocation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3283,17 +3906,17 @@ func (c *ProjectsLocationsGetCall) Do(opts ...googleapi.CallOption) (*GoogleClou
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudLocationLocation{
 		ServerResponse: googleapi.ServerResponse{
@@ -3306,35 +3929,7 @@ func (c *ProjectsLocationsGetCall) Do(opts ...googleapi.CallOption) (*GoogleClou
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets information about a location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Resource name for the location.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleCloudLocationLocation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.list":
 
 type ProjectsLocationsListCall struct {
 	s            *Service
@@ -3345,69 +3940,63 @@ type ProjectsLocationsListCall struct {
 	header_      http.Header
 }
 
-// List: Lists information about the supported locations for this
-// service.
+// List: Lists information about the supported locations for this service.
 //
-//   - name: The resource that owns the locations collection, if
-//     applicable.
+// - name: The resource that owns the locations collection, if applicable.
 func (r *ProjectsLocationsService) List(name string) *ProjectsLocationsListCall {
 	c := &ProjectsLocationsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
 	return c
 }
 
-// Filter sets the optional parameter "filter": A filter to narrow down
-// results to a preferred subset. The filtering language accepts strings
-// like "displayName=tokyo", and is documented in more detail in
-// AIP-160 (https://google.aip.dev/160).
+// Filter sets the optional parameter "filter": A filter to narrow down results
+// to a preferred subset. The filtering language accepts strings like
+// "displayName=tokyo", and is documented in more detail in AIP-160
+// (https://google.aip.dev/160).
 func (c *ProjectsLocationsListCall) Filter(filter string) *ProjectsLocationsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of results to return. If not set, the service selects a default.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// results to return. If not set, the service selects a default.
 func (c *ProjectsLocationsListCall) PageSize(pageSize int64) *ProjectsLocationsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token
-// received from the `next_page_token` field in the response. Send that
-// page token to receive the subsequent page.
+// PageToken sets the optional parameter "pageToken": A page token received
+// from the `next_page_token` field in the response. Send that page token to
+// receive the subsequent page.
 func (c *ProjectsLocationsListCall) PageToken(pageToken string) *ProjectsLocationsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsListCall) Context(ctx context.Context) *ProjectsLocationsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3416,12 +4005,7 @@ func (c *ProjectsLocationsListCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -3442,14 +4026,11 @@ func (c *ProjectsLocationsListCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "beyondcorp.projects.locations.list" call.
-// Exactly one of *GoogleCloudLocationListLocationsResponse or error
-// will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleCloudLocationListLocationsResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudLocationListLocationsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsListCall) Do(opts ...googleapi.CallOption) (*GoogleCloudLocationListLocationsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3457,17 +4038,17 @@ func (c *ProjectsLocationsListCall) Do(opts ...googleapi.CallOption) (*GoogleClo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudLocationListLocationsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -3480,48 +4061,6 @@ func (c *ProjectsLocationsListCall) Do(opts ...googleapi.CallOption) (*GoogleClo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists information about the supported locations for this service.",
-	//   "flatPath": "v1/projects/{projectsId}/locations",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.list",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "A filter to narrow down results to a preferred subset. The filtering language accepts strings like `\"displayName=tokyo\"`, and is documented in more detail in [AIP-160](https://google.aip.dev/160).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "name": {
-	//       "description": "The resource that owns the locations collection, if applicable.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of results to return. If not set, the service selects a default.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A page token received from the `next_page_token` field in the response. Send that page token to receive the subsequent page.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}/locations",
-	//   "response": {
-	//     "$ref": "GoogleCloudLocationListLocationsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -3529,7 +4068,7 @@ func (c *ProjectsLocationsListCall) Do(opts ...googleapi.CallOption) (*GoogleClo
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsListCall) Pages(ctx context.Context, f func(*GoogleCloudLocationListLocationsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -3545,8 +4084,6 @@ func (c *ProjectsLocationsListCall) Pages(ctx context.Context, f func(*GoogleClo
 	}
 }
 
-// method id "beyondcorp.projects.locations.appConnections.create":
-
 type ProjectsLocationsAppConnectionsCreateCall struct {
 	s                                                  *Service
 	parent                                             string
@@ -3558,8 +4095,8 @@ type ProjectsLocationsAppConnectionsCreateCall struct {
 
 // Create: Creates a new AppConnection in a given project and location.
 //
-//   - parent: The resource project name of the AppConnection location
-//     using the form: `projects/{project_id}/locations/{location_id}`.
+//   - parent: The resource project name of the AppConnection location using the
+//     form: `projects/{project_id}/locations/{location_id}`.
 func (r *ProjectsLocationsAppConnectionsService) Create(parent string, googlecloudbeyondcorpappconnectionsv1appconnection *GoogleCloudBeyondcorpAppconnectionsV1AppConnection) *ProjectsLocationsAppConnectionsCreateCall {
 	c := &ProjectsLocationsAppConnectionsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -3567,59 +4104,54 @@ func (r *ProjectsLocationsAppConnectionsService) Create(parent string, googleclo
 	return c
 }
 
-// AppConnectionId sets the optional parameter "appConnectionId":
-// User-settable AppConnection resource ID. * Must start with a letter.
-// * Must contain between 4-63 characters from `/a-z-/`. * Must end with
-// a number or a letter.
+// AppConnectionId sets the optional parameter "appConnectionId": User-settable
+// AppConnection resource ID. * Must start with a letter. * Must contain
+// between 4-63 characters from `/a-z-/`. * Must end with a number or a letter.
 func (c *ProjectsLocationsAppConnectionsCreateCall) AppConnectionId(appConnectionId string) *ProjectsLocationsAppConnectionsCreateCall {
 	c.urlParams_.Set("appConnectionId", appConnectionId)
 	return c
 }
 
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes since the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. The server will guarantee that for at least 60 minutes since
+// the first request. For example, consider a situation where you make an
+// initial request and the request times out. If you make the request again
+// with the same request ID, the server can check if original operation with
+// the same request ID was received, and if so, will ignore the second request.
+// This prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
 func (c *ProjectsLocationsAppConnectionsCreateCall) RequestId(requestId string) *ProjectsLocationsAppConnectionsCreateCall {
 	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
+// ValidateOnly sets the optional parameter "validateOnly": If set, validates
+// request by executing a dry-run which would not alter the resource in any
+// way.
 func (c *ProjectsLocationsAppConnectionsCreateCall) ValidateOnly(validateOnly bool) *ProjectsLocationsAppConnectionsCreateCall {
 	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectionsCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectionsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectionsCreateCall) Context(ctx context.Context) *ProjectsLocationsAppConnectionsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectionsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3628,18 +4160,12 @@ func (c *ProjectsLocationsAppConnectionsCreateCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectionsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudbeyondcorpappconnectionsv1appconnection)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/appConnections")
@@ -3656,12 +4182,11 @@ func (c *ProjectsLocationsAppConnectionsCreateCall) doRequest(alt string) (*http
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnections.create" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectionsCreateCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3669,17 +4194,17 @@ func (c *ProjectsLocationsAppConnectionsCreateCall) Do(opts ...googleapi.CallOpt
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -3692,53 +4217,7 @@ func (c *ProjectsLocationsAppConnectionsCreateCall) Do(opts ...googleapi.CallOpt
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new AppConnection in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnections",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appConnections.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "appConnectionId": {
-	//       "description": "Optional. User-settable AppConnection resource ID. * Must start with a letter. * Must contain between 4-63 characters from `/a-z-/`. * Must end with a number or a letter.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The resource project name of the AppConnection location using the form: `projects/{project_id}/locations/{location_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/appConnections",
-	//   "request": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectionsV1AppConnection"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnections.delete":
 
 type ProjectsLocationsAppConnectionsDeleteCall struct {
 	s          *Service
@@ -3751,58 +4230,54 @@ type ProjectsLocationsAppConnectionsDeleteCall struct {
 // Delete: Deletes a single AppConnection.
 //
 //   - name: BeyondCorp Connector name using the form:
-//     `projects/{project_id}/locations/{location_id}/appConnections/{app_c
-//     onnection_id}`.
+//     `projects/{project_id}/locations/{location_id}/appConnections/{app_connecti
+//     on_id}`.
 func (r *ProjectsLocationsAppConnectionsService) Delete(name string) *ProjectsLocationsAppConnectionsDeleteCall {
 	c := &ProjectsLocationsAppConnectionsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
 	return c
 }
 
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes after the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. The server will guarantee that for at least 60 minutes after
+// the first request. For example, consider a situation where you make an
+// initial request and the request times out. If you make the request again
+// with the same request ID, the server can check if original operation with
+// the same request ID was received, and if so, will ignore the second request.
+// This prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
 func (c *ProjectsLocationsAppConnectionsDeleteCall) RequestId(requestId string) *ProjectsLocationsAppConnectionsDeleteCall {
 	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
+// ValidateOnly sets the optional parameter "validateOnly": If set, validates
+// request by executing a dry-run which would not alter the resource in any
+// way.
 func (c *ProjectsLocationsAppConnectionsDeleteCall) ValidateOnly(validateOnly bool) *ProjectsLocationsAppConnectionsDeleteCall {
 	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectionsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectionsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectionsDeleteCall) Context(ctx context.Context) *ProjectsLocationsAppConnectionsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectionsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3811,12 +4286,7 @@ func (c *ProjectsLocationsAppConnectionsDeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectionsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -3834,12 +4304,11 @@ func (c *ProjectsLocationsAppConnectionsDeleteCall) doRequest(alt string) (*http
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnections.delete" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectionsDeleteCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3847,17 +4316,17 @@ func (c *ProjectsLocationsAppConnectionsDeleteCall) Do(opts ...googleapi.CallOpt
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -3870,45 +4339,7 @@ func (c *ProjectsLocationsAppConnectionsDeleteCall) Do(opts ...googleapi.CallOpt
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a single AppConnection.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnections/{appConnectionsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "beyondcorp.projects.locations.appConnections.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. BeyondCorp Connector name using the form: `projects/{project_id}/locations/{location_id}/appConnections/{app_connection_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnections/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnections.get":
 
 type ProjectsLocationsAppConnectionsGetCall struct {
 	s            *Service
@@ -3922,8 +4353,8 @@ type ProjectsLocationsAppConnectionsGetCall struct {
 // Get: Gets details of a single AppConnection.
 //
 //   - name: BeyondCorp AppConnection name using the form:
-//     `projects/{project_id}/locations/{location_id}/appConnections/{app_c
-//     onnection_id}`.
+//     `projects/{project_id}/locations/{location_id}/appConnections/{app_connecti
+//     on_id}`.
 func (r *ProjectsLocationsAppConnectionsService) Get(name string) *ProjectsLocationsAppConnectionsGetCall {
 	c := &ProjectsLocationsAppConnectionsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -3931,33 +4362,29 @@ func (r *ProjectsLocationsAppConnectionsService) Get(name string) *ProjectsLocat
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectionsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectionsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppConnectionsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppConnectionsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectionsGetCall) Context(ctx context.Context) *ProjectsLocationsAppConnectionsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectionsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3966,12 +4393,7 @@ func (c *ProjectsLocationsAppConnectionsGetCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectionsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -3992,14 +4414,11 @@ func (c *ProjectsLocationsAppConnectionsGetCall) doRequest(alt string) (*http.Re
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnections.get" call.
-// Exactly one of *GoogleCloudBeyondcorpAppconnectionsV1AppConnection or
-// error will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleCloudBeyondcorpAppconnectionsV1AppConnection.ServerResponse.Hea
-// der or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudBeyondcorpAppconnectionsV1AppConnection.ServerResponse.Header or
+// (if a response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectionsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloudBeyondcorpAppconnectionsV1AppConnection, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4007,17 +4426,17 @@ func (c *ProjectsLocationsAppConnectionsGetCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudBeyondcorpAppconnectionsV1AppConnection{
 		ServerResponse: googleapi.ServerResponse{
@@ -4030,35 +4449,7 @@ func (c *ProjectsLocationsAppConnectionsGetCall) Do(opts ...googleapi.CallOption
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets details of a single AppConnection.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnections/{appConnectionsId}",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appConnections.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. BeyondCorp AppConnection name using the form: `projects/{project_id}/locations/{location_id}/appConnections/{app_connection_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnections/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectionsV1AppConnection"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnections.getIamPolicy":
 
 type ProjectsLocationsAppConnectionsGetIamPolicyCall struct {
 	s            *Service
@@ -4069,14 +4460,12 @@ type ProjectsLocationsAppConnectionsGetIamPolicyCall struct {
 	header_      http.Header
 }
 
-// GetIamPolicy: Gets the access control policy for a resource. Returns
-// an empty policy if the resource exists and does not have a policy
-// set.
+// GetIamPolicy: Gets the access control policy for a resource. Returns an
+// empty policy if the resource exists and does not have a policy set.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsAppConnectionsService) GetIamPolicy(resource string) *ProjectsLocationsAppConnectionsGetIamPolicyCall {
 	c := &ProjectsLocationsAppConnectionsGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -4084,17 +4473,16 @@ func (r *ProjectsLocationsAppConnectionsService) GetIamPolicy(resource string) *
 }
 
 // OptionsRequestedPolicyVersion sets the optional parameter
-// "options.requestedPolicyVersion": The maximum policy version that
-// will be used to format the policy. Valid values are 0, 1, and 3.
-// Requests specifying an invalid value will be rejected. Requests for
-// policies with any conditional role bindings must specify version 3.
-// Policies with no conditional role bindings may specify any valid
-// value or leave the field unset. The policy in the response might use
-// the policy version that you specified, or it might use a lower policy
-// version. For example, if you specify version 3, but the policy has no
-// conditional role bindings, the response uses version 1. To learn
-// which resources support conditions in their IAM policies, see the IAM
-// documentation
+// "options.requestedPolicyVersion": The maximum policy version that will be
+// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+// an invalid value will be rejected. Requests for policies with any
+// conditional role bindings must specify version 3. Policies with no
+// conditional role bindings may specify any valid value or leave the field
+// unset. The policy in the response might use the policy version that you
+// specified, or it might use a lower policy version. For example, if you
+// specify version 3, but the policy has no conditional role bindings, the
+// response uses version 1. To learn which resources support conditions in
+// their IAM policies, see the IAM documentation
 // (https://cloud.google.com/iam/help/conditions/resource-policies).
 func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) OptionsRequestedPolicyVersion(optionsRequestedPolicyVersion int64) *ProjectsLocationsAppConnectionsGetIamPolicyCall {
 	c.urlParams_.Set("options.requestedPolicyVersion", fmt.Sprint(optionsRequestedPolicyVersion))
@@ -4102,33 +4490,29 @@ func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) OptionsRequestedPolicy
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectionsGetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppConnectionsGetIamPolicyCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsAppConnectionsGetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4137,12 +4521,7 @@ func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -4163,12 +4542,11 @@ func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) doRequest(alt string) 
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnections.getIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4176,17 +4554,17 @@ func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) Do(opts ...googleapi.C
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -4199,41 +4577,7 @@ func (c *ProjectsLocationsAppConnectionsGetIamPolicyCall) Do(opts ...googleapi.C
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnections/{appConnectionsId}:getIamPolicy",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appConnections.getIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "options.requestedPolicyVersion": {
-	//       "description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnections/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:getIamPolicy",
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnections.list":
 
 type ProjectsLocationsAppConnectionsListCall struct {
 	s            *Service
@@ -4246,77 +4590,71 @@ type ProjectsLocationsAppConnectionsListCall struct {
 
 // List: Lists AppConnections in a given project and location.
 //
-//   - parent: The resource name of the AppConnection location using the
-//     form: `projects/{project_id}/locations/{location_id}`.
+//   - parent: The resource name of the AppConnection location using the form:
+//     `projects/{project_id}/locations/{location_id}`.
 func (r *ProjectsLocationsAppConnectionsService) List(parent string) *ProjectsLocationsAppConnectionsListCall {
 	c := &ProjectsLocationsAppConnectionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// Filter sets the optional parameter "filter": A filter specifying
-// constraints of a list operation.
+// Filter sets the optional parameter "filter": A filter specifying constraints
+// of a list operation.
 func (c *ProjectsLocationsAppConnectionsListCall) Filter(filter string) *ProjectsLocationsAppConnectionsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// OrderBy sets the optional parameter "orderBy": Specifies the ordering
-// of results. See Sorting order
-// (https://cloud.google.com/apis/design/design_patterns#sorting_order)
-// for more information.
+// OrderBy sets the optional parameter "orderBy": Specifies the ordering of
+// results. See Sorting order
+// (https://cloud.google.com/apis/design/design_patterns#sorting_order) for
+// more information.
 func (c *ProjectsLocationsAppConnectionsListCall) OrderBy(orderBy string) *ProjectsLocationsAppConnectionsListCall {
 	c.urlParams_.Set("orderBy", orderBy)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of items to return. If not specified, a default value of 50 will be
-// used by the service. Regardless of the page_size value, the response
-// may include a partial list and a caller should only rely on
-// response's next_page_token to determine if there are more instances
-// left to be queried.
+// PageSize sets the optional parameter "pageSize": The maximum number of items
+// to return. If not specified, a default value of 50 will be used by the
+// service. Regardless of the page_size value, the response may include a
+// partial list and a caller should only rely on response's next_page_token to
+// determine if there are more instances left to be queried.
 func (c *ProjectsLocationsAppConnectionsListCall) PageSize(pageSize int64) *ProjectsLocationsAppConnectionsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": The
-// next_page_token value returned from a previous
-// ListAppConnectionsRequest, if any.
+// PageToken sets the optional parameter "pageToken": The next_page_token value
+// returned from a previous ListAppConnectionsRequest, if any.
 func (c *ProjectsLocationsAppConnectionsListCall) PageToken(pageToken string) *ProjectsLocationsAppConnectionsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectionsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectionsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppConnectionsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppConnectionsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectionsListCall) Context(ctx context.Context) *ProjectsLocationsAppConnectionsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectionsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4325,12 +4663,7 @@ func (c *ProjectsLocationsAppConnectionsListCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectionsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -4351,15 +4684,11 @@ func (c *ProjectsLocationsAppConnectionsListCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnections.list" call.
-// Exactly one of
-// *GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse or
-// error will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse.Serve
-// rResponse.Header or (if a response was returned at all) in
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse.ServerRespon
+// se.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectionsListCall) Do(opts ...googleapi.CallOption) (*GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4367,17 +4696,17 @@ func (c *ProjectsLocationsAppConnectionsListCall) Do(opts ...googleapi.CallOptio
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -4390,53 +4719,6 @@ func (c *ProjectsLocationsAppConnectionsListCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists AppConnections in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnections",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appConnections.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "Optional. A filter specifying constraints of a list operation.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "orderBy": {
-	//       "description": "Optional. Specifies the ordering of results. See [Sorting order](https://cloud.google.com/apis/design/design_patterns#sorting_order) for more information.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of items to return. If not specified, a default value of 50 will be used by the service. Regardless of the page_size value, the response may include a partial list and a caller should only rely on response's next_page_token to determine if there are more instances left to be queried.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. The next_page_token value returned from a previous ListAppConnectionsRequest, if any.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The resource name of the AppConnection location using the form: `projects/{project_id}/locations/{location_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/appConnections",
-	//   "response": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -4444,7 +4726,7 @@ func (c *ProjectsLocationsAppConnectionsListCall) Do(opts ...googleapi.CallOptio
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsAppConnectionsListCall) Pages(ctx context.Context, f func(*GoogleCloudBeyondcorpAppconnectionsV1ListAppConnectionsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -4460,8 +4742,6 @@ func (c *ProjectsLocationsAppConnectionsListCall) Pages(ctx context.Context, f f
 	}
 }
 
-// method id "beyondcorp.projects.locations.appConnections.patch":
-
 type ProjectsLocationsAppConnectionsPatchCall struct {
 	s                                                  *Service
 	name                                               string
@@ -4473,8 +4753,8 @@ type ProjectsLocationsAppConnectionsPatchCall struct {
 
 // Patch: Updates the parameters of a single AppConnection.
 //
-//   - name: Unique resource name of the AppConnection. The name is
-//     ignored when creating a AppConnection.
+//   - name: Unique resource name of the AppConnection. The name is ignored when
+//     creating a AppConnection.
 func (r *ProjectsLocationsAppConnectionsService) Patch(name string, googlecloudbeyondcorpappconnectionsv1appconnection *GoogleCloudBeyondcorpAppconnectionsV1AppConnection) *ProjectsLocationsAppConnectionsPatchCall {
 	c := &ProjectsLocationsAppConnectionsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -4482,67 +4762,63 @@ func (r *ProjectsLocationsAppConnectionsService) Patch(name string, googlecloudb
 	return c
 }
 
-// AllowMissing sets the optional parameter "allowMissing": If set as
-// true, will create the resource if it is not found.
+// AllowMissing sets the optional parameter "allowMissing": If set as true,
+// will create the resource if it is not found.
 func (c *ProjectsLocationsAppConnectionsPatchCall) AllowMissing(allowMissing bool) *ProjectsLocationsAppConnectionsPatchCall {
 	c.urlParams_.Set("allowMissing", fmt.Sprint(allowMissing))
 	return c
 }
 
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes since the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. The server will guarantee that for at least 60 minutes since
+// the first request. For example, consider a situation where you make an
+// initial request and the request times out. If you make the request again
+// with the same request ID, the server can check if original operation with
+// the same request ID was received, and if so, will ignore the second request.
+// This prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
 func (c *ProjectsLocationsAppConnectionsPatchCall) RequestId(requestId string) *ProjectsLocationsAppConnectionsPatchCall {
 	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Required. Mask
-// of fields to update. At least one path must be supplied in this
-// field. The elements of the repeated paths field may only include
-// these fields from [BeyondCorp.AppConnection]: * `labels` *
-// `display_name` * `application_endpoint` * `connectors`
+// UpdateMask sets the optional parameter "updateMask": Required. Mask of
+// fields to update. At least one path must be supplied in this field. The
+// elements of the repeated paths field may only include these fields from
+// [BeyondCorp.AppConnection]: * `labels` * `display_name` *
+// `application_endpoint` * `connectors`
 func (c *ProjectsLocationsAppConnectionsPatchCall) UpdateMask(updateMask string) *ProjectsLocationsAppConnectionsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
+// ValidateOnly sets the optional parameter "validateOnly": If set, validates
+// request by executing a dry-run which would not alter the resource in any
+// way.
 func (c *ProjectsLocationsAppConnectionsPatchCall) ValidateOnly(validateOnly bool) *ProjectsLocationsAppConnectionsPatchCall {
 	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectionsPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectionsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectionsPatchCall) Context(ctx context.Context) *ProjectsLocationsAppConnectionsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectionsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4551,18 +4827,12 @@ func (c *ProjectsLocationsAppConnectionsPatchCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectionsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudbeyondcorpappconnectionsv1appconnection)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -4579,12 +4849,11 @@ func (c *ProjectsLocationsAppConnectionsPatchCall) doRequest(alt string) (*http.
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnections.patch" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectionsPatchCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4592,17 +4861,17 @@ func (c *ProjectsLocationsAppConnectionsPatchCall) Do(opts ...googleapi.CallOpti
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -4615,59 +4884,7 @@ func (c *ProjectsLocationsAppConnectionsPatchCall) Do(opts ...googleapi.CallOpti
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates the parameters of a single AppConnection.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnections/{appConnectionsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "beyondcorp.projects.locations.appConnections.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "allowMissing": {
-	//       "description": "Optional. If set as true, will create the resource if it is not found.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "name": {
-	//       "description": "Required. Unique resource name of the AppConnection. The name is ignored when creating a AppConnection.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnections/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Required. Mask of fields to update. At least one path must be supplied in this field. The elements of the repeated paths field may only include these fields from [BeyondCorp.AppConnection]: * `labels` * `display_name` * `application_endpoint` * `connectors`",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectionsV1AppConnection"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnections.resolve":
 
 type ProjectsLocationsAppConnectionsResolveCall struct {
 	s            *Service
@@ -4679,74 +4896,67 @@ type ProjectsLocationsAppConnectionsResolveCall struct {
 }
 
 // Resolve: Resolves AppConnections details for a given AppConnector. An
-// internal method called by a connector to find AppConnections to
-// connect to.
+// internal method called by a connector to find AppConnections to connect to.
 //
-//   - parent: The resource name of the AppConnection location using the
-//     form: `projects/{project_id}/locations/{location_id}`.
+//   - parent: The resource name of the AppConnection location using the form:
+//     `projects/{project_id}/locations/{location_id}`.
 func (r *ProjectsLocationsAppConnectionsService) Resolve(parent string) *ProjectsLocationsAppConnectionsResolveCall {
 	c := &ProjectsLocationsAppConnectionsResolveCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// AppConnectorId sets the optional parameter "appConnectorId":
-// Required. BeyondCorp Connector name of the connector associated with
-// those AppConnections using the form:
-// `projects/{project_id}/locations/{location_id}/appConnectors/{app_conn
-// ector_id}`
+// AppConnectorId sets the optional parameter "appConnectorId": Required.
+// BeyondCorp Connector name of the connector associated with those
+// AppConnections using the form:
+// `projects/{project_id}/locations/{location_id}/appConnectors/{app_connector_i
+// d}`
 func (c *ProjectsLocationsAppConnectionsResolveCall) AppConnectorId(appConnectorId string) *ProjectsLocationsAppConnectionsResolveCall {
 	c.urlParams_.Set("appConnectorId", appConnectorId)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of items to return. If not specified, a default value of 50 will be
-// used by the service. Regardless of the page_size value, the response
-// may include a partial list and a caller should only rely on
-// response's next_page_token to determine if there are more instances
-// left to be queried.
+// PageSize sets the optional parameter "pageSize": The maximum number of items
+// to return. If not specified, a default value of 50 will be used by the
+// service. Regardless of the page_size value, the response may include a
+// partial list and a caller should only rely on response's next_page_token to
+// determine if there are more instances left to be queried.
 func (c *ProjectsLocationsAppConnectionsResolveCall) PageSize(pageSize int64) *ProjectsLocationsAppConnectionsResolveCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": The
-// next_page_token value returned from a previous
-// ResolveAppConnectionsResponse, if any.
+// PageToken sets the optional parameter "pageToken": The next_page_token value
+// returned from a previous ResolveAppConnectionsResponse, if any.
 func (c *ProjectsLocationsAppConnectionsResolveCall) PageToken(pageToken string) *ProjectsLocationsAppConnectionsResolveCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectionsResolveCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectionsResolveCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppConnectionsResolveCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppConnectionsResolveCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectionsResolveCall) Context(ctx context.Context) *ProjectsLocationsAppConnectionsResolveCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectionsResolveCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4755,12 +4965,7 @@ func (c *ProjectsLocationsAppConnectionsResolveCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectionsResolveCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -4781,15 +4986,11 @@ func (c *ProjectsLocationsAppConnectionsResolveCall) doRequest(alt string) (*htt
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnections.resolve" call.
-// Exactly one of
-// *GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse
-// or error will be non-nil. Any non-2xx status code is an error.
-// Response headers are in either
-// *GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse.Se
-// rverResponse.Header or (if a response was returned at all) in
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse.ServerRes
+// ponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectionsResolveCall) Do(opts ...googleapi.CallOption) (*GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4797,17 +4998,17 @@ func (c *ProjectsLocationsAppConnectionsResolveCall) Do(opts ...googleapi.CallOp
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -4820,48 +5021,6 @@ func (c *ProjectsLocationsAppConnectionsResolveCall) Do(opts ...googleapi.CallOp
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Resolves AppConnections details for a given AppConnector. An internal method called by a connector to find AppConnections to connect to.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnections:resolve",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appConnections.resolve",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "appConnectorId": {
-	//       "description": "Required. BeyondCorp Connector name of the connector associated with those AppConnections using the form: `projects/{project_id}/locations/{location_id}/appConnectors/{app_connector_id}`",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of items to return. If not specified, a default value of 50 will be used by the service. Regardless of the page_size value, the response may include a partial list and a caller should only rely on response's next_page_token to determine if there are more instances left to be queried.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. The next_page_token value returned from a previous ResolveAppConnectionsResponse, if any.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The resource name of the AppConnection location using the form: `projects/{project_id}/locations/{location_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/appConnections:resolve",
-	//   "response": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -4869,7 +5028,7 @@ func (c *ProjectsLocationsAppConnectionsResolveCall) Do(opts ...googleapi.CallOp
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsAppConnectionsResolveCall) Pages(ctx context.Context, f func(*GoogleCloudBeyondcorpAppconnectionsV1ResolveAppConnectionsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -4885,8 +5044,6 @@ func (c *ProjectsLocationsAppConnectionsResolveCall) Pages(ctx context.Context, 
 	}
 }
 
-// method id "beyondcorp.projects.locations.appConnections.setIamPolicy":
-
 type ProjectsLocationsAppConnectionsSetIamPolicyCall struct {
 	s                              *Service
 	resource                       string
@@ -4896,14 +5053,13 @@ type ProjectsLocationsAppConnectionsSetIamPolicyCall struct {
 	header_                        http.Header
 }
 
-// SetIamPolicy: Sets the access control policy on the specified
-// resource. Replaces any existing policy. Can return `NOT_FOUND`,
-// `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+// SetIamPolicy: Sets the access control policy on the specified resource.
+// Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`,
+// and `PERMISSION_DENIED` errors.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     specified. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsAppConnectionsService) SetIamPolicy(resource string, googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest) *ProjectsLocationsAppConnectionsSetIamPolicyCall {
 	c := &ProjectsLocationsAppConnectionsSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -4912,23 +5068,21 @@ func (r *ProjectsLocationsAppConnectionsService) SetIamPolicy(resource string, g
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectionsSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectionsSetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectionsSetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsAppConnectionsSetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectionsSetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4937,18 +5091,12 @@ func (c *ProjectsLocationsAppConnectionsSetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectionsSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1setiampolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
@@ -4965,12 +5113,11 @@ func (c *ProjectsLocationsAppConnectionsSetIamPolicyCall) doRequest(alt string) 
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnections.setIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsAppConnectionsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4978,17 +5125,17 @@ func (c *ProjectsLocationsAppConnectionsSetIamPolicyCall) Do(opts ...googleapi.C
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -5001,38 +5148,7 @@ func (c *ProjectsLocationsAppConnectionsSetIamPolicyCall) Do(opts ...googleapi.C
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnections/{appConnectionsId}:setIamPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appConnections.setIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnections/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:setIamPolicy",
-	//   "request": {
-	//     "$ref": "GoogleIamV1SetIamPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnections.testIamPermissions":
 
 type ProjectsLocationsAppConnectionsTestIamPermissionsCall struct {
 	s                                    *Service
@@ -5043,17 +5159,16 @@ type ProjectsLocationsAppConnectionsTestIamPermissionsCall struct {
 	header_                              http.Header
 }
 
-// TestIamPermissions: Returns permissions that a caller has on the
-// specified resource. If the resource does not exist, this will return
-// an empty set of permissions, not a `NOT_FOUND` error. Note: This
-// operation is designed to be used for building permission-aware UIs
-// and command-line tools, not for authorization checking. This
-// operation may "fail open" without warning.
+// TestIamPermissions: Returns permissions that a caller has on the specified
+// resource. If the resource does not exist, this will return an empty set of
+// permissions, not a `NOT_FOUND` error. Note: This operation is designed to be
+// used for building permission-aware UIs and command-line tools, not for
+// authorization checking. This operation may "fail open" without warning.
 //
-//   - resource: REQUIRED: The resource for which the policy detail is
-//     being requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
 func (r *ProjectsLocationsAppConnectionsService) TestIamPermissions(resource string, googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest) *ProjectsLocationsAppConnectionsTestIamPermissionsCall {
 	c := &ProjectsLocationsAppConnectionsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -5062,23 +5177,21 @@ func (r *ProjectsLocationsAppConnectionsService) TestIamPermissions(resource str
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectionsTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectionsTestIamPermissionsCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectionsTestIamPermissionsCall) Context(ctx context.Context) *ProjectsLocationsAppConnectionsTestIamPermissionsCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectionsTestIamPermissionsCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5087,18 +5200,12 @@ func (c *ProjectsLocationsAppConnectionsTestIamPermissionsCall) Header() http.He
 }
 
 func (c *ProjectsLocationsAppConnectionsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1testiampermissionsrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
@@ -5115,13 +5222,11 @@ func (c *ProjectsLocationsAppConnectionsTestIamPermissionsCall) doRequest(alt st
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnections.testIamPermissions" call.
-// Exactly one of *GoogleIamV1TestIamPermissionsResponse or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleIamV1TestIamPermissionsResponse.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectionsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1TestIamPermissionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5129,17 +5234,17 @@ func (c *ProjectsLocationsAppConnectionsTestIamPermissionsCall) Do(opts ...googl
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1TestIamPermissionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -5152,38 +5257,7 @@ func (c *ProjectsLocationsAppConnectionsTestIamPermissionsCall) Do(opts ...googl
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnections/{appConnectionsId}:testIamPermissions",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appConnections.testIamPermissions",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnections/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:testIamPermissions",
-	//   "request": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnectors.create":
 
 type ProjectsLocationsAppConnectorsCreateCall struct {
 	s                                                *Service
@@ -5196,8 +5270,8 @@ type ProjectsLocationsAppConnectorsCreateCall struct {
 
 // Create: Creates a new AppConnector in a given project and location.
 //
-//   - parent: The resource project name of the AppConnector location
-//     using the form: `projects/{project_id}/locations/{location_id}`.
+//   - parent: The resource project name of the AppConnector location using the
+//     form: `projects/{project_id}/locations/{location_id}`.
 func (r *ProjectsLocationsAppConnectorsService) Create(parent string, googlecloudbeyondcorpappconnectorsv1appconnector *GoogleCloudBeyondcorpAppconnectorsV1AppConnector) *ProjectsLocationsAppConnectorsCreateCall {
 	c := &ProjectsLocationsAppConnectorsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -5205,59 +5279,54 @@ func (r *ProjectsLocationsAppConnectorsService) Create(parent string, googleclou
 	return c
 }
 
-// AppConnectorId sets the optional parameter "appConnectorId":
-// User-settable AppConnector resource ID. * Must start with a letter. *
-// Must contain between 4-63 characters from `/a-z-/`. * Must end with a
-// number or a letter.
+// AppConnectorId sets the optional parameter "appConnectorId": User-settable
+// AppConnector resource ID. * Must start with a letter. * Must contain between
+// 4-63 characters from `/a-z-/`. * Must end with a number or a letter.
 func (c *ProjectsLocationsAppConnectorsCreateCall) AppConnectorId(appConnectorId string) *ProjectsLocationsAppConnectorsCreateCall {
 	c.urlParams_.Set("appConnectorId", appConnectorId)
 	return c
 }
 
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes since the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. The server will guarantee that for at least 60 minutes since
+// the first request. For example, consider a situation where you make an
+// initial request and the request times out. If you make the request again
+// with the same request ID, the server can check if original operation with
+// the same request ID was received, and if so, will ignore the second request.
+// This prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
 func (c *ProjectsLocationsAppConnectorsCreateCall) RequestId(requestId string) *ProjectsLocationsAppConnectorsCreateCall {
 	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
+// ValidateOnly sets the optional parameter "validateOnly": If set, validates
+// request by executing a dry-run which would not alter the resource in any
+// way.
 func (c *ProjectsLocationsAppConnectorsCreateCall) ValidateOnly(validateOnly bool) *ProjectsLocationsAppConnectorsCreateCall {
 	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsCreateCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5266,18 +5335,12 @@ func (c *ProjectsLocationsAppConnectorsCreateCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectorsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudbeyondcorpappconnectorsv1appconnector)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/appConnectors")
@@ -5294,12 +5357,11 @@ func (c *ProjectsLocationsAppConnectorsCreateCall) doRequest(alt string) (*http.
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.create" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectorsCreateCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5307,17 +5369,17 @@ func (c *ProjectsLocationsAppConnectorsCreateCall) Do(opts ...googleapi.CallOpti
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -5330,53 +5392,7 @@ func (c *ProjectsLocationsAppConnectorsCreateCall) Do(opts ...googleapi.CallOpti
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new AppConnector in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appConnectors.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "appConnectorId": {
-	//       "description": "Optional. User-settable AppConnector resource ID. * Must start with a letter. * Must contain between 4-63 characters from `/a-z-/`. * Must end with a number or a letter.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The resource project name of the AppConnector location using the form: `projects/{project_id}/locations/{location_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/appConnectors",
-	//   "request": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectorsV1AppConnector"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnectors.delete":
 
 type ProjectsLocationsAppConnectorsDeleteCall struct {
 	s          *Service
@@ -5389,58 +5405,54 @@ type ProjectsLocationsAppConnectorsDeleteCall struct {
 // Delete: Deletes a single AppConnector.
 //
 //   - name: BeyondCorp AppConnector name using the form:
-//     `projects/{project_id}/locations/{location_id}/appConnectors/{app_co
-//     nnector_id}`.
+//     `projects/{project_id}/locations/{location_id}/appConnectors/{app_connector
+//     _id}`.
 func (r *ProjectsLocationsAppConnectorsService) Delete(name string) *ProjectsLocationsAppConnectorsDeleteCall {
 	c := &ProjectsLocationsAppConnectorsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
 	return c
 }
 
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes after the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. The server will guarantee that for at least 60 minutes after
+// the first request. For example, consider a situation where you make an
+// initial request and the request times out. If you make the request again
+// with the same request ID, the server can check if original operation with
+// the same request ID was received, and if so, will ignore the second request.
+// This prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
 func (c *ProjectsLocationsAppConnectorsDeleteCall) RequestId(requestId string) *ProjectsLocationsAppConnectorsDeleteCall {
 	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
+// ValidateOnly sets the optional parameter "validateOnly": If set, validates
+// request by executing a dry-run which would not alter the resource in any
+// way.
 func (c *ProjectsLocationsAppConnectorsDeleteCall) ValidateOnly(validateOnly bool) *ProjectsLocationsAppConnectorsDeleteCall {
 	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsDeleteCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5449,12 +5461,7 @@ func (c *ProjectsLocationsAppConnectorsDeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectorsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -5472,12 +5479,11 @@ func (c *ProjectsLocationsAppConnectorsDeleteCall) doRequest(alt string) (*http.
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.delete" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectorsDeleteCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5485,17 +5491,17 @@ func (c *ProjectsLocationsAppConnectorsDeleteCall) Do(opts ...googleapi.CallOpti
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -5508,45 +5514,7 @@ func (c *ProjectsLocationsAppConnectorsDeleteCall) Do(opts ...googleapi.CallOpti
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a single AppConnector.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "beyondcorp.projects.locations.appConnectors.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. BeyondCorp AppConnector name using the form: `projects/{project_id}/locations/{location_id}/appConnectors/{app_connector_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnectors/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnectors.get":
 
 type ProjectsLocationsAppConnectorsGetCall struct {
 	s            *Service
@@ -5560,8 +5528,8 @@ type ProjectsLocationsAppConnectorsGetCall struct {
 // Get: Gets details of a single AppConnector.
 //
 //   - name: BeyondCorp AppConnector name using the form:
-//     `projects/{project_id}/locations/{location_id}/appConnectors/{app_co
-//     nnector_id}`.
+//     `projects/{project_id}/locations/{location_id}/appConnectors/{app_connector
+//     _id}`.
 func (r *ProjectsLocationsAppConnectorsService) Get(name string) *ProjectsLocationsAppConnectorsGetCall {
 	c := &ProjectsLocationsAppConnectorsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -5569,33 +5537,29 @@ func (r *ProjectsLocationsAppConnectorsService) Get(name string) *ProjectsLocati
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppConnectorsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppConnectorsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsGetCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5604,12 +5568,7 @@ func (c *ProjectsLocationsAppConnectorsGetCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectorsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -5630,14 +5589,11 @@ func (c *ProjectsLocationsAppConnectorsGetCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.get" call.
-// Exactly one of *GoogleCloudBeyondcorpAppconnectorsV1AppConnector or
-// error will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleCloudBeyondcorpAppconnectorsV1AppConnector.ServerResponse.Heade
-// r or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudBeyondcorpAppconnectorsV1AppConnector.ServerResponse.Header or
+// (if a response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectorsGetCall) Do(opts ...googleapi.CallOption) (*GoogleCloudBeyondcorpAppconnectorsV1AppConnector, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5645,17 +5601,17 @@ func (c *ProjectsLocationsAppConnectorsGetCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudBeyondcorpAppconnectorsV1AppConnector{
 		ServerResponse: googleapi.ServerResponse{
@@ -5668,35 +5624,7 @@ func (c *ProjectsLocationsAppConnectorsGetCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets details of a single AppConnector.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appConnectors.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. BeyondCorp AppConnector name using the form: `projects/{project_id}/locations/{location_id}/appConnectors/{app_connector_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnectors/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectorsV1AppConnector"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnectors.getIamPolicy":
 
 type ProjectsLocationsAppConnectorsGetIamPolicyCall struct {
 	s            *Service
@@ -5707,14 +5635,12 @@ type ProjectsLocationsAppConnectorsGetIamPolicyCall struct {
 	header_      http.Header
 }
 
-// GetIamPolicy: Gets the access control policy for a resource. Returns
-// an empty policy if the resource exists and does not have a policy
-// set.
+// GetIamPolicy: Gets the access control policy for a resource. Returns an
+// empty policy if the resource exists and does not have a policy set.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsAppConnectorsService) GetIamPolicy(resource string) *ProjectsLocationsAppConnectorsGetIamPolicyCall {
 	c := &ProjectsLocationsAppConnectorsGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -5722,17 +5648,16 @@ func (r *ProjectsLocationsAppConnectorsService) GetIamPolicy(resource string) *P
 }
 
 // OptionsRequestedPolicyVersion sets the optional parameter
-// "options.requestedPolicyVersion": The maximum policy version that
-// will be used to format the policy. Valid values are 0, 1, and 3.
-// Requests specifying an invalid value will be rejected. Requests for
-// policies with any conditional role bindings must specify version 3.
-// Policies with no conditional role bindings may specify any valid
-// value or leave the field unset. The policy in the response might use
-// the policy version that you specified, or it might use a lower policy
-// version. For example, if you specify version 3, but the policy has no
-// conditional role bindings, the response uses version 1. To learn
-// which resources support conditions in their IAM policies, see the IAM
-// documentation
+// "options.requestedPolicyVersion": The maximum policy version that will be
+// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+// an invalid value will be rejected. Requests for policies with any
+// conditional role bindings must specify version 3. Policies with no
+// conditional role bindings may specify any valid value or leave the field
+// unset. The policy in the response might use the policy version that you
+// specified, or it might use a lower policy version. For example, if you
+// specify version 3, but the policy has no conditional role bindings, the
+// response uses version 1. To learn which resources support conditions in
+// their IAM policies, see the IAM documentation
 // (https://cloud.google.com/iam/help/conditions/resource-policies).
 func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) OptionsRequestedPolicyVersion(optionsRequestedPolicyVersion int64) *ProjectsLocationsAppConnectorsGetIamPolicyCall {
 	c.urlParams_.Set("options.requestedPolicyVersion", fmt.Sprint(optionsRequestedPolicyVersion))
@@ -5740,33 +5665,29 @@ func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) OptionsRequestedPolicyV
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsGetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppConnectorsGetIamPolicyCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsGetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5775,12 +5696,7 @@ func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -5801,12 +5717,11 @@ func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) doRequest(alt string) (
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.getIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5814,17 +5729,17 @@ func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) Do(opts ...googleapi.Ca
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -5837,41 +5752,7 @@ func (c *ProjectsLocationsAppConnectorsGetIamPolicyCall) Do(opts ...googleapi.Ca
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}:getIamPolicy",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appConnectors.getIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "options.requestedPolicyVersion": {
-	//       "description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnectors/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:getIamPolicy",
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnectors.list":
 
 type ProjectsLocationsAppConnectorsListCall struct {
 	s            *Service
@@ -5884,77 +5765,71 @@ type ProjectsLocationsAppConnectorsListCall struct {
 
 // List: Lists AppConnectors in a given project and location.
 //
-//   - parent: The resource name of the AppConnector location using the
-//     form: `projects/{project_id}/locations/{location_id}`.
+//   - parent: The resource name of the AppConnector location using the form:
+//     `projects/{project_id}/locations/{location_id}`.
 func (r *ProjectsLocationsAppConnectorsService) List(parent string) *ProjectsLocationsAppConnectorsListCall {
 	c := &ProjectsLocationsAppConnectorsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// Filter sets the optional parameter "filter": A filter specifying
-// constraints of a list operation.
+// Filter sets the optional parameter "filter": A filter specifying constraints
+// of a list operation.
 func (c *ProjectsLocationsAppConnectorsListCall) Filter(filter string) *ProjectsLocationsAppConnectorsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// OrderBy sets the optional parameter "orderBy": Specifies the ordering
-// of results. See Sorting order
-// (https://cloud.google.com/apis/design/design_patterns#sorting_order)
-// for more information.
+// OrderBy sets the optional parameter "orderBy": Specifies the ordering of
+// results. See Sorting order
+// (https://cloud.google.com/apis/design/design_patterns#sorting_order) for
+// more information.
 func (c *ProjectsLocationsAppConnectorsListCall) OrderBy(orderBy string) *ProjectsLocationsAppConnectorsListCall {
 	c.urlParams_.Set("orderBy", orderBy)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of items to return. If not specified, a default value of 50 will be
-// used by the service. Regardless of the page_size value, the response
-// may include a partial list and a caller should only rely on
-// response's next_page_token to determine if there are more instances
-// left to be queried.
+// PageSize sets the optional parameter "pageSize": The maximum number of items
+// to return. If not specified, a default value of 50 will be used by the
+// service. Regardless of the page_size value, the response may include a
+// partial list and a caller should only rely on response's next_page_token to
+// determine if there are more instances left to be queried.
 func (c *ProjectsLocationsAppConnectorsListCall) PageSize(pageSize int64) *ProjectsLocationsAppConnectorsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": The
-// next_page_token value returned from a previous
-// ListAppConnectorsRequest, if any.
+// PageToken sets the optional parameter "pageToken": The next_page_token value
+// returned from a previous ListAppConnectorsRequest, if any.
 func (c *ProjectsLocationsAppConnectorsListCall) PageToken(pageToken string) *ProjectsLocationsAppConnectorsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppConnectorsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppConnectorsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsListCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5963,12 +5838,7 @@ func (c *ProjectsLocationsAppConnectorsListCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectorsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -5989,15 +5859,11 @@ func (c *ProjectsLocationsAppConnectorsListCall) doRequest(alt string) (*http.Re
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.list" call.
-// Exactly one of
-// *GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse or
-// error will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse.ServerR
-// esponse.Header or (if a response was returned at all) in
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse.ServerResponse
+// .Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectorsListCall) Do(opts ...googleapi.CallOption) (*GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6005,17 +5871,17 @@ func (c *ProjectsLocationsAppConnectorsListCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -6028,53 +5894,6 @@ func (c *ProjectsLocationsAppConnectorsListCall) Do(opts ...googleapi.CallOption
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists AppConnectors in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appConnectors.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "Optional. A filter specifying constraints of a list operation.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "orderBy": {
-	//       "description": "Optional. Specifies the ordering of results. See [Sorting order](https://cloud.google.com/apis/design/design_patterns#sorting_order) for more information.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of items to return. If not specified, a default value of 50 will be used by the service. Regardless of the page_size value, the response may include a partial list and a caller should only rely on response's next_page_token to determine if there are more instances left to be queried.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. The next_page_token value returned from a previous ListAppConnectorsRequest, if any.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The resource name of the AppConnector location using the form: `projects/{project_id}/locations/{location_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/appConnectors",
-	//   "response": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -6082,7 +5901,7 @@ func (c *ProjectsLocationsAppConnectorsListCall) Do(opts ...googleapi.CallOption
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsAppConnectorsListCall) Pages(ctx context.Context, f func(*GoogleCloudBeyondcorpAppconnectorsV1ListAppConnectorsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -6098,8 +5917,6 @@ func (c *ProjectsLocationsAppConnectorsListCall) Pages(ctx context.Context, f fu
 	}
 }
 
-// method id "beyondcorp.projects.locations.appConnectors.patch":
-
 type ProjectsLocationsAppConnectorsPatchCall struct {
 	s                                                *Service
 	name                                             string
@@ -6111,8 +5928,8 @@ type ProjectsLocationsAppConnectorsPatchCall struct {
 
 // Patch: Updates the parameters of a single AppConnector.
 //
-//   - name: Unique resource name of the AppConnector. The name is ignored
-//     when creating a AppConnector.
+//   - name: Unique resource name of the AppConnector. The name is ignored when
+//     creating a AppConnector.
 func (r *ProjectsLocationsAppConnectorsService) Patch(name string, googlecloudbeyondcorpappconnectorsv1appconnector *GoogleCloudBeyondcorpAppconnectorsV1AppConnector) *ProjectsLocationsAppConnectorsPatchCall {
 	c := &ProjectsLocationsAppConnectorsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -6120,60 +5937,55 @@ func (r *ProjectsLocationsAppConnectorsService) Patch(name string, googlecloudbe
 	return c
 }
 
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes since the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. The server will guarantee that for at least 60 minutes since
+// the first request. For example, consider a situation where you make an
+// initial request and the request times out. If you make the request again
+// with the same request ID, the server can check if original operation with
+// the same request ID was received, and if so, will ignore the second request.
+// This prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
 func (c *ProjectsLocationsAppConnectorsPatchCall) RequestId(requestId string) *ProjectsLocationsAppConnectorsPatchCall {
 	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Required. Mask
-// of fields to update. At least one path must be supplied in this
-// field. The elements of the repeated paths field may only include
-// these fields from [BeyondCorp.AppConnector]: * `labels` *
-// `display_name`
+// UpdateMask sets the optional parameter "updateMask": Required. Mask of
+// fields to update. At least one path must be supplied in this field. The
+// elements of the repeated paths field may only include these fields from
+// [BeyondCorp.AppConnector]: * `labels` * `display_name`
 func (c *ProjectsLocationsAppConnectorsPatchCall) UpdateMask(updateMask string) *ProjectsLocationsAppConnectorsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
+// ValidateOnly sets the optional parameter "validateOnly": If set, validates
+// request by executing a dry-run which would not alter the resource in any
+// way.
 func (c *ProjectsLocationsAppConnectorsPatchCall) ValidateOnly(validateOnly bool) *ProjectsLocationsAppConnectorsPatchCall {
 	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsPatchCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6182,18 +5994,12 @@ func (c *ProjectsLocationsAppConnectorsPatchCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectorsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudbeyondcorpappconnectorsv1appconnector)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -6210,12 +6016,11 @@ func (c *ProjectsLocationsAppConnectorsPatchCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.patch" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectorsPatchCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6223,17 +6028,17 @@ func (c *ProjectsLocationsAppConnectorsPatchCall) Do(opts ...googleapi.CallOptio
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -6246,54 +6051,7 @@ func (c *ProjectsLocationsAppConnectorsPatchCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates the parameters of a single AppConnector.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "beyondcorp.projects.locations.appConnectors.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. Unique resource name of the AppConnector. The name is ignored when creating a AppConnector.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnectors/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Required. Mask of fields to update. At least one path must be supplied in this field. The elements of the repeated paths field may only include these fields from [BeyondCorp.AppConnector]: * `labels` * `display_name`",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectorsV1AppConnector"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnectors.reportStatus":
 
 type ProjectsLocationsAppConnectorsReportStatusCall struct {
 	s                                                       *Service
@@ -6307,8 +6065,7 @@ type ProjectsLocationsAppConnectorsReportStatusCall struct {
 // ReportStatus: Report status for a given connector.
 //
 //   - appConnector: BeyondCorp Connector name using the form:
-//     `projects/{project_id}/locations/{location_id}/connectors/{connector
-//     }`.
+//     `projects/{project_id}/locations/{location_id}/connectors/{connector}`.
 func (r *ProjectsLocationsAppConnectorsService) ReportStatus(appConnector string, googlecloudbeyondcorpappconnectorsv1reportstatusrequest *GoogleCloudBeyondcorpAppconnectorsV1ReportStatusRequest) *ProjectsLocationsAppConnectorsReportStatusCall {
 	c := &ProjectsLocationsAppConnectorsReportStatusCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.appConnector = appConnector
@@ -6317,23 +6074,21 @@ func (r *ProjectsLocationsAppConnectorsService) ReportStatus(appConnector string
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsReportStatusCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsReportStatusCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsReportStatusCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsReportStatusCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsReportStatusCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6342,18 +6097,12 @@ func (c *ProjectsLocationsAppConnectorsReportStatusCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectorsReportStatusCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlecloudbeyondcorpappconnectorsv1reportstatusrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+appConnector}:reportStatus")
@@ -6370,12 +6119,11 @@ func (c *ProjectsLocationsAppConnectorsReportStatusCall) doRequest(alt string) (
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.reportStatus" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectorsReportStatusCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6383,17 +6131,17 @@ func (c *ProjectsLocationsAppConnectorsReportStatusCall) Do(opts ...googleapi.Ca
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -6406,38 +6154,7 @@ func (c *ProjectsLocationsAppConnectorsReportStatusCall) Do(opts ...googleapi.Ca
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Report status for a given connector.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}:reportStatus",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appConnectors.reportStatus",
-	//   "parameterOrder": [
-	//     "appConnector"
-	//   ],
-	//   "parameters": {
-	//     "appConnector": {
-	//       "description": "Required. BeyondCorp Connector name using the form: `projects/{project_id}/locations/{location_id}/connectors/{connector}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnectors/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+appConnector}:reportStatus",
-	//   "request": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectorsV1ReportStatusRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnectors.resolveInstanceConfig":
 
 type ProjectsLocationsAppConnectorsResolveInstanceConfigCall struct {
 	s            *Service
@@ -6448,13 +6165,12 @@ type ProjectsLocationsAppConnectorsResolveInstanceConfigCall struct {
 	header_      http.Header
 }
 
-// ResolveInstanceConfig: Gets instance configuration for a given
-// AppConnector. An internal method called by a AppConnector to get its
-// container config.
+// ResolveInstanceConfig: Gets instance configuration for a given AppConnector.
+// An internal method called by a AppConnector to get its container config.
 //
 //   - appConnector: BeyondCorp AppConnector name using the form:
-//     `projects/{project_id}/locations/{location_id}/appConnectors/{app_co
-//     nnector}`.
+//     `projects/{project_id}/locations/{location_id}/appConnectors/{app_connector
+//     }`.
 func (r *ProjectsLocationsAppConnectorsService) ResolveInstanceConfig(appConnector string) *ProjectsLocationsAppConnectorsResolveInstanceConfigCall {
 	c := &ProjectsLocationsAppConnectorsResolveInstanceConfigCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.appConnector = appConnector
@@ -6462,33 +6178,29 @@ func (r *ProjectsLocationsAppConnectorsService) ResolveInstanceConfig(appConnect
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsResolveInstanceConfigCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppConnectorsResolveInstanceConfigCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsResolveInstanceConfigCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6497,12 +6209,7 @@ func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) Header() http.
 }
 
 func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -6523,15 +6230,11 @@ func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) doRequest(alt 
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.resolveInstanceConfig" call.
-// Exactly one of
-// *GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse or
-// error will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse.Ser
-// verResponse.Header or (if a response was returned at all) in
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse.ServerResp
+// onse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) Do(opts ...googleapi.CallOption) (*GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6539,17 +6242,17 @@ func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) Do(opts ...goo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -6562,35 +6265,7 @@ func (c *ProjectsLocationsAppConnectorsResolveInstanceConfigCall) Do(opts ...goo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets instance configuration for a given AppConnector. An internal method called by a AppConnector to get its container config.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}:resolveInstanceConfig",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appConnectors.resolveInstanceConfig",
-	//   "parameterOrder": [
-	//     "appConnector"
-	//   ],
-	//   "parameters": {
-	//     "appConnector": {
-	//       "description": "Required. BeyondCorp AppConnector name using the form: `projects/{project_id}/locations/{location_id}/appConnectors/{app_connector}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnectors/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+appConnector}:resolveInstanceConfig",
-	//   "response": {
-	//     "$ref": "GoogleCloudBeyondcorpAppconnectorsV1ResolveInstanceConfigResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnectors.setIamPolicy":
 
 type ProjectsLocationsAppConnectorsSetIamPolicyCall struct {
 	s                              *Service
@@ -6601,14 +6276,13 @@ type ProjectsLocationsAppConnectorsSetIamPolicyCall struct {
 	header_                        http.Header
 }
 
-// SetIamPolicy: Sets the access control policy on the specified
-// resource. Replaces any existing policy. Can return `NOT_FOUND`,
-// `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+// SetIamPolicy: Sets the access control policy on the specified resource.
+// Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`,
+// and `PERMISSION_DENIED` errors.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     specified. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsAppConnectorsService) SetIamPolicy(resource string, googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest) *ProjectsLocationsAppConnectorsSetIamPolicyCall {
 	c := &ProjectsLocationsAppConnectorsSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -6617,23 +6291,21 @@ func (r *ProjectsLocationsAppConnectorsService) SetIamPolicy(resource string, go
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsSetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsSetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsSetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsSetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6642,18 +6314,12 @@ func (c *ProjectsLocationsAppConnectorsSetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppConnectorsSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1setiampolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
@@ -6670,12 +6336,11 @@ func (c *ProjectsLocationsAppConnectorsSetIamPolicyCall) doRequest(alt string) (
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.setIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsAppConnectorsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6683,17 +6348,17 @@ func (c *ProjectsLocationsAppConnectorsSetIamPolicyCall) Do(opts ...googleapi.Ca
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -6706,38 +6371,7 @@ func (c *ProjectsLocationsAppConnectorsSetIamPolicyCall) Do(opts ...googleapi.Ca
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}:setIamPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appConnectors.setIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnectors/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:setIamPolicy",
-	//   "request": {
-	//     "$ref": "GoogleIamV1SetIamPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appConnectors.testIamPermissions":
 
 type ProjectsLocationsAppConnectorsTestIamPermissionsCall struct {
 	s                                    *Service
@@ -6748,17 +6382,16 @@ type ProjectsLocationsAppConnectorsTestIamPermissionsCall struct {
 	header_                              http.Header
 }
 
-// TestIamPermissions: Returns permissions that a caller has on the
-// specified resource. If the resource does not exist, this will return
-// an empty set of permissions, not a `NOT_FOUND` error. Note: This
-// operation is designed to be used for building permission-aware UIs
-// and command-line tools, not for authorization checking. This
-// operation may "fail open" without warning.
+// TestIamPermissions: Returns permissions that a caller has on the specified
+// resource. If the resource does not exist, this will return an empty set of
+// permissions, not a `NOT_FOUND` error. Note: This operation is designed to be
+// used for building permission-aware UIs and command-line tools, not for
+// authorization checking. This operation may "fail open" without warning.
 //
-//   - resource: REQUIRED: The resource for which the policy detail is
-//     being requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
 func (r *ProjectsLocationsAppConnectorsService) TestIamPermissions(resource string, googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest) *ProjectsLocationsAppConnectorsTestIamPermissionsCall {
 	c := &ProjectsLocationsAppConnectorsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -6767,23 +6400,21 @@ func (r *ProjectsLocationsAppConnectorsService) TestIamPermissions(resource stri
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppConnectorsTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppConnectorsTestIamPermissionsCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppConnectorsTestIamPermissionsCall) Context(ctx context.Context) *ProjectsLocationsAppConnectorsTestIamPermissionsCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppConnectorsTestIamPermissionsCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6792,18 +6423,12 @@ func (c *ProjectsLocationsAppConnectorsTestIamPermissionsCall) Header() http.Hea
 }
 
 func (c *ProjectsLocationsAppConnectorsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1testiampermissionsrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
@@ -6820,13 +6445,11 @@ func (c *ProjectsLocationsAppConnectorsTestIamPermissionsCall) doRequest(alt str
 }
 
 // Do executes the "beyondcorp.projects.locations.appConnectors.testIamPermissions" call.
-// Exactly one of *GoogleIamV1TestIamPermissionsResponse or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleIamV1TestIamPermissionsResponse.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppConnectorsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1TestIamPermissionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6834,17 +6457,17 @@ func (c *ProjectsLocationsAppConnectorsTestIamPermissionsCall) Do(opts ...google
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1TestIamPermissionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -6857,38 +6480,7 @@ func (c *ProjectsLocationsAppConnectorsTestIamPermissionsCall) Do(opts ...google
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}:testIamPermissions",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appConnectors.testIamPermissions",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appConnectors/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:testIamPermissions",
-	//   "request": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appGateways.create":
 
 type ProjectsLocationsAppGatewaysCreateCall struct {
 	s          *Service
@@ -6901,8 +6493,8 @@ type ProjectsLocationsAppGatewaysCreateCall struct {
 
 // Create: Creates a new AppGateway in a given project and location.
 //
-//   - parent: The resource project name of the AppGateway location using
-//     the form: `projects/{project_id}/locations/{location_id}`.
+//   - parent: The resource project name of the AppGateway location using the
+//     form: `projects/{project_id}/locations/{location_id}`.
 func (r *ProjectsLocationsAppGatewaysService) Create(parent string, appgateway *AppGateway) *ProjectsLocationsAppGatewaysCreateCall {
 	c := &ProjectsLocationsAppGatewaysCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -6910,59 +6502,54 @@ func (r *ProjectsLocationsAppGatewaysService) Create(parent string, appgateway *
 	return c
 }
 
-// AppGatewayId sets the optional parameter "appGatewayId":
-// User-settable AppGateway resource ID. * Must start with a letter. *
-// Must contain between 4-63 characters from `/a-z-/`. * Must end with a
-// number or a letter.
+// AppGatewayId sets the optional parameter "appGatewayId": User-settable
+// AppGateway resource ID. * Must start with a letter. * Must contain between
+// 4-63 characters from `/a-z-/`. * Must end with a number or a letter.
 func (c *ProjectsLocationsAppGatewaysCreateCall) AppGatewayId(appGatewayId string) *ProjectsLocationsAppGatewaysCreateCall {
 	c.urlParams_.Set("appGatewayId", appGatewayId)
 	return c
 }
 
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes since the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. The server will guarantee that for at least 60 minutes since
+// the first request. For example, consider a situation where you make an
+// initial request and the request times out. If you make the request again
+// with the same request ID, the server can check if original operation with
+// the same request ID was received, and if so, will ignore the second request.
+// This prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
 func (c *ProjectsLocationsAppGatewaysCreateCall) RequestId(requestId string) *ProjectsLocationsAppGatewaysCreateCall {
 	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
+// ValidateOnly sets the optional parameter "validateOnly": If set, validates
+// request by executing a dry-run which would not alter the resource in any
+// way.
 func (c *ProjectsLocationsAppGatewaysCreateCall) ValidateOnly(validateOnly bool) *ProjectsLocationsAppGatewaysCreateCall {
 	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppGatewaysCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppGatewaysCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppGatewaysCreateCall) Context(ctx context.Context) *ProjectsLocationsAppGatewaysCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppGatewaysCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6971,18 +6558,12 @@ func (c *ProjectsLocationsAppGatewaysCreateCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppGatewaysCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.appgateway)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/appGateways")
@@ -6999,12 +6580,11 @@ func (c *ProjectsLocationsAppGatewaysCreateCall) doRequest(alt string) (*http.Re
 }
 
 // Do executes the "beyondcorp.projects.locations.appGateways.create" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppGatewaysCreateCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7012,17 +6592,17 @@ func (c *ProjectsLocationsAppGatewaysCreateCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -7035,53 +6615,7 @@ func (c *ProjectsLocationsAppGatewaysCreateCall) Do(opts ...googleapi.CallOption
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new AppGateway in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appGateways",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appGateways.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "appGatewayId": {
-	//       "description": "Optional. User-settable AppGateway resource ID. * Must start with a letter. * Must contain between 4-63 characters from `/a-z-/`. * Must end with a number or a letter.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The resource project name of the AppGateway location using the form: `projects/{project_id}/locations/{location_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/appGateways",
-	//   "request": {
-	//     "$ref": "AppGateway"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appGateways.delete":
 
 type ProjectsLocationsAppGatewaysDeleteCall struct {
 	s          *Service
@@ -7094,58 +6628,54 @@ type ProjectsLocationsAppGatewaysDeleteCall struct {
 // Delete: Deletes a single AppGateway.
 //
 //   - name: BeyondCorp AppGateway name using the form:
-//     `projects/{project_id}/locations/{location_id}/appGateways/{app_gate
-//     way_id}`.
+//     `projects/{project_id}/locations/{location_id}/appGateways/{app_gateway_id}
+//     `.
 func (r *ProjectsLocationsAppGatewaysService) Delete(name string) *ProjectsLocationsAppGatewaysDeleteCall {
 	c := &ProjectsLocationsAppGatewaysDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
 	return c
 }
 
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes after the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. The server will guarantee that for at least 60 minutes after
+// the first request. For example, consider a situation where you make an
+// initial request and the request times out. If you make the request again
+// with the same request ID, the server can check if original operation with
+// the same request ID was received, and if so, will ignore the second request.
+// This prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
 func (c *ProjectsLocationsAppGatewaysDeleteCall) RequestId(requestId string) *ProjectsLocationsAppGatewaysDeleteCall {
 	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
+// ValidateOnly sets the optional parameter "validateOnly": If set, validates
+// request by executing a dry-run which would not alter the resource in any
+// way.
 func (c *ProjectsLocationsAppGatewaysDeleteCall) ValidateOnly(validateOnly bool) *ProjectsLocationsAppGatewaysDeleteCall {
 	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppGatewaysDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppGatewaysDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppGatewaysDeleteCall) Context(ctx context.Context) *ProjectsLocationsAppGatewaysDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppGatewaysDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7154,12 +6684,7 @@ func (c *ProjectsLocationsAppGatewaysDeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppGatewaysDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -7177,12 +6702,11 @@ func (c *ProjectsLocationsAppGatewaysDeleteCall) doRequest(alt string) (*http.Re
 }
 
 // Do executes the "beyondcorp.projects.locations.appGateways.delete" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppGatewaysDeleteCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7190,17 +6714,17 @@ func (c *ProjectsLocationsAppGatewaysDeleteCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -7213,45 +6737,7 @@ func (c *ProjectsLocationsAppGatewaysDeleteCall) Do(opts ...googleapi.CallOption
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a single AppGateway.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appGateways/{appGatewaysId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "beyondcorp.projects.locations.appGateways.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. BeyondCorp AppGateway name using the form: `projects/{project_id}/locations/{location_id}/appGateways/{app_gateway_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appGateways.get":
 
 type ProjectsLocationsAppGatewaysGetCall struct {
 	s            *Service
@@ -7265,8 +6751,8 @@ type ProjectsLocationsAppGatewaysGetCall struct {
 // Get: Gets details of a single AppGateway.
 //
 //   - name: BeyondCorp AppGateway name using the form:
-//     `projects/{project_id}/locations/{location_id}/appGateways/{app_gate
-//     way_id}`.
+//     `projects/{project_id}/locations/{location_id}/appGateways/{app_gateway_id}
+//     `.
 func (r *ProjectsLocationsAppGatewaysService) Get(name string) *ProjectsLocationsAppGatewaysGetCall {
 	c := &ProjectsLocationsAppGatewaysGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -7274,33 +6760,29 @@ func (r *ProjectsLocationsAppGatewaysService) Get(name string) *ProjectsLocation
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppGatewaysGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppGatewaysGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppGatewaysGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppGatewaysGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppGatewaysGetCall) Context(ctx context.Context) *ProjectsLocationsAppGatewaysGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppGatewaysGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7309,12 +6791,7 @@ func (c *ProjectsLocationsAppGatewaysGetCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppGatewaysGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7335,12 +6812,10 @@ func (c *ProjectsLocationsAppGatewaysGetCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "beyondcorp.projects.locations.appGateways.get" call.
-// Exactly one of *AppGateway or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *AppGateway.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *AppGateway.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppGatewaysGetCall) Do(opts ...googleapi.CallOption) (*AppGateway, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7348,17 +6823,17 @@ func (c *ProjectsLocationsAppGatewaysGetCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AppGateway{
 		ServerResponse: googleapi.ServerResponse{
@@ -7371,35 +6846,7 @@ func (c *ProjectsLocationsAppGatewaysGetCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets details of a single AppGateway.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appGateways/{appGatewaysId}",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appGateways.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. BeyondCorp AppGateway name using the form: `projects/{project_id}/locations/{location_id}/appGateways/{app_gateway_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "AppGateway"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appGateways.getIamPolicy":
 
 type ProjectsLocationsAppGatewaysGetIamPolicyCall struct {
 	s            *Service
@@ -7410,14 +6857,12 @@ type ProjectsLocationsAppGatewaysGetIamPolicyCall struct {
 	header_      http.Header
 }
 
-// GetIamPolicy: Gets the access control policy for a resource. Returns
-// an empty policy if the resource exists and does not have a policy
-// set.
+// GetIamPolicy: Gets the access control policy for a resource. Returns an
+// empty policy if the resource exists and does not have a policy set.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsAppGatewaysService) GetIamPolicy(resource string) *ProjectsLocationsAppGatewaysGetIamPolicyCall {
 	c := &ProjectsLocationsAppGatewaysGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -7425,17 +6870,16 @@ func (r *ProjectsLocationsAppGatewaysService) GetIamPolicy(resource string) *Pro
 }
 
 // OptionsRequestedPolicyVersion sets the optional parameter
-// "options.requestedPolicyVersion": The maximum policy version that
-// will be used to format the policy. Valid values are 0, 1, and 3.
-// Requests specifying an invalid value will be rejected. Requests for
-// policies with any conditional role bindings must specify version 3.
-// Policies with no conditional role bindings may specify any valid
-// value or leave the field unset. The policy in the response might use
-// the policy version that you specified, or it might use a lower policy
-// version. For example, if you specify version 3, but the policy has no
-// conditional role bindings, the response uses version 1. To learn
-// which resources support conditions in their IAM policies, see the IAM
-// documentation
+// "options.requestedPolicyVersion": The maximum policy version that will be
+// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+// an invalid value will be rejected. Requests for policies with any
+// conditional role bindings must specify version 3. Policies with no
+// conditional role bindings may specify any valid value or leave the field
+// unset. The policy in the response might use the policy version that you
+// specified, or it might use a lower policy version. For example, if you
+// specify version 3, but the policy has no conditional role bindings, the
+// response uses version 1. To learn which resources support conditions in
+// their IAM policies, see the IAM documentation
 // (https://cloud.google.com/iam/help/conditions/resource-policies).
 func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) OptionsRequestedPolicyVersion(optionsRequestedPolicyVersion int64) *ProjectsLocationsAppGatewaysGetIamPolicyCall {
 	c.urlParams_.Set("options.requestedPolicyVersion", fmt.Sprint(optionsRequestedPolicyVersion))
@@ -7443,33 +6887,29 @@ func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) OptionsRequestedPolicyVer
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppGatewaysGetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppGatewaysGetIamPolicyCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsAppGatewaysGetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7478,12 +6918,7 @@ func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7504,12 +6939,11 @@ func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) doRequest(alt string) (*h
 }
 
 // Do executes the "beyondcorp.projects.locations.appGateways.getIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7517,17 +6951,17 @@ func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) Do(opts ...googleapi.Call
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -7540,41 +6974,7 @@ func (c *ProjectsLocationsAppGatewaysGetIamPolicyCall) Do(opts ...googleapi.Call
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appGateways/{appGatewaysId}:getIamPolicy",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appGateways.getIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "options.requestedPolicyVersion": {
-	//       "description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:getIamPolicy",
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appGateways.list":
 
 type ProjectsLocationsAppGatewaysListCall struct {
 	s            *Service
@@ -7587,77 +6987,71 @@ type ProjectsLocationsAppGatewaysListCall struct {
 
 // List: Lists AppGateways in a given project and location.
 //
-//   - parent: The resource name of the AppGateway location using the
-//     form: `projects/{project_id}/locations/{location_id}`.
+//   - parent: The resource name of the AppGateway location using the form:
+//     `projects/{project_id}/locations/{location_id}`.
 func (r *ProjectsLocationsAppGatewaysService) List(parent string) *ProjectsLocationsAppGatewaysListCall {
 	c := &ProjectsLocationsAppGatewaysListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// Filter sets the optional parameter "filter": A filter specifying
-// constraints of a list operation.
+// Filter sets the optional parameter "filter": A filter specifying constraints
+// of a list operation.
 func (c *ProjectsLocationsAppGatewaysListCall) Filter(filter string) *ProjectsLocationsAppGatewaysListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// OrderBy sets the optional parameter "orderBy": Specifies the ordering
-// of results. See Sorting order
-// (https://cloud.google.com/apis/design/design_patterns#sorting_order)
-// for more information.
+// OrderBy sets the optional parameter "orderBy": Specifies the ordering of
+// results. See Sorting order
+// (https://cloud.google.com/apis/design/design_patterns#sorting_order) for
+// more information.
 func (c *ProjectsLocationsAppGatewaysListCall) OrderBy(orderBy string) *ProjectsLocationsAppGatewaysListCall {
 	c.urlParams_.Set("orderBy", orderBy)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of items to return. If not specified, a default value of 50 will be
-// used by the service. Regardless of the page_size value, the response
-// may include a partial list and a caller should only rely on
-// response's next_page_token to determine if there are more instances
-// left to be queried.
+// PageSize sets the optional parameter "pageSize": The maximum number of items
+// to return. If not specified, a default value of 50 will be used by the
+// service. Regardless of the page_size value, the response may include a
+// partial list and a caller should only rely on response's next_page_token to
+// determine if there are more instances left to be queried.
 func (c *ProjectsLocationsAppGatewaysListCall) PageSize(pageSize int64) *ProjectsLocationsAppGatewaysListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": The
-// next_page_token value returned from a previous
-// ListAppGatewaysRequest, if any.
+// PageToken sets the optional parameter "pageToken": The next_page_token value
+// returned from a previous ListAppGatewaysRequest, if any.
 func (c *ProjectsLocationsAppGatewaysListCall) PageToken(pageToken string) *ProjectsLocationsAppGatewaysListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppGatewaysListCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppGatewaysListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsAppGatewaysListCall) IfNoneMatch(entityTag string) *ProjectsLocationsAppGatewaysListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppGatewaysListCall) Context(ctx context.Context) *ProjectsLocationsAppGatewaysListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppGatewaysListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7666,12 +7060,7 @@ func (c *ProjectsLocationsAppGatewaysListCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppGatewaysListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7692,12 +7081,11 @@ func (c *ProjectsLocationsAppGatewaysListCall) doRequest(alt string) (*http.Resp
 }
 
 // Do executes the "beyondcorp.projects.locations.appGateways.list" call.
-// Exactly one of *ListAppGatewaysResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *ListAppGatewaysResponse.ServerResponse.Header or (if a response was
 // returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppGatewaysListCall) Do(opts ...googleapi.CallOption) (*ListAppGatewaysResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7705,17 +7093,17 @@ func (c *ProjectsLocationsAppGatewaysListCall) Do(opts ...googleapi.CallOption) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListAppGatewaysResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -7728,53 +7116,6 @@ func (c *ProjectsLocationsAppGatewaysListCall) Do(opts ...googleapi.CallOption) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists AppGateways in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appGateways",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.appGateways.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "Optional. A filter specifying constraints of a list operation.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "orderBy": {
-	//       "description": "Optional. Specifies the ordering of results. See [Sorting order](https://cloud.google.com/apis/design/design_patterns#sorting_order) for more information.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of items to return. If not specified, a default value of 50 will be used by the service. Regardless of the page_size value, the response may include a partial list and a caller should only rely on response's next_page_token to determine if there are more instances left to be queried.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. The next_page_token value returned from a previous ListAppGatewaysRequest, if any.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The resource name of the AppGateway location using the form: `projects/{project_id}/locations/{location_id}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/appGateways",
-	//   "response": {
-	//     "$ref": "ListAppGatewaysResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -7782,7 +7123,7 @@ func (c *ProjectsLocationsAppGatewaysListCall) Do(opts ...googleapi.CallOption) 
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsAppGatewaysListCall) Pages(ctx context.Context, f func(*ListAppGatewaysResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -7798,8 +7139,6 @@ func (c *ProjectsLocationsAppGatewaysListCall) Pages(ctx context.Context, f func
 	}
 }
 
-// method id "beyondcorp.projects.locations.appGateways.setIamPolicy":
-
 type ProjectsLocationsAppGatewaysSetIamPolicyCall struct {
 	s                              *Service
 	resource                       string
@@ -7809,14 +7148,13 @@ type ProjectsLocationsAppGatewaysSetIamPolicyCall struct {
 	header_                        http.Header
 }
 
-// SetIamPolicy: Sets the access control policy on the specified
-// resource. Replaces any existing policy. Can return `NOT_FOUND`,
-// `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+// SetIamPolicy: Sets the access control policy on the specified resource.
+// Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`,
+// and `PERMISSION_DENIED` errors.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     specified. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsAppGatewaysService) SetIamPolicy(resource string, googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest) *ProjectsLocationsAppGatewaysSetIamPolicyCall {
 	c := &ProjectsLocationsAppGatewaysSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -7825,23 +7163,21 @@ func (r *ProjectsLocationsAppGatewaysService) SetIamPolicy(resource string, goog
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppGatewaysSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppGatewaysSetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppGatewaysSetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsAppGatewaysSetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppGatewaysSetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7850,18 +7186,12 @@ func (c *ProjectsLocationsAppGatewaysSetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsAppGatewaysSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1setiampolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
@@ -7878,12 +7208,11 @@ func (c *ProjectsLocationsAppGatewaysSetIamPolicyCall) doRequest(alt string) (*h
 }
 
 // Do executes the "beyondcorp.projects.locations.appGateways.setIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsAppGatewaysSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7891,17 +7220,17 @@ func (c *ProjectsLocationsAppGatewaysSetIamPolicyCall) Do(opts ...googleapi.Call
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -7914,38 +7243,7 @@ func (c *ProjectsLocationsAppGatewaysSetIamPolicyCall) Do(opts ...googleapi.Call
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appGateways/{appGatewaysId}:setIamPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appGateways.setIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:setIamPolicy",
-	//   "request": {
-	//     "$ref": "GoogleIamV1SetIamPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.appGateways.testIamPermissions":
 
 type ProjectsLocationsAppGatewaysTestIamPermissionsCall struct {
 	s                                    *Service
@@ -7956,17 +7254,16 @@ type ProjectsLocationsAppGatewaysTestIamPermissionsCall struct {
 	header_                              http.Header
 }
 
-// TestIamPermissions: Returns permissions that a caller has on the
-// specified resource. If the resource does not exist, this will return
-// an empty set of permissions, not a `NOT_FOUND` error. Note: This
-// operation is designed to be used for building permission-aware UIs
-// and command-line tools, not for authorization checking. This
-// operation may "fail open" without warning.
+// TestIamPermissions: Returns permissions that a caller has on the specified
+// resource. If the resource does not exist, this will return an empty set of
+// permissions, not a `NOT_FOUND` error. Note: This operation is designed to be
+// used for building permission-aware UIs and command-line tools, not for
+// authorization checking. This operation may "fail open" without warning.
 //
-//   - resource: REQUIRED: The resource for which the policy detail is
-//     being requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
 func (r *ProjectsLocationsAppGatewaysService) TestIamPermissions(resource string, googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest) *ProjectsLocationsAppGatewaysTestIamPermissionsCall {
 	c := &ProjectsLocationsAppGatewaysTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -7975,23 +7272,21 @@ func (r *ProjectsLocationsAppGatewaysService) TestIamPermissions(resource string
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsAppGatewaysTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsLocationsAppGatewaysTestIamPermissionsCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsAppGatewaysTestIamPermissionsCall) Context(ctx context.Context) *ProjectsLocationsAppGatewaysTestIamPermissionsCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsAppGatewaysTestIamPermissionsCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8000,18 +7295,12 @@ func (c *ProjectsLocationsAppGatewaysTestIamPermissionsCall) Header() http.Heade
 }
 
 func (c *ProjectsLocationsAppGatewaysTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1testiampermissionsrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
@@ -8028,13 +7317,11 @@ func (c *ProjectsLocationsAppGatewaysTestIamPermissionsCall) doRequest(alt strin
 }
 
 // Do executes the "beyondcorp.projects.locations.appGateways.testIamPermissions" call.
-// Exactly one of *GoogleIamV1TestIamPermissionsResponse or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleIamV1TestIamPermissionsResponse.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsAppGatewaysTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1TestIamPermissionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8042,17 +7329,17 @@ func (c *ProjectsLocationsAppGatewaysTestIamPermissionsCall) Do(opts ...googleap
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1TestIamPermissionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -8065,547 +7352,7 @@ func (c *ProjectsLocationsAppGatewaysTestIamPermissionsCall) Do(opts ...googleap
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/appGateways/{appGatewaysId}:testIamPermissions",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.appGateways.testIamPermissions",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/appGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:testIamPermissions",
-	//   "request": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.clientConnectorServices.create":
-
-type ProjectsLocationsClientConnectorServicesCreateCall struct {
-	s                      *Service
-	parent                 string
-	clientconnectorservice *ClientConnectorService
-	urlParams_             gensupport.URLParams
-	ctx_                   context.Context
-	header_                http.Header
-}
-
-// Create: Creates a new ClientConnectorService in a given project and
-// location.
-//
-// - parent: Value for parent.
-func (r *ProjectsLocationsClientConnectorServicesService) Create(parent string, clientconnectorservice *ClientConnectorService) *ProjectsLocationsClientConnectorServicesCreateCall {
-	c := &ProjectsLocationsClientConnectorServicesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.parent = parent
-	c.clientconnectorservice = clientconnectorservice
-	return c
-}
-
-// ClientConnectorServiceId sets the optional parameter
-// "clientConnectorServiceId": User-settable client connector service
-// resource ID. * Must start with a letter. * Must contain between 4-63
-// characters from `/a-z-/`. * Must end with a number or a letter. A
-// random system generated name will be assigned if not specified by the
-// user.
-func (c *ProjectsLocationsClientConnectorServicesCreateCall) ClientConnectorServiceId(clientConnectorServiceId string) *ProjectsLocationsClientConnectorServicesCreateCall {
-	c.urlParams_.Set("clientConnectorServiceId", clientConnectorServiceId)
-	return c
-}
-
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes since the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
-func (c *ProjectsLocationsClientConnectorServicesCreateCall) RequestId(requestId string) *ProjectsLocationsClientConnectorServicesCreateCall {
-	c.urlParams_.Set("requestId", requestId)
-	return c
-}
-
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
-func (c *ProjectsLocationsClientConnectorServicesCreateCall) ValidateOnly(validateOnly bool) *ProjectsLocationsClientConnectorServicesCreateCall {
-	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsClientConnectorServicesCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientConnectorServicesCreateCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsClientConnectorServicesCreateCall) Context(ctx context.Context) *ProjectsLocationsClientConnectorServicesCreateCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsClientConnectorServicesCreateCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsClientConnectorServicesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.clientconnectorservice)
-	if err != nil {
-		return nil, err
-	}
-	reqHeaders.Set("Content-Type", "application/json")
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/clientConnectorServices")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"parent": c.parent,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "beyondcorp.projects.locations.clientConnectorServices.create" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
-// Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
-func (c *ProjectsLocationsClientConnectorServicesCreateCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &GoogleLongrunningOperation{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Creates a new ClientConnectorService in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientConnectorServices",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.clientConnectorServices.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "clientConnectorServiceId": {
-	//       "description": "Optional. User-settable client connector service resource ID. * Must start with a letter. * Must contain between 4-63 characters from `/a-z-/`. * Must end with a number or a letter. A random system generated name will be assigned if not specified by the user.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. Value for parent.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/clientConnectorServices",
-	//   "request": {
-	//     "$ref": "ClientConnectorService"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
-}
-
-// method id "beyondcorp.projects.locations.clientConnectorServices.delete":
-
-type ProjectsLocationsClientConnectorServicesDeleteCall struct {
-	s          *Service
-	name       string
-	urlParams_ gensupport.URLParams
-	ctx_       context.Context
-	header_    http.Header
-}
-
-// Delete: Deletes a single ClientConnectorService.
-//
-// - name: Name of the resource.
-func (r *ProjectsLocationsClientConnectorServicesService) Delete(name string) *ProjectsLocationsClientConnectorServicesDeleteCall {
-	c := &ProjectsLocationsClientConnectorServicesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.name = name
-	return c
-}
-
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes after the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
-func (c *ProjectsLocationsClientConnectorServicesDeleteCall) RequestId(requestId string) *ProjectsLocationsClientConnectorServicesDeleteCall {
-	c.urlParams_.Set("requestId", requestId)
-	return c
-}
-
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
-func (c *ProjectsLocationsClientConnectorServicesDeleteCall) ValidateOnly(validateOnly bool) *ProjectsLocationsClientConnectorServicesDeleteCall {
-	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsClientConnectorServicesDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientConnectorServicesDeleteCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsClientConnectorServicesDeleteCall) Context(ctx context.Context) *ProjectsLocationsClientConnectorServicesDeleteCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsClientConnectorServicesDeleteCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsClientConnectorServicesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	var body io.Reader = nil
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"name": c.name,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "beyondcorp.projects.locations.clientConnectorServices.delete" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
-// Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
-func (c *ProjectsLocationsClientConnectorServicesDeleteCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &GoogleLongrunningOperation{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Deletes a single ClientConnectorService.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientConnectorServices/{clientConnectorServicesId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "beyondcorp.projects.locations.clientConnectorServices.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. Name of the resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientConnectorServices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
-}
-
-// method id "beyondcorp.projects.locations.clientConnectorServices.get":
-
-type ProjectsLocationsClientConnectorServicesGetCall struct {
-	s            *Service
-	name         string
-	urlParams_   gensupport.URLParams
-	ifNoneMatch_ string
-	ctx_         context.Context
-	header_      http.Header
-}
-
-// Get: Gets details of a single ClientConnectorService.
-//
-// - name: Name of the resource.
-func (r *ProjectsLocationsClientConnectorServicesService) Get(name string) *ProjectsLocationsClientConnectorServicesGetCall {
-	c := &ProjectsLocationsClientConnectorServicesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.name = name
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsClientConnectorServicesGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientConnectorServicesGetCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
-func (c *ProjectsLocationsClientConnectorServicesGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsClientConnectorServicesGetCall {
-	c.ifNoneMatch_ = entityTag
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsClientConnectorServicesGetCall) Context(ctx context.Context) *ProjectsLocationsClientConnectorServicesGetCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsClientConnectorServicesGetCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsClientConnectorServicesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	if c.ifNoneMatch_ != "" {
-		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
-	}
-	var body io.Reader = nil
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"name": c.name,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "beyondcorp.projects.locations.clientConnectorServices.get" call.
-// Exactly one of *ClientConnectorService or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ClientConnectorService.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
-func (c *ProjectsLocationsClientConnectorServicesGetCall) Do(opts ...googleapi.CallOption) (*ClientConnectorService, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &ClientConnectorService{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Gets details of a single ClientConnectorService.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientConnectorServices/{clientConnectorServicesId}",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.clientConnectorServices.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. Name of the resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientConnectorServices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "ClientConnectorService"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
-}
-
-// method id "beyondcorp.projects.locations.clientConnectorServices.getIamPolicy":
 
 type ProjectsLocationsClientConnectorServicesGetIamPolicyCall struct {
 	s            *Service
@@ -8616,14 +7363,12 @@ type ProjectsLocationsClientConnectorServicesGetIamPolicyCall struct {
 	header_      http.Header
 }
 
-// GetIamPolicy: Gets the access control policy for a resource. Returns
-// an empty policy if the resource exists and does not have a policy
-// set.
+// GetIamPolicy: Gets the access control policy for a resource. Returns an
+// empty policy if the resource exists and does not have a policy set.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsClientConnectorServicesService) GetIamPolicy(resource string) *ProjectsLocationsClientConnectorServicesGetIamPolicyCall {
 	c := &ProjectsLocationsClientConnectorServicesGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -8631,17 +7376,16 @@ func (r *ProjectsLocationsClientConnectorServicesService) GetIamPolicy(resource 
 }
 
 // OptionsRequestedPolicyVersion sets the optional parameter
-// "options.requestedPolicyVersion": The maximum policy version that
-// will be used to format the policy. Valid values are 0, 1, and 3.
-// Requests specifying an invalid value will be rejected. Requests for
-// policies with any conditional role bindings must specify version 3.
-// Policies with no conditional role bindings may specify any valid
-// value or leave the field unset. The policy in the response might use
-// the policy version that you specified, or it might use a lower policy
-// version. For example, if you specify version 3, but the policy has no
-// conditional role bindings, the response uses version 1. To learn
-// which resources support conditions in their IAM policies, see the IAM
-// documentation
+// "options.requestedPolicyVersion": The maximum policy version that will be
+// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+// an invalid value will be rejected. Requests for policies with any
+// conditional role bindings must specify version 3. Policies with no
+// conditional role bindings may specify any valid value or leave the field
+// unset. The policy in the response might use the policy version that you
+// specified, or it might use a lower policy version. For example, if you
+// specify version 3, but the policy has no conditional role bindings, the
+// response uses version 1. To learn which resources support conditions in
+// their IAM policies, see the IAM documentation
 // (https://cloud.google.com/iam/help/conditions/resource-policies).
 func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) OptionsRequestedPolicyVersion(optionsRequestedPolicyVersion int64) *ProjectsLocationsClientConnectorServicesGetIamPolicyCall {
 	c.urlParams_.Set("options.requestedPolicyVersion", fmt.Sprint(optionsRequestedPolicyVersion))
@@ -8649,33 +7393,29 @@ func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) OptionsReques
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientConnectorServicesGetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) IfNoneMatch(entityTag string) *ProjectsLocationsClientConnectorServicesGetIamPolicyCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsClientConnectorServicesGetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8684,12 +7424,7 @@ func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) Header() http
 }
 
 func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -8710,12 +7445,11 @@ func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) doRequest(alt
 }
 
 // Do executes the "beyondcorp.projects.locations.clientConnectorServices.getIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8723,17 +7457,17 @@ func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) Do(opts ...go
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -8746,466 +7480,7 @@ func (c *ProjectsLocationsClientConnectorServicesGetIamPolicyCall) Do(opts ...go
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientConnectorServices/{clientConnectorServicesId}:getIamPolicy",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.clientConnectorServices.getIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "options.requestedPolicyVersion": {
-	//       "description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientConnectorServices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:getIamPolicy",
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.clientConnectorServices.list":
-
-type ProjectsLocationsClientConnectorServicesListCall struct {
-	s            *Service
-	parent       string
-	urlParams_   gensupport.URLParams
-	ifNoneMatch_ string
-	ctx_         context.Context
-	header_      http.Header
-}
-
-// List: Lists ClientConnectorServices in a given project and location.
-//
-// - parent: Parent value for ListClientConnectorServicesRequest.
-func (r *ProjectsLocationsClientConnectorServicesService) List(parent string) *ProjectsLocationsClientConnectorServicesListCall {
-	c := &ProjectsLocationsClientConnectorServicesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.parent = parent
-	return c
-}
-
-// Filter sets the optional parameter "filter": Filtering results.
-func (c *ProjectsLocationsClientConnectorServicesListCall) Filter(filter string) *ProjectsLocationsClientConnectorServicesListCall {
-	c.urlParams_.Set("filter", filter)
-	return c
-}
-
-// OrderBy sets the optional parameter "orderBy": Hint for how to order
-// the results.
-func (c *ProjectsLocationsClientConnectorServicesListCall) OrderBy(orderBy string) *ProjectsLocationsClientConnectorServicesListCall {
-	c.urlParams_.Set("orderBy", orderBy)
-	return c
-}
-
-// PageSize sets the optional parameter "pageSize": Requested page size.
-// Server may return fewer items than requested. If unspecified, server
-// will pick an appropriate default.
-func (c *ProjectsLocationsClientConnectorServicesListCall) PageSize(pageSize int64) *ProjectsLocationsClientConnectorServicesListCall {
-	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
-	return c
-}
-
-// PageToken sets the optional parameter "pageToken": A token
-// identifying a page of results the server should return.
-func (c *ProjectsLocationsClientConnectorServicesListCall) PageToken(pageToken string) *ProjectsLocationsClientConnectorServicesListCall {
-	c.urlParams_.Set("pageToken", pageToken)
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsClientConnectorServicesListCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientConnectorServicesListCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
-func (c *ProjectsLocationsClientConnectorServicesListCall) IfNoneMatch(entityTag string) *ProjectsLocationsClientConnectorServicesListCall {
-	c.ifNoneMatch_ = entityTag
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsClientConnectorServicesListCall) Context(ctx context.Context) *ProjectsLocationsClientConnectorServicesListCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsClientConnectorServicesListCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsClientConnectorServicesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	if c.ifNoneMatch_ != "" {
-		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
-	}
-	var body io.Reader = nil
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/clientConnectorServices")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"parent": c.parent,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "beyondcorp.projects.locations.clientConnectorServices.list" call.
-// Exactly one of *ListClientConnectorServicesResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *ListClientConnectorServicesResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
-func (c *ProjectsLocationsClientConnectorServicesListCall) Do(opts ...googleapi.CallOption) (*ListClientConnectorServicesResponse, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &ListClientConnectorServicesResponse{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Lists ClientConnectorServices in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientConnectorServices",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.clientConnectorServices.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "Optional. Filtering results.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "orderBy": {
-	//       "description": "Optional. Hint for how to order the results.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional. Requested page size. Server may return fewer items than requested. If unspecified, server will pick an appropriate default.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. A token identifying a page of results the server should return.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. Parent value for ListClientConnectorServicesRequest.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/clientConnectorServices",
-	//   "response": {
-	//     "$ref": "ListClientConnectorServicesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
-}
-
-// Pages invokes f for each page of results.
-// A non-nil error returned from f will halt the iteration.
-// The provided context supersedes any context provided to the Context method.
-func (c *ProjectsLocationsClientConnectorServicesListCall) Pages(ctx context.Context, f func(*ListClientConnectorServicesResponse) error) error {
-	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
-	for {
-		x, err := c.Do()
-		if err != nil {
-			return err
-		}
-		if err := f(x); err != nil {
-			return err
-		}
-		if x.NextPageToken == "" {
-			return nil
-		}
-		c.PageToken(x.NextPageToken)
-	}
-}
-
-// method id "beyondcorp.projects.locations.clientConnectorServices.patch":
-
-type ProjectsLocationsClientConnectorServicesPatchCall struct {
-	s                      *Service
-	name                   string
-	clientconnectorservice *ClientConnectorService
-	urlParams_             gensupport.URLParams
-	ctx_                   context.Context
-	header_                http.Header
-}
-
-// Patch: Updates the parameters of a single ClientConnectorService.
-//
-// - name: Name of resource. The name is ignored during creation.
-func (r *ProjectsLocationsClientConnectorServicesService) Patch(name string, clientconnectorservice *ClientConnectorService) *ProjectsLocationsClientConnectorServicesPatchCall {
-	c := &ProjectsLocationsClientConnectorServicesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.name = name
-	c.clientconnectorservice = clientconnectorservice
-	return c
-}
-
-// AllowMissing sets the optional parameter "allowMissing": If set as
-// true, will create the resource if it is not found.
-func (c *ProjectsLocationsClientConnectorServicesPatchCall) AllowMissing(allowMissing bool) *ProjectsLocationsClientConnectorServicesPatchCall {
-	c.urlParams_.Set("allowMissing", fmt.Sprint(allowMissing))
-	return c
-}
-
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes since the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
-func (c *ProjectsLocationsClientConnectorServicesPatchCall) RequestId(requestId string) *ProjectsLocationsClientConnectorServicesPatchCall {
-	c.urlParams_.Set("requestId", requestId)
-	return c
-}
-
-// UpdateMask sets the optional parameter "updateMask": Required. Field
-// mask is used to specify the fields to be overwritten in the
-// ClientConnectorService resource by the update. The fields specified
-// in the update_mask are relative to the resource, not the full
-// request. A field will be overwritten if it is in the mask. If the
-// user does not provide a mask then all fields will be overwritten.
-// Mutable fields: display_name, ingress.config.destination_routes.
-func (c *ProjectsLocationsClientConnectorServicesPatchCall) UpdateMask(updateMask string) *ProjectsLocationsClientConnectorServicesPatchCall {
-	c.urlParams_.Set("updateMask", updateMask)
-	return c
-}
-
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
-func (c *ProjectsLocationsClientConnectorServicesPatchCall) ValidateOnly(validateOnly bool) *ProjectsLocationsClientConnectorServicesPatchCall {
-	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsClientConnectorServicesPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientConnectorServicesPatchCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsClientConnectorServicesPatchCall) Context(ctx context.Context) *ProjectsLocationsClientConnectorServicesPatchCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsClientConnectorServicesPatchCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsClientConnectorServicesPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.clientconnectorservice)
-	if err != nil {
-		return nil, err
-	}
-	reqHeaders.Set("Content-Type", "application/json")
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("PATCH", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"name": c.name,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "beyondcorp.projects.locations.clientConnectorServices.patch" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
-// Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
-func (c *ProjectsLocationsClientConnectorServicesPatchCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &GoogleLongrunningOperation{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Updates the parameters of a single ClientConnectorService.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientConnectorServices/{clientConnectorServicesId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "beyondcorp.projects.locations.clientConnectorServices.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "allowMissing": {
-	//       "description": "Optional. If set as true, will create the resource if it is not found.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "name": {
-	//       "description": "Required. Name of resource. The name is ignored during creation.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientConnectorServices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Required. Field mask is used to specify the fields to be overwritten in the ClientConnectorService resource by the update. The fields specified in the update_mask are relative to the resource, not the full request. A field will be overwritten if it is in the mask. If the user does not provide a mask then all fields will be overwritten. Mutable fields: display_name, ingress.config.destination_routes.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "ClientConnectorService"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
-}
-
-// method id "beyondcorp.projects.locations.clientConnectorServices.setIamPolicy":
 
 type ProjectsLocationsClientConnectorServicesSetIamPolicyCall struct {
 	s                              *Service
@@ -9216,14 +7491,13 @@ type ProjectsLocationsClientConnectorServicesSetIamPolicyCall struct {
 	header_                        http.Header
 }
 
-// SetIamPolicy: Sets the access control policy on the specified
-// resource. Replaces any existing policy. Can return `NOT_FOUND`,
-// `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+// SetIamPolicy: Sets the access control policy on the specified resource.
+// Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`,
+// and `PERMISSION_DENIED` errors.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     specified. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsClientConnectorServicesService) SetIamPolicy(resource string, googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest) *ProjectsLocationsClientConnectorServicesSetIamPolicyCall {
 	c := &ProjectsLocationsClientConnectorServicesSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -9232,23 +7506,21 @@ func (r *ProjectsLocationsClientConnectorServicesService) SetIamPolicy(resource 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsClientConnectorServicesSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientConnectorServicesSetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsClientConnectorServicesSetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsClientConnectorServicesSetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsClientConnectorServicesSetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9257,18 +7529,12 @@ func (c *ProjectsLocationsClientConnectorServicesSetIamPolicyCall) Header() http
 }
 
 func (c *ProjectsLocationsClientConnectorServicesSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1setiampolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
@@ -9285,12 +7551,11 @@ func (c *ProjectsLocationsClientConnectorServicesSetIamPolicyCall) doRequest(alt
 }
 
 // Do executes the "beyondcorp.projects.locations.clientConnectorServices.setIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsClientConnectorServicesSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9298,17 +7563,17 @@ func (c *ProjectsLocationsClientConnectorServicesSetIamPolicyCall) Do(opts ...go
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -9321,38 +7586,7 @@ func (c *ProjectsLocationsClientConnectorServicesSetIamPolicyCall) Do(opts ...go
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientConnectorServices/{clientConnectorServicesId}:setIamPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.clientConnectorServices.setIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientConnectorServices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:setIamPolicy",
-	//   "request": {
-	//     "$ref": "GoogleIamV1SetIamPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.clientConnectorServices.testIamPermissions":
 
 type ProjectsLocationsClientConnectorServicesTestIamPermissionsCall struct {
 	s                                    *Service
@@ -9363,17 +7597,16 @@ type ProjectsLocationsClientConnectorServicesTestIamPermissionsCall struct {
 	header_                              http.Header
 }
 
-// TestIamPermissions: Returns permissions that a caller has on the
-// specified resource. If the resource does not exist, this will return
-// an empty set of permissions, not a `NOT_FOUND` error. Note: This
-// operation is designed to be used for building permission-aware UIs
-// and command-line tools, not for authorization checking. This
-// operation may "fail open" without warning.
+// TestIamPermissions: Returns permissions that a caller has on the specified
+// resource. If the resource does not exist, this will return an empty set of
+// permissions, not a `NOT_FOUND` error. Note: This operation is designed to be
+// used for building permission-aware UIs and command-line tools, not for
+// authorization checking. This operation may "fail open" without warning.
 //
-//   - resource: REQUIRED: The resource for which the policy detail is
-//     being requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
 func (r *ProjectsLocationsClientConnectorServicesService) TestIamPermissions(resource string, googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest) *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall {
 	c := &ProjectsLocationsClientConnectorServicesTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -9382,23 +7615,21 @@ func (r *ProjectsLocationsClientConnectorServicesService) TestIamPermissions(res
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall) Context(ctx context.Context) *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9407,18 +7638,12 @@ func (c *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall) Header(
 }
 
 func (c *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1testiampermissionsrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
@@ -9435,13 +7660,11 @@ func (c *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall) doReque
 }
 
 // Do executes the "beyondcorp.projects.locations.clientConnectorServices.testIamPermissions" call.
-// Exactly one of *GoogleIamV1TestIamPermissionsResponse or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleIamV1TestIamPermissionsResponse.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1TestIamPermissionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9449,17 +7672,17 @@ func (c *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall) Do(opts
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1TestIamPermissionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -9472,544 +7695,7 @@ func (c *ProjectsLocationsClientConnectorServicesTestIamPermissionsCall) Do(opts
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientConnectorServices/{clientConnectorServicesId}:testIamPermissions",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.clientConnectorServices.testIamPermissions",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientConnectorServices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:testIamPermissions",
-	//   "request": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.clientGateways.create":
-
-type ProjectsLocationsClientGatewaysCreateCall struct {
-	s             *Service
-	parent        string
-	clientgateway *ClientGateway
-	urlParams_    gensupport.URLParams
-	ctx_          context.Context
-	header_       http.Header
-}
-
-// Create: Creates a new ClientGateway in a given project and location.
-//
-// - parent: Value for parent.
-func (r *ProjectsLocationsClientGatewaysService) Create(parent string, clientgateway *ClientGateway) *ProjectsLocationsClientGatewaysCreateCall {
-	c := &ProjectsLocationsClientGatewaysCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.parent = parent
-	c.clientgateway = clientgateway
-	return c
-}
-
-// ClientGatewayId sets the optional parameter "clientGatewayId":
-// User-settable client gateway resource ID. * Must start with a letter.
-// * Must contain between 4-63 characters from `/a-z-/`. * Must end with
-// a number or a letter.
-func (c *ProjectsLocationsClientGatewaysCreateCall) ClientGatewayId(clientGatewayId string) *ProjectsLocationsClientGatewaysCreateCall {
-	c.urlParams_.Set("clientGatewayId", clientGatewayId)
-	return c
-}
-
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes since the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
-func (c *ProjectsLocationsClientGatewaysCreateCall) RequestId(requestId string) *ProjectsLocationsClientGatewaysCreateCall {
-	c.urlParams_.Set("requestId", requestId)
-	return c
-}
-
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
-func (c *ProjectsLocationsClientGatewaysCreateCall) ValidateOnly(validateOnly bool) *ProjectsLocationsClientGatewaysCreateCall {
-	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsClientGatewaysCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientGatewaysCreateCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsClientGatewaysCreateCall) Context(ctx context.Context) *ProjectsLocationsClientGatewaysCreateCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsClientGatewaysCreateCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsClientGatewaysCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.clientgateway)
-	if err != nil {
-		return nil, err
-	}
-	reqHeaders.Set("Content-Type", "application/json")
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/clientGateways")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"parent": c.parent,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "beyondcorp.projects.locations.clientGateways.create" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
-// Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
-func (c *ProjectsLocationsClientGatewaysCreateCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &GoogleLongrunningOperation{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Creates a new ClientGateway in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientGateways",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.clientGateways.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "clientGatewayId": {
-	//       "description": "Optional. User-settable client gateway resource ID. * Must start with a letter. * Must contain between 4-63 characters from `/a-z-/`. * Must end with a number or a letter.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. Value for parent.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/clientGateways",
-	//   "request": {
-	//     "$ref": "ClientGateway"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
-}
-
-// method id "beyondcorp.projects.locations.clientGateways.delete":
-
-type ProjectsLocationsClientGatewaysDeleteCall struct {
-	s          *Service
-	name       string
-	urlParams_ gensupport.URLParams
-	ctx_       context.Context
-	header_    http.Header
-}
-
-// Delete: Deletes a single ClientGateway.
-//
-// - name: Name of the resource.
-func (r *ProjectsLocationsClientGatewaysService) Delete(name string) *ProjectsLocationsClientGatewaysDeleteCall {
-	c := &ProjectsLocationsClientGatewaysDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.name = name
-	return c
-}
-
-// RequestId sets the optional parameter "requestId": An optional
-// request ID to identify requests. Specify a unique request ID so that
-// if you must retry your request, the server will know to ignore the
-// request if it has already been completed. The server will guarantee
-// that for at least 60 minutes after the first request. For example,
-// consider a situation where you make an initial request and t he
-// request times out. If you make the request again with the same
-// request ID, the server can check if original operation with the same
-// request ID was received, and if so, will ignore the second request.
-// This prevents clients from accidentally creating duplicate
-// commitments. The request ID must be a valid UUID with the exception
-// that zero UUID is not supported
-// (00000000-0000-0000-0000-000000000000).
-func (c *ProjectsLocationsClientGatewaysDeleteCall) RequestId(requestId string) *ProjectsLocationsClientGatewaysDeleteCall {
-	c.urlParams_.Set("requestId", requestId)
-	return c
-}
-
-// ValidateOnly sets the optional parameter "validateOnly": If set,
-// validates request by executing a dry-run which would not alter the
-// resource in any way.
-func (c *ProjectsLocationsClientGatewaysDeleteCall) ValidateOnly(validateOnly bool) *ProjectsLocationsClientGatewaysDeleteCall {
-	c.urlParams_.Set("validateOnly", fmt.Sprint(validateOnly))
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsClientGatewaysDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientGatewaysDeleteCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsClientGatewaysDeleteCall) Context(ctx context.Context) *ProjectsLocationsClientGatewaysDeleteCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsClientGatewaysDeleteCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsClientGatewaysDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	var body io.Reader = nil
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"name": c.name,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "beyondcorp.projects.locations.clientGateways.delete" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
-// Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
-func (c *ProjectsLocationsClientGatewaysDeleteCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &GoogleLongrunningOperation{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Deletes a single ClientGateway.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientGateways/{clientGatewaysId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "beyondcorp.projects.locations.clientGateways.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. Name of the resource",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "requestId": {
-	//       "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and t he request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "validateOnly": {
-	//       "description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
-}
-
-// method id "beyondcorp.projects.locations.clientGateways.get":
-
-type ProjectsLocationsClientGatewaysGetCall struct {
-	s            *Service
-	name         string
-	urlParams_   gensupport.URLParams
-	ifNoneMatch_ string
-	ctx_         context.Context
-	header_      http.Header
-}
-
-// Get: Gets details of a single ClientGateway.
-//
-// - name: Name of the resource.
-func (r *ProjectsLocationsClientGatewaysService) Get(name string) *ProjectsLocationsClientGatewaysGetCall {
-	c := &ProjectsLocationsClientGatewaysGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.name = name
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsClientGatewaysGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientGatewaysGetCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
-func (c *ProjectsLocationsClientGatewaysGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsClientGatewaysGetCall {
-	c.ifNoneMatch_ = entityTag
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsClientGatewaysGetCall) Context(ctx context.Context) *ProjectsLocationsClientGatewaysGetCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsClientGatewaysGetCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsClientGatewaysGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	if c.ifNoneMatch_ != "" {
-		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
-	}
-	var body io.Reader = nil
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"name": c.name,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "beyondcorp.projects.locations.clientGateways.get" call.
-// Exactly one of *ClientGateway or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *ClientGateway.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
-func (c *ProjectsLocationsClientGatewaysGetCall) Do(opts ...googleapi.CallOption) (*ClientGateway, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &ClientGateway{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Gets details of a single ClientGateway.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientGateways/{clientGatewaysId}",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.clientGateways.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. Name of the resource",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "ClientGateway"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
-}
-
-// method id "beyondcorp.projects.locations.clientGateways.getIamPolicy":
 
 type ProjectsLocationsClientGatewaysGetIamPolicyCall struct {
 	s            *Service
@@ -10020,14 +7706,12 @@ type ProjectsLocationsClientGatewaysGetIamPolicyCall struct {
 	header_      http.Header
 }
 
-// GetIamPolicy: Gets the access control policy for a resource. Returns
-// an empty policy if the resource exists and does not have a policy
-// set.
+// GetIamPolicy: Gets the access control policy for a resource. Returns an
+// empty policy if the resource exists and does not have a policy set.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsClientGatewaysService) GetIamPolicy(resource string) *ProjectsLocationsClientGatewaysGetIamPolicyCall {
 	c := &ProjectsLocationsClientGatewaysGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -10035,17 +7719,16 @@ func (r *ProjectsLocationsClientGatewaysService) GetIamPolicy(resource string) *
 }
 
 // OptionsRequestedPolicyVersion sets the optional parameter
-// "options.requestedPolicyVersion": The maximum policy version that
-// will be used to format the policy. Valid values are 0, 1, and 3.
-// Requests specifying an invalid value will be rejected. Requests for
-// policies with any conditional role bindings must specify version 3.
-// Policies with no conditional role bindings may specify any valid
-// value or leave the field unset. The policy in the response might use
-// the policy version that you specified, or it might use a lower policy
-// version. For example, if you specify version 3, but the policy has no
-// conditional role bindings, the response uses version 1. To learn
-// which resources support conditions in their IAM policies, see the IAM
-// documentation
+// "options.requestedPolicyVersion": The maximum policy version that will be
+// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+// an invalid value will be rejected. Requests for policies with any
+// conditional role bindings must specify version 3. Policies with no
+// conditional role bindings may specify any valid value or leave the field
+// unset. The policy in the response might use the policy version that you
+// specified, or it might use a lower policy version. For example, if you
+// specify version 3, but the policy has no conditional role bindings, the
+// response uses version 1. To learn which resources support conditions in
+// their IAM policies, see the IAM documentation
 // (https://cloud.google.com/iam/help/conditions/resource-policies).
 func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) OptionsRequestedPolicyVersion(optionsRequestedPolicyVersion int64) *ProjectsLocationsClientGatewaysGetIamPolicyCall {
 	c.urlParams_.Set("options.requestedPolicyVersion", fmt.Sprint(optionsRequestedPolicyVersion))
@@ -10053,33 +7736,29 @@ func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) OptionsRequestedPolicy
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientGatewaysGetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) IfNoneMatch(entityTag string) *ProjectsLocationsClientGatewaysGetIamPolicyCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsClientGatewaysGetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10088,12 +7767,7 @@ func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -10114,12 +7788,11 @@ func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) doRequest(alt string) 
 }
 
 // Do executes the "beyondcorp.projects.locations.clientGateways.getIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10127,17 +7800,17 @@ func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) Do(opts ...googleapi.C
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -10150,257 +7823,7 @@ func (c *ProjectsLocationsClientGatewaysGetIamPolicyCall) Do(opts ...googleapi.C
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientGateways/{clientGatewaysId}:getIamPolicy",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.clientGateways.getIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "options.requestedPolicyVersion": {
-	//       "description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:getIamPolicy",
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.clientGateways.list":
-
-type ProjectsLocationsClientGatewaysListCall struct {
-	s            *Service
-	parent       string
-	urlParams_   gensupport.URLParams
-	ifNoneMatch_ string
-	ctx_         context.Context
-	header_      http.Header
-}
-
-// List: Lists ClientGateways in a given project and location.
-//
-// - parent: Parent value for ListClientGatewaysRequest.
-func (r *ProjectsLocationsClientGatewaysService) List(parent string) *ProjectsLocationsClientGatewaysListCall {
-	c := &ProjectsLocationsClientGatewaysListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.parent = parent
-	return c
-}
-
-// Filter sets the optional parameter "filter": Filtering results.
-func (c *ProjectsLocationsClientGatewaysListCall) Filter(filter string) *ProjectsLocationsClientGatewaysListCall {
-	c.urlParams_.Set("filter", filter)
-	return c
-}
-
-// OrderBy sets the optional parameter "orderBy": Hint for how to order
-// the results.
-func (c *ProjectsLocationsClientGatewaysListCall) OrderBy(orderBy string) *ProjectsLocationsClientGatewaysListCall {
-	c.urlParams_.Set("orderBy", orderBy)
-	return c
-}
-
-// PageSize sets the optional parameter "pageSize": Requested page size.
-// Server may return fewer items than requested. If unspecified, server
-// will pick an appropriate default.
-func (c *ProjectsLocationsClientGatewaysListCall) PageSize(pageSize int64) *ProjectsLocationsClientGatewaysListCall {
-	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
-	return c
-}
-
-// PageToken sets the optional parameter "pageToken": A token
-// identifying a page of results the server should return.
-func (c *ProjectsLocationsClientGatewaysListCall) PageToken(pageToken string) *ProjectsLocationsClientGatewaysListCall {
-	c.urlParams_.Set("pageToken", pageToken)
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsClientGatewaysListCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientGatewaysListCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
-func (c *ProjectsLocationsClientGatewaysListCall) IfNoneMatch(entityTag string) *ProjectsLocationsClientGatewaysListCall {
-	c.ifNoneMatch_ = entityTag
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsClientGatewaysListCall) Context(ctx context.Context) *ProjectsLocationsClientGatewaysListCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsClientGatewaysListCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsClientGatewaysListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	if c.ifNoneMatch_ != "" {
-		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
-	}
-	var body io.Reader = nil
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/clientGateways")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"parent": c.parent,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "beyondcorp.projects.locations.clientGateways.list" call.
-// Exactly one of *ListClientGatewaysResponse or error will be non-nil.
-// Any non-2xx status code is an error. Response headers are in either
-// *ListClientGatewaysResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
-func (c *ProjectsLocationsClientGatewaysListCall) Do(opts ...googleapi.CallOption) (*ListClientGatewaysResponse, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &ListClientGatewaysResponse{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Lists ClientGateways in a given project and location.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientGateways",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.clientGateways.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "Optional. Filtering results.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "orderBy": {
-	//       "description": "Optional. Hint for how to order the results.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional. Requested page size. Server may return fewer items than requested. If unspecified, server will pick an appropriate default.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. A token identifying a page of results the server should return.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. Parent value for ListClientGatewaysRequest.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/clientGateways",
-	//   "response": {
-	//     "$ref": "ListClientGatewaysResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
-}
-
-// Pages invokes f for each page of results.
-// A non-nil error returned from f will halt the iteration.
-// The provided context supersedes any context provided to the Context method.
-func (c *ProjectsLocationsClientGatewaysListCall) Pages(ctx context.Context, f func(*ListClientGatewaysResponse) error) error {
-	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
-	for {
-		x, err := c.Do()
-		if err != nil {
-			return err
-		}
-		if err := f(x); err != nil {
-			return err
-		}
-		if x.NextPageToken == "" {
-			return nil
-		}
-		c.PageToken(x.NextPageToken)
-	}
-}
-
-// method id "beyondcorp.projects.locations.clientGateways.setIamPolicy":
 
 type ProjectsLocationsClientGatewaysSetIamPolicyCall struct {
 	s                              *Service
@@ -10411,14 +7834,13 @@ type ProjectsLocationsClientGatewaysSetIamPolicyCall struct {
 	header_                        http.Header
 }
 
-// SetIamPolicy: Sets the access control policy on the specified
-// resource. Replaces any existing policy. Can return `NOT_FOUND`,
-// `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+// SetIamPolicy: Sets the access control policy on the specified resource.
+// Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`,
+// and `PERMISSION_DENIED` errors.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     specified. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsLocationsClientGatewaysService) SetIamPolicy(resource string, googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest) *ProjectsLocationsClientGatewaysSetIamPolicyCall {
 	c := &ProjectsLocationsClientGatewaysSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -10427,23 +7849,21 @@ func (r *ProjectsLocationsClientGatewaysService) SetIamPolicy(resource string, g
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsClientGatewaysSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientGatewaysSetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsClientGatewaysSetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsClientGatewaysSetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsClientGatewaysSetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10452,18 +7872,12 @@ func (c *ProjectsLocationsClientGatewaysSetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsClientGatewaysSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1setiampolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
@@ -10480,12 +7894,11 @@ func (c *ProjectsLocationsClientGatewaysSetIamPolicyCall) doRequest(alt string) 
 }
 
 // Do executes the "beyondcorp.projects.locations.clientGateways.setIamPolicy" call.
-// Exactly one of *GoogleIamV1Policy or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *GoogleIamV1Policy.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleIamV1Policy.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsClientGatewaysSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10493,17 +7906,17 @@ func (c *ProjectsLocationsClientGatewaysSetIamPolicyCall) Do(opts ...googleapi.C
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1Policy{
 		ServerResponse: googleapi.ServerResponse{
@@ -10516,38 +7929,7 @@ func (c *ProjectsLocationsClientGatewaysSetIamPolicyCall) Do(opts ...googleapi.C
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientGateways/{clientGatewaysId}:setIamPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.clientGateways.setIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:setIamPolicy",
-	//   "request": {
-	//     "$ref": "GoogleIamV1SetIamPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.clientGateways.testIamPermissions":
 
 type ProjectsLocationsClientGatewaysTestIamPermissionsCall struct {
 	s                                    *Service
@@ -10558,17 +7940,16 @@ type ProjectsLocationsClientGatewaysTestIamPermissionsCall struct {
 	header_                              http.Header
 }
 
-// TestIamPermissions: Returns permissions that a caller has on the
-// specified resource. If the resource does not exist, this will return
-// an empty set of permissions, not a `NOT_FOUND` error. Note: This
-// operation is designed to be used for building permission-aware UIs
-// and command-line tools, not for authorization checking. This
-// operation may "fail open" without warning.
+// TestIamPermissions: Returns permissions that a caller has on the specified
+// resource. If the resource does not exist, this will return an empty set of
+// permissions, not a `NOT_FOUND` error. Note: This operation is designed to be
+// used for building permission-aware UIs and command-line tools, not for
+// authorization checking. This operation may "fail open" without warning.
 //
-//   - resource: REQUIRED: The resource for which the policy detail is
-//     being requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
 func (r *ProjectsLocationsClientGatewaysService) TestIamPermissions(resource string, googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest) *ProjectsLocationsClientGatewaysTestIamPermissionsCall {
 	c := &ProjectsLocationsClientGatewaysTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -10577,23 +7958,21 @@ func (r *ProjectsLocationsClientGatewaysService) TestIamPermissions(resource str
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsClientGatewaysTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsLocationsClientGatewaysTestIamPermissionsCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsClientGatewaysTestIamPermissionsCall) Context(ctx context.Context) *ProjectsLocationsClientGatewaysTestIamPermissionsCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsClientGatewaysTestIamPermissionsCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10602,18 +7981,12 @@ func (c *ProjectsLocationsClientGatewaysTestIamPermissionsCall) Header() http.He
 }
 
 func (c *ProjectsLocationsClientGatewaysTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googleiamv1testiampermissionsrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
@@ -10630,13 +8003,11 @@ func (c *ProjectsLocationsClientGatewaysTestIamPermissionsCall) doRequest(alt st
 }
 
 // Do executes the "beyondcorp.projects.locations.clientGateways.testIamPermissions" call.
-// Exactly one of *GoogleIamV1TestIamPermissionsResponse or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *GoogleIamV1TestIamPermissionsResponse.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsClientGatewaysTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*GoogleIamV1TestIamPermissionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10644,17 +8015,17 @@ func (c *ProjectsLocationsClientGatewaysTestIamPermissionsCall) Do(opts ...googl
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleIamV1TestIamPermissionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -10667,38 +8038,7 @@ func (c *ProjectsLocationsClientGatewaysTestIamPermissionsCall) Do(opts ...googl
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clientGateways/{clientGatewaysId}:testIamPermissions",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.clientGateways.testIamPermissions",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/clientGateways/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:testIamPermissions",
-	//   "request": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "GoogleIamV1TestIamPermissionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.operations.cancel":
 
 type ProjectsLocationsOperationsCancelCall struct {
 	s                                       *Service
@@ -10709,15 +8049,14 @@ type ProjectsLocationsOperationsCancelCall struct {
 	header_                                 http.Header
 }
 
-// Cancel: Starts asynchronous cancellation on a long-running operation.
-// The server makes a best effort to cancel the operation, but success
-// is not guaranteed. If the server doesn't support this method, it
-// returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use
-// Operations.GetOperation or other methods to check whether the
-// cancellation succeeded or whether the operation completed despite
-// cancellation. On successful cancellation, the operation is not
-// deleted; instead, it becomes an operation with an Operation.error
-// value with a google.rpc.Status.code of 1, corresponding to
+// Cancel: Starts asynchronous cancellation on a long-running operation. The
+// server makes a best effort to cancel the operation, but success is not
+// guaranteed. If the server doesn't support this method, it returns
+// `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or
+// other methods to check whether the cancellation succeeded or whether the
+// operation completed despite cancellation. On successful cancellation, the
+// operation is not deleted; instead, it becomes an operation with an
+// Operation.error value with a google.rpc.Status.code of 1, corresponding to
 // `Code.CANCELLED`.
 //
 // - name: The name of the operation resource to be cancelled.
@@ -10729,23 +8068,21 @@ func (r *ProjectsLocationsOperationsService) Cancel(name string, googlelongrunni
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOperationsCancelCall) Fields(s ...googleapi.Field) *ProjectsLocationsOperationsCancelCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOperationsCancelCall) Context(ctx context.Context) *ProjectsLocationsOperationsCancelCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOperationsCancelCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10754,18 +8091,12 @@ func (c *ProjectsLocationsOperationsCancelCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOperationsCancelCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.googlelongrunningcanceloperationrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:cancel")
@@ -10782,12 +8113,10 @@ func (c *ProjectsLocationsOperationsCancelCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "beyondcorp.projects.locations.operations.cancel" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsOperationsCancelCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10795,17 +8124,17 @@ func (c *ProjectsLocationsOperationsCancelCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -10818,38 +8147,7 @@ func (c *ProjectsLocationsOperationsCancelCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}:cancel",
-	//   "httpMethod": "POST",
-	//   "id": "beyondcorp.projects.locations.operations.cancel",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource to be cancelled.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:cancel",
-	//   "request": {
-	//     "$ref": "GoogleLongrunningCancelOperationRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.operations.delete":
 
 type ProjectsLocationsOperationsDeleteCall struct {
 	s          *Service
@@ -10859,10 +8157,10 @@ type ProjectsLocationsOperationsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a long-running operation. This method indicates that
-// the client is no longer interested in the operation result. It does
-// not cancel the operation. If the server doesn't support this method,
-// it returns `google.rpc.Code.UNIMPLEMENTED`.
+// Delete: Deletes a long-running operation. This method indicates that the
+// client is no longer interested in the operation result. It does not cancel
+// the operation. If the server doesn't support this method, it returns
+// `google.rpc.Code.UNIMPLEMENTED`.
 //
 // - name: The name of the operation resource to be deleted.
 func (r *ProjectsLocationsOperationsService) Delete(name string) *ProjectsLocationsOperationsDeleteCall {
@@ -10872,23 +8170,21 @@ func (r *ProjectsLocationsOperationsService) Delete(name string) *ProjectsLocati
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOperationsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsOperationsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOperationsDeleteCall) Context(ctx context.Context) *ProjectsLocationsOperationsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOperationsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10897,12 +8193,7 @@ func (c *ProjectsLocationsOperationsDeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOperationsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -10920,12 +8211,10 @@ func (c *ProjectsLocationsOperationsDeleteCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "beyondcorp.projects.locations.operations.delete" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsOperationsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10933,17 +8222,17 @@ func (c *ProjectsLocationsOperationsDeleteCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -10956,35 +8245,7 @@ func (c *ProjectsLocationsOperationsDeleteCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "beyondcorp.projects.locations.operations.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource to be deleted.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.operations.get":
 
 type ProjectsLocationsOperationsGetCall struct {
 	s            *Service
@@ -10995,9 +8256,9 @@ type ProjectsLocationsOperationsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *ProjectsLocationsOperationsService) Get(name string) *ProjectsLocationsOperationsGetCall {
@@ -11007,33 +8268,29 @@ func (r *ProjectsLocationsOperationsService) Get(name string) *ProjectsLocations
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11042,12 +8299,7 @@ func (c *ProjectsLocationsOperationsGetCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -11068,12 +8320,11 @@ func (c *ProjectsLocationsOperationsGetCall) doRequest(alt string) (*http.Respon
 }
 
 // Do executes the "beyondcorp.projects.locations.operations.get" call.
-// Exactly one of *GoogleLongrunningOperation or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *GoogleLongrunningOperation.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *GoogleLongrunningOperation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsOperationsGetCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningOperation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11081,17 +8332,17 @@ func (c *ProjectsLocationsOperationsGetCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningOperation{
 		ServerResponse: googleapi.ServerResponse{
@@ -11104,35 +8355,7 @@ func (c *ProjectsLocationsOperationsGetCall) Do(opts ...googleapi.CallOption) (*
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "GoogleLongrunningOperation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "beyondcorp.projects.locations.operations.list":
 
 type ProjectsLocationsOperationsListCall struct {
 	s            *Service
@@ -11143,16 +8366,8 @@ type ProjectsLocationsOperationsListCall struct {
 	header_      http.Header
 }
 
-// List: Lists operations that match the specified filter in the
-// request. If the server doesn't support this method, it returns
-// `UNIMPLEMENTED`. NOTE: the `name` binding allows API services to
-// override the binding to use different resource name schemes, such as
-// `users/*/operations`. To override the binding, API services can add a
-// binding such as "/v1/{name=users/*}/operations" to their service
-// configuration. For backwards compatibility, the default name includes
-// the operations collection id, however overriding users must ensure
-// the name binding is the parent resource, without the operations
-// collection id.
+// List: Lists operations that match the specified filter in the request. If
+// the server doesn't support this method, it returns `UNIMPLEMENTED`.
 //
 // - name: The name of the operation's parent resource.
 func (r *ProjectsLocationsOperationsService) List(name string) *ProjectsLocationsOperationsListCall {
@@ -11161,55 +8376,50 @@ func (r *ProjectsLocationsOperationsService) List(name string) *ProjectsLocation
 	return c
 }
 
-// Filter sets the optional parameter "filter": The standard list
-// filter.
+// Filter sets the optional parameter "filter": The standard list filter.
 func (c *ProjectsLocationsOperationsListCall) Filter(filter string) *ProjectsLocationsOperationsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The standard list
-// page size.
+// PageSize sets the optional parameter "pageSize": The standard list page
+// size.
 func (c *ProjectsLocationsOperationsListCall) PageSize(pageSize int64) *ProjectsLocationsOperationsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": The standard list
-// page token.
+// PageToken sets the optional parameter "pageToken": The standard list page
+// token.
 func (c *ProjectsLocationsOperationsListCall) PageToken(pageToken string) *ProjectsLocationsOperationsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOperationsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsOperationsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsOperationsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsOperationsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOperationsListCall) Context(ctx context.Context) *ProjectsLocationsOperationsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOperationsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11218,12 +8428,7 @@ func (c *ProjectsLocationsOperationsListCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOperationsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -11244,13 +8449,11 @@ func (c *ProjectsLocationsOperationsListCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "beyondcorp.projects.locations.operations.list" call.
-// Exactly one of *GoogleLongrunningListOperationsResponse or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
-// *GoogleLongrunningListOperationsResponse.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *GoogleLongrunningListOperationsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsOperationsListCall) Do(opts ...googleapi.CallOption) (*GoogleLongrunningListOperationsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11258,17 +8461,17 @@ func (c *ProjectsLocationsOperationsListCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleLongrunningListOperationsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -11281,48 +8484,6 @@ func (c *ProjectsLocationsOperationsListCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`. NOTE: the `name` binding allows API services to override the binding to use different resource name schemes, such as `users/*/operations`. To override the binding, API services can add a binding such as `\"/v1/{name=users/*}/operations\"` to their service configuration. For backwards compatibility, the default name includes the operations collection id, however overriding users must ensure the name binding is the parent resource, without the operations collection id.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/operations",
-	//   "httpMethod": "GET",
-	//   "id": "beyondcorp.projects.locations.operations.list",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "filter": {
-	//       "description": "The standard list filter.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "name": {
-	//       "description": "The name of the operation's parent resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The standard list page size.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "The standard list page token.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}/operations",
-	//   "response": {
-	//     "$ref": "GoogleLongrunningListOperationsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -11330,7 +8491,7 @@ func (c *ProjectsLocationsOperationsListCall) Do(opts ...googleapi.CallOption) (
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsOperationsListCall) Pages(ctx context.Context, f func(*GoogleLongrunningListOperationsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {

@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package gmail provides access to the Gmail API.
 //
 // For product documentation, see: https://developers.google.com/gmail/api/
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,28 +28,31 @@
 //	ctx := context.Background()
 //	gmailService, err := gmail.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
+// By default, all available scopes (see "Constants") are used to authenticate.
+// To restrict scopes, use [google.golang.org/api/option.WithScopes]:
 //
 //	gmailService, err := gmail.NewService(ctx, option.WithScopes(gmail.GmailSettingsSharingScope))
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	gmailService, err := gmail.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	gmailService, err := gmail.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package gmail // import "google.golang.org/api/gmail/v1"
 
 import (
@@ -75,11 +89,13 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "gmail:v1"
 const apiName = "gmail"
 const apiVersion = "v1"
 const basePath = "https://gmail.googleapis.com/"
+const basePathTemplate = "https://gmail.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://gmail.mtls.googleapis.com/"
 
 // OAuth2 scopes used by this API.
@@ -108,8 +124,8 @@ const (
 	// See and edit your email labels
 	GmailLabelsScope = "https://www.googleapis.com/auth/gmail.labels"
 
-	// View your email message metadata such as labels and headers, but not
-	// the email body
+	// View your email message metadata such as labels and headers, but not the
+	// email body
 	GmailMetadataScope = "https://www.googleapis.com/auth/gmail.metadata"
 
 	// Read, compose, and send emails from your Gmail account
@@ -124,8 +140,7 @@ const (
 	// See, edit, create, or change your email settings and filters in Gmail
 	GmailSettingsBasicScope = "https://www.googleapis.com/auth/gmail.settings.basic"
 
-	// Manage your sensitive mail settings, including who can manage your
-	// mail
+	// Manage your sensitive mail settings, including who can manage your mail
 	GmailSettingsSharingScope = "https://www.googleapis.com/auth/gmail.settings.sharing"
 )
 
@@ -150,7 +165,9 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -271,6 +288,7 @@ type UsersMessagesAttachmentsService struct {
 
 func NewUsersSettingsService(s *Service) *UsersSettingsService {
 	rs := &UsersSettingsService{s: s}
+	rs.Cse = NewUsersSettingsCseService(s)
 	rs.Delegates = NewUsersSettingsDelegatesService(s)
 	rs.Filters = NewUsersSettingsFiltersService(s)
 	rs.ForwardingAddresses = NewUsersSettingsForwardingAddressesService(s)
@@ -281,6 +299,8 @@ func NewUsersSettingsService(s *Service) *UsersSettingsService {
 type UsersSettingsService struct {
 	s *Service
 
+	Cse *UsersSettingsCseService
+
 	Delegates *UsersSettingsDelegatesService
 
 	Filters *UsersSettingsFiltersService
@@ -288,6 +308,39 @@ type UsersSettingsService struct {
 	ForwardingAddresses *UsersSettingsForwardingAddressesService
 
 	SendAs *UsersSettingsSendAsService
+}
+
+func NewUsersSettingsCseService(s *Service) *UsersSettingsCseService {
+	rs := &UsersSettingsCseService{s: s}
+	rs.Identities = NewUsersSettingsCseIdentitiesService(s)
+	rs.Keypairs = NewUsersSettingsCseKeypairsService(s)
+	return rs
+}
+
+type UsersSettingsCseService struct {
+	s *Service
+
+	Identities *UsersSettingsCseIdentitiesService
+
+	Keypairs *UsersSettingsCseKeypairsService
+}
+
+func NewUsersSettingsCseIdentitiesService(s *Service) *UsersSettingsCseIdentitiesService {
+	rs := &UsersSettingsCseIdentitiesService{s: s}
+	return rs
+}
+
+type UsersSettingsCseIdentitiesService struct {
+	s *Service
+}
+
+func NewUsersSettingsCseKeypairsService(s *Service) *UsersSettingsCseKeypairsService {
+	rs := &UsersSettingsCseKeypairsService{s: s}
+	return rs
+}
+
+type UsersSettingsCseKeypairsService struct {
+	s *Service
 }
 
 func NewUsersSettingsDelegatesService(s *Service) *UsersSettingsDelegatesService {
@@ -349,8 +402,8 @@ type UsersThreadsService struct {
 
 // AutoForwarding: Auto-forwarding settings for an account.
 type AutoForwarding struct {
-	// Disposition: The state that a message should be left in after it has
-	// been forwarded.
+	// Disposition: The state that a message should be left in after it has been
+	// forwarded.
 	//
 	// Possible values:
 	//   "dispositionUnspecified" - Unspecified disposition.
@@ -359,337 +412,396 @@ type AutoForwarding struct {
 	//   "trash" - Move the message to the `TRASH`.
 	//   "markRead" - Leave the message in the `INBOX` and mark it as read.
 	Disposition string `json:"disposition,omitempty"`
-
-	// EmailAddress: Email address to which all incoming messages are
-	// forwarded. This email address must be a verified member of the
-	// forwarding addresses.
+	// EmailAddress: Email address to which all incoming messages are forwarded.
+	// This email address must be a verified member of the forwarding addresses.
 	EmailAddress string `json:"emailAddress,omitempty"`
-
-	// Enabled: Whether all incoming mail is automatically forwarded to
-	// another address.
+	// Enabled: Whether all incoming mail is automatically forwarded to another
+	// address.
 	Enabled bool `json:"enabled,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Disposition") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Disposition") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Disposition") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AutoForwarding) MarshalJSON() ([]byte, error) {
 	type NoMethod AutoForwarding
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type BatchDeleteMessagesRequest struct {
 	// Ids: The IDs of the messages to delete.
 	Ids []string `json:"ids,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Ids") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Ids") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Ids") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Ids") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *BatchDeleteMessagesRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod BatchDeleteMessagesRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type BatchModifyMessagesRequest struct {
 	// AddLabelIds: A list of label IDs to add to messages.
 	AddLabelIds []string `json:"addLabelIds,omitempty"`
-
-	// Ids: The IDs of the messages to modify. There is a limit of 1000 ids
-	// per request.
+	// Ids: The IDs of the messages to modify. There is a limit of 1000 ids per
+	// request.
 	Ids []string `json:"ids,omitempty"`
-
 	// RemoveLabelIds: A list of label IDs to remove from messages.
 	RemoveLabelIds []string `json:"removeLabelIds,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AddLabelIds") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AddLabelIds") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AddLabelIds") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *BatchModifyMessagesRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod BatchModifyMessagesRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// Delegate: Settings for a delegate. Delegates can read, send, and
-// delete messages, as well as view and add contacts, for the
-// delegator's account. See "Set up mail delegation" for more
-// information about delegates.
+// CseIdentity: The client-side encryption (CSE) configuration for the email
+// address of an authenticated user. Gmail uses CSE configurations to save
+// drafts of client-side encrypted email messages, and to sign and send
+// encrypted email messages.
+type CseIdentity struct {
+	// EmailAddress: The email address for the sending identity. The email address
+	// must be the primary email address of the authenticated user.
+	EmailAddress string `json:"emailAddress,omitempty"`
+	// PrimaryKeyPairId: If a key pair is associated, the ID of the key pair,
+	// CseKeyPair.
+	PrimaryKeyPairId string `json:"primaryKeyPairId,omitempty"`
+	// SignAndEncryptKeyPairs: The configuration of a CSE identity that uses
+	// different key pairs for signing and encryption.
+	SignAndEncryptKeyPairs *SignAndEncryptKeyPairs `json:"signAndEncryptKeyPairs,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "EmailAddress") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "EmailAddress") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *CseIdentity) MarshalJSON() ([]byte, error) {
+	type NoMethod CseIdentity
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// CseKeyPair: A client-side encryption S/MIME key pair, which is comprised of
+// a public key, its certificate chain, and metadata for its paired private
+// key. Gmail uses the key pair to complete the following tasks: - Sign
+// outgoing client-side encrypted messages. - Save and reopen drafts of
+// client-side encrypted messages. - Save and reopen sent messages. - Decrypt
+// incoming or archived S/MIME messages.
+type CseKeyPair struct {
+	// DisableTime: Output only. If a key pair is set to `DISABLED`, the time that
+	// the key pair's state changed from `ENABLED` to `DISABLED`. This field is
+	// present only when the key pair is in state `DISABLED`.
+	DisableTime string `json:"disableTime,omitempty"`
+	// EnablementState: Output only. The current state of the key pair.
+	//
+	// Possible values:
+	//   "stateUnspecified" - The current state of the key pair is not set. The key
+	// pair is neither turned on nor turned off.
+	//   "enabled" - The key pair is turned on. For any email messages that this
+	// key pair encrypts, Gmail decrypts the messages and signs any outgoing mail
+	// with the private key. To turn on a key pair, use the EnableCseKeyPair
+	// method.
+	//   "disabled" - The key pair is turned off. Authenticated users cannot
+	// decrypt email messages nor sign outgoing messages. If a key pair is turned
+	// off for more than 30 days, you can permanently delete it. To turn off a key
+	// pair, use the DisableCseKeyPair method.
+	EnablementState string `json:"enablementState,omitempty"`
+	// KeyPairId: Output only. The immutable ID for the client-side encryption
+	// S/MIME key pair.
+	KeyPairId string `json:"keyPairId,omitempty"`
+	// Pem: Output only. The public key and its certificate chain, in PEM
+	// (https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail) format.
+	Pem string `json:"pem,omitempty"`
+	// Pkcs7: Input only. The public key and its certificate chain. The chain must
+	// be in PKCS#7 (https://en.wikipedia.org/wiki/PKCS_7) format and use PEM
+	// encoding and ASCII armor.
+	Pkcs7 string `json:"pkcs7,omitempty"`
+	// PrivateKeyMetadata: Metadata for instances of this key pair's private key.
+	PrivateKeyMetadata []*CsePrivateKeyMetadata `json:"privateKeyMetadata,omitempty"`
+	// SubjectEmailAddresses: Output only. The email address identities that are
+	// specified on the leaf certificate.
+	SubjectEmailAddresses []string `json:"subjectEmailAddresses,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "DisableTime") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DisableTime") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *CseKeyPair) MarshalJSON() ([]byte, error) {
+	type NoMethod CseKeyPair
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// CsePrivateKeyMetadata: Metadata for a private key instance.
+type CsePrivateKeyMetadata struct {
+	// HardwareKeyMetadata: Metadata for hardware keys.
+	HardwareKeyMetadata *HardwareKeyMetadata `json:"hardwareKeyMetadata,omitempty"`
+	// KaclsKeyMetadata: Metadata for a private key instance managed by an external
+	// key access control list service.
+	KaclsKeyMetadata *KaclsKeyMetadata `json:"kaclsKeyMetadata,omitempty"`
+	// PrivateKeyMetadataId: Output only. The immutable ID for the private key
+	// metadata instance.
+	PrivateKeyMetadataId string `json:"privateKeyMetadataId,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "HardwareKeyMetadata") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "HardwareKeyMetadata") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *CsePrivateKeyMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod CsePrivateKeyMetadata
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// Delegate: Settings for a delegate. Delegates can read, send, and delete
+// messages, as well as view and add contacts, for the delegator's account. See
+// "Set up mail delegation" for more information about delegates.
 type Delegate struct {
 	// DelegateEmail: The email address of the delegate.
 	DelegateEmail string `json:"delegateEmail,omitempty"`
-
-	// VerificationStatus: Indicates whether this address has been verified
-	// and can act as a delegate for the account. Read-only.
+	// VerificationStatus: Indicates whether this address has been verified and can
+	// act as a delegate for the account. Read-only.
 	//
 	// Possible values:
 	//   "verificationStatusUnspecified" - Unspecified verification status.
 	//   "accepted" - The address can act a delegate for the account.
-	//   "pending" - A verification request was mailed to the address, and
-	// the owner has not yet accepted it.
-	//   "rejected" - A verification request was mailed to the address, and
-	// the owner rejected it.
-	//   "expired" - A verification request was mailed to the address, and
-	// it expired without verification.
+	//   "pending" - A verification request was mailed to the address, and the
+	// owner has not yet accepted it.
+	//   "rejected" - A verification request was mailed to the address, and the
+	// owner rejected it.
+	//   "expired" - A verification request was mailed to the address, and it
+	// expired without verification.
 	VerificationStatus string `json:"verificationStatus,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "DelegateEmail") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DelegateEmail") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "DelegateEmail") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Delegate) MarshalJSON() ([]byte, error) {
 	type NoMethod Delegate
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// DisableCseKeyPairRequest: Requests to turn off a client-side encryption key
+// pair.
+type DisableCseKeyPairRequest struct {
 }
 
 // Draft: A draft email in the user's mailbox.
 type Draft struct {
 	// Id: The immutable ID of the draft.
 	Id string `json:"id,omitempty"`
-
 	// Message: The message content of the draft.
 	Message *Message `json:"message,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Id") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Id") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Id") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Id") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Draft) MarshalJSON() ([]byte, error) {
 	type NoMethod Draft
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// Filter: Resource definition for Gmail filters. Filters apply to
-// specific messages instead of an entire email thread.
+// EnableCseKeyPairRequest: Requests to turn on a client-side encryption key
+// pair.
+type EnableCseKeyPairRequest struct {
+}
+
+// Filter: Resource definition for Gmail filters. Filters apply to specific
+// messages instead of an entire email thread.
 type Filter struct {
 	// Action: Action that the filter performs.
 	Action *FilterAction `json:"action,omitempty"`
-
 	// Criteria: Matching criteria for the filter.
 	Criteria *FilterCriteria `json:"criteria,omitempty"`
-
 	// Id: The server assigned ID of the filter.
 	Id string `json:"id,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Action") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Action") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Action") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Filter) MarshalJSON() ([]byte, error) {
 	type NoMethod Filter
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // FilterAction: A set of actions to perform on a message.
 type FilterAction struct {
 	// AddLabelIds: List of labels to add to the message.
 	AddLabelIds []string `json:"addLabelIds,omitempty"`
-
 	// Forward: Email address that the message should be forwarded to.
 	Forward string `json:"forward,omitempty"`
-
 	// RemoveLabelIds: List of labels to remove from the message.
 	RemoveLabelIds []string `json:"removeLabelIds,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AddLabelIds") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AddLabelIds") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AddLabelIds") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *FilterAction) MarshalJSON() ([]byte, error) {
 	type NoMethod FilterAction
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // FilterCriteria: Message matching criteria.
 type FilterCriteria struct {
 	// ExcludeChats: Whether the response should exclude chats.
 	ExcludeChats bool `json:"excludeChats,omitempty"`
-
 	// From: The sender's display name or email address.
 	From string `json:"from,omitempty"`
-
 	// HasAttachment: Whether the message has any attachment.
 	HasAttachment bool `json:"hasAttachment,omitempty"`
-
 	// NegatedQuery: Only return messages not matching the specified query.
 	// Supports the same query format as the Gmail search box. For example,
 	// "from:someuser@example.com rfc822msgid: is:unread".
 	NegatedQuery string `json:"negatedQuery,omitempty"`
-
-	// Query: Only return messages matching the specified query. Supports
-	// the same query format as the Gmail search box. For example,
+	// Query: Only return messages matching the specified query. Supports the same
+	// query format as the Gmail search box. For example,
 	// "from:someuser@example.com rfc822msgid: is:unread".
 	Query string `json:"query,omitempty"`
-
-	// Size: The size of the entire RFC822 message in bytes, including all
-	// headers and attachments.
+	// Size: The size of the entire RFC822 message in bytes, including all headers
+	// and attachments.
 	Size int64 `json:"size,omitempty"`
-
-	// SizeComparison: How the message size in bytes should be in relation
-	// to the size field.
+	// SizeComparison: How the message size in bytes should be in relation to the
+	// size field.
 	//
 	// Possible values:
 	//   "unspecified"
 	//   "smaller" - Find messages smaller than the given size.
 	//   "larger" - Find messages larger than the given size.
 	SizeComparison string `json:"sizeComparison,omitempty"`
-
-	// Subject: Case-insensitive phrase found in the message's subject.
-	// Trailing and leading whitespace are be trimmed and adjacent spaces
-	// are collapsed.
+	// Subject: Case-insensitive phrase found in the message's subject. Trailing
+	// and leading whitespace are be trimmed and adjacent spaces are collapsed.
 	Subject string `json:"subject,omitempty"`
-
-	// To: The recipient's display name or email address. Includes
-	// recipients in the "to", "cc", and "bcc" header fields. You can use
-	// simply the local part of the email address. For example, "example"
-	// and "example@" both match "example@gmail.com". This field is
-	// case-insensitive.
+	// To: The recipient's display name or email address. Includes recipients in
+	// the "to", "cc", and "bcc" header fields. You can use simply the local part
+	// of the email address. For example, "example" and "example@" both match
+	// "example@gmail.com". This field is case-insensitive.
 	To string `json:"to,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ExcludeChats") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ExcludeChats") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ExcludeChats") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *FilterCriteria) MarshalJSON() ([]byte, error) {
 	type NoMethod FilterCriteria
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ForwardingAddress: Settings for a forwarding address.
 type ForwardingAddress struct {
 	// ForwardingEmail: An email address to which messages can be forwarded.
 	ForwardingEmail string `json:"forwardingEmail,omitempty"`
-
-	// VerificationStatus: Indicates whether this address has been verified
-	// and is usable for forwarding. Read-only.
+	// VerificationStatus: Indicates whether this address has been verified and is
+	// usable for forwarding. Read-only.
 	//
 	// Possible values:
 	//   "verificationStatusUnspecified" - Unspecified verification status.
@@ -697,514 +809,510 @@ type ForwardingAddress struct {
 	//   "pending" - The address is awaiting verification by the owner.
 	VerificationStatus string `json:"verificationStatus,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "ForwardingEmail") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ForwardingEmail") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "ForwardingEmail") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ForwardingAddress) MarshalJSON() ([]byte, error) {
 	type NoMethod ForwardingAddress
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// History: A record of a change to the user's mailbox. Each history
-// change may affect multiple messages in multiple ways.
+// HardwareKeyMetadata: Metadata for hardware keys.
+type HardwareKeyMetadata struct {
+	// Description: Description about the hardware key.
+	Description string `json:"description,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Description") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *HardwareKeyMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod HardwareKeyMetadata
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// History: A record of a change to the user's mailbox. Each history change may
+// affect multiple messages in multiple ways.
 type History struct {
 	// Id: The mailbox sequence ID.
 	Id uint64 `json:"id,omitempty,string"`
-
 	// LabelsAdded: Labels added to messages in this history record.
 	LabelsAdded []*HistoryLabelAdded `json:"labelsAdded,omitempty"`
-
 	// LabelsRemoved: Labels removed from messages in this history record.
 	LabelsRemoved []*HistoryLabelRemoved `json:"labelsRemoved,omitempty"`
-
-	// Messages: List of messages changed in this history record. The fields
-	// for specific change types, such as `messagesAdded` may duplicate
-	// messages in this field. We recommend using the specific change-type
-	// fields instead of this.
+	// Messages: List of messages changed in this history record. The fields for
+	// specific change types, such as `messagesAdded` may duplicate messages in
+	// this field. We recommend using the specific change-type fields instead of
+	// this.
 	Messages []*Message `json:"messages,omitempty"`
-
 	// MessagesAdded: Messages added to the mailbox in this history record.
 	MessagesAdded []*HistoryMessageAdded `json:"messagesAdded,omitempty"`
-
-	// MessagesDeleted: Messages deleted (not Trashed) from the mailbox in
-	// this history record.
+	// MessagesDeleted: Messages deleted (not Trashed) from the mailbox in this
+	// history record.
 	MessagesDeleted []*HistoryMessageDeleted `json:"messagesDeleted,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Id") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Id") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Id") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Id") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *History) MarshalJSON() ([]byte, error) {
 	type NoMethod History
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type HistoryLabelAdded struct {
 	// LabelIds: Label IDs added to the message.
 	LabelIds []string `json:"labelIds,omitempty"`
-
-	Message *Message `json:"message,omitempty"`
-
+	Message  *Message `json:"message,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "LabelIds") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "LabelIds") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "LabelIds") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *HistoryLabelAdded) MarshalJSON() ([]byte, error) {
 	type NoMethod HistoryLabelAdded
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type HistoryLabelRemoved struct {
 	// LabelIds: Label IDs removed from the message.
 	LabelIds []string `json:"labelIds,omitempty"`
-
-	Message *Message `json:"message,omitempty"`
-
+	Message  *Message `json:"message,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "LabelIds") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "LabelIds") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "LabelIds") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *HistoryLabelRemoved) MarshalJSON() ([]byte, error) {
 	type NoMethod HistoryLabelRemoved
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type HistoryMessageAdded struct {
 	Message *Message `json:"message,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Message") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Message") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Message") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Message") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *HistoryMessageAdded) MarshalJSON() ([]byte, error) {
 	type NoMethod HistoryMessageAdded
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type HistoryMessageDeleted struct {
 	Message *Message `json:"message,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Message") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Message") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Message") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Message") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *HistoryMessageDeleted) MarshalJSON() ([]byte, error) {
 	type NoMethod HistoryMessageDeleted
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ImapSettings: IMAP settings for an account.
 type ImapSettings struct {
-	// AutoExpunge: If this value is true, Gmail will immediately expunge a
-	// message when it is marked as deleted in IMAP. Otherwise, Gmail will
-	// wait for an update from the client before expunging messages marked
-	// as deleted.
+	// AutoExpunge: If this value is true, Gmail will immediately expunge a message
+	// when it is marked as deleted in IMAP. Otherwise, Gmail will wait for an
+	// update from the client before expunging messages marked as deleted.
 	AutoExpunge bool `json:"autoExpunge,omitempty"`
-
 	// Enabled: Whether IMAP is enabled for the account.
 	Enabled bool `json:"enabled,omitempty"`
-
-	// ExpungeBehavior: The action that will be executed on a message when
-	// it is marked as deleted and expunged from the last visible IMAP
-	// folder.
+	// ExpungeBehavior: The action that will be executed on a message when it is
+	// marked as deleted and expunged from the last visible IMAP folder.
 	//
 	// Possible values:
 	//   "expungeBehaviorUnspecified" - Unspecified behavior.
 	//   "archive" - Archive messages marked as deleted.
 	//   "trash" - Move messages marked as deleted to the trash.
-	//   "deleteForever" - Immediately and permanently delete messages
-	// marked as deleted. The expunged messages cannot be recovered.
+	//   "deleteForever" - Immediately and permanently delete messages marked as
+	// deleted. The expunged messages cannot be recovered.
 	ExpungeBehavior string `json:"expungeBehavior,omitempty"`
-
-	// MaxFolderSize: An optional limit on the number of messages that an
-	// IMAP folder may contain. Legal values are 0, 1000, 2000, 5000 or
-	// 10000. A value of zero is interpreted to mean that there is no limit.
+	// MaxFolderSize: An optional limit on the number of messages that an IMAP
+	// folder may contain. Legal values are 0, 1000, 2000, 5000 or 10000. A value
+	// of zero is interpreted to mean that there is no limit.
 	MaxFolderSize int64 `json:"maxFolderSize,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "AutoExpunge") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AutoExpunge") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AutoExpunge") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ImapSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod ImapSettings
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// Label: Labels are used to categorize messages and threads within the
-// user's mailbox. The maximum number of labels supported for a user's
-// mailbox is 10,000.
-type Label struct {
-	// Color: The color to assign to the label. Color is only available for
-	// labels that have their `type` set to `user`.
-	Color *LabelColor `json:"color,omitempty"`
+// KaclsKeyMetadata: Metadata for private keys managed by an external key
+// access control list service. For details about managing key access, see
+// Google Workspace CSE API Reference
+// (https://developers.google.com/workspace/cse/reference).
+type KaclsKeyMetadata struct {
+	// KaclsData: Opaque data generated and used by the key access control list
+	// service. Maximum size: 8 KiB.
+	KaclsData string `json:"kaclsData,omitempty"`
+	// KaclsUri: The URI of the key access control list service that manages the
+	// private key.
+	KaclsUri string `json:"kaclsUri,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "KaclsData") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "KaclsData") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
 
+func (s *KaclsKeyMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod KaclsKeyMetadata
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// Label: Labels are used to categorize messages and threads within the user's
+// mailbox. The maximum number of labels supported for a user's mailbox is
+// 10,000.
+type Label struct {
+	// Color: The color to assign to the label. Color is only available for labels
+	// that have their `type` set to `user`.
+	Color *LabelColor `json:"color,omitempty"`
 	// Id: The immutable ID of the label.
 	Id string `json:"id,omitempty"`
-
-	// LabelListVisibility: The visibility of the label in the label list in
-	// the Gmail web interface.
+	// LabelListVisibility: The visibility of the label in the label list in the
+	// Gmail web interface.
 	//
 	// Possible values:
 	//   "labelShow" - Show the label in the label list.
-	//   "labelShowIfUnread" - Show the label if there are any unread
-	// messages with that label.
+	//   "labelShowIfUnread" - Show the label if there are any unread messages with
+	// that label.
 	//   "labelHide" - Do not show the label in the label list.
 	LabelListVisibility string `json:"labelListVisibility,omitempty"`
-
-	// MessageListVisibility: The visibility of messages with this label in
-	// the message list in the Gmail web interface.
+	// MessageListVisibility: The visibility of messages with this label in the
+	// message list in the Gmail web interface.
 	//
 	// Possible values:
 	//   "show" - Show the label in the message list.
 	//   "hide" - Do not show the label in the message list.
 	MessageListVisibility string `json:"messageListVisibility,omitempty"`
-
 	// MessagesTotal: The total number of messages with the label.
 	MessagesTotal int64 `json:"messagesTotal,omitempty"`
-
 	// MessagesUnread: The number of unread messages with the label.
 	MessagesUnread int64 `json:"messagesUnread,omitempty"`
-
 	// Name: The display name of the label.
 	Name string `json:"name,omitempty"`
-
 	// ThreadsTotal: The total number of threads with the label.
 	ThreadsTotal int64 `json:"threadsTotal,omitempty"`
-
 	// ThreadsUnread: The number of unread threads with the label.
 	ThreadsUnread int64 `json:"threadsUnread,omitempty"`
-
-	// Type: The owner type for the label. User labels are created by the
-	// user and can be modified and deleted by the user and can be applied
-	// to any message or thread. System labels are internally created and
-	// cannot be added, modified, or deleted. System labels may be able to
-	// be applied to or removed from messages and threads under some
-	// circumstances but this is not guaranteed. For example, users can
-	// apply and remove the `INBOX` and `UNREAD` labels from messages and
-	// threads, but cannot apply or remove the `DRAFTS` or `SENT` labels
-	// from messages or threads.
+	// Type: The owner type for the label. User labels are created by the user and
+	// can be modified and deleted by the user and can be applied to any message or
+	// thread. System labels are internally created and cannot be added, modified,
+	// or deleted. System labels may be able to be applied to or removed from
+	// messages and threads under some circumstances but this is not guaranteed.
+	// For example, users can apply and remove the `INBOX` and `UNREAD` labels from
+	// messages and threads, but cannot apply or remove the `DRAFTS` or `SENT`
+	// labels from messages or threads.
 	//
 	// Possible values:
 	//   "system" - Labels created by Gmail.
 	//   "user" - Custom labels created by the user or application.
 	Type string `json:"type,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Color") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Color") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Color") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Label) MarshalJSON() ([]byte, error) {
 	type NoMethod Label
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type LabelColor struct {
-	// BackgroundColor: The background color represented as hex string
-	// #RRGGBB (ex #000000). This field is required in order to set the
-	// color of a label. Only the following predefined set of color values
-	// are allowed: \#000000, #434343, #666666, #999999, #cccccc, #efefef,
-	// #f3f3f3, #ffffff, \#fb4c2f, #ffad47, #fad165, #16a766, #43d692,
-	// #4a86e8, #a479e2, #f691b3, \#f6c5be, #ffe6c7, #fef1d1, #b9e4d0,
-	// #c6f3de, #c9daf8, #e4d7f5, #fcdee8, \#efa093, #ffd6a2, #fce8b3,
-	// #89d3b2, #a0eac9, #a4c2f4, #d0bcf1, #fbc8d9, \#e66550, #ffbc6b,
-	// #fcda83, #44b984, #68dfa9, #6d9eeb, #b694e8, #f7a7c0, \#cc3a21,
-	// #eaa041, #f2c960, #149e60, #3dc789, #3c78d8, #8e63ce, #e07798,
-	// \#ac2b16, #cf8933, #d5ae49, #0b804b, #2a9c68, #285bac, #653e9b,
-	// #b65775, \#822111, #a46a21, #aa8831, #076239, #1a764d, #1c4587,
-	// #41236d, #83334c \#464646, #e7e7e7, #0d3472, #b6cff5, #0d3b44,
-	// #98d7e4, #3d188e, #e3d7ff, \#711a36, #fbd3e0, #8a1c0a, #f2b2a8,
-	// #7a2e0b, #ffc8af, #7a4706, #ffdeb5, \#594c05, #fbe983, #684e07,
-	// #fdedc1, #0b4f30, #b3efd3, #04502e, #a2dcc1, \#c2c2c2, #4986e7,
-	// #2da2bb, #b99aff, #994a64, #f691b2, #ff7537, #ffad46, \#662e37,
-	// #ebdbde, #cca6ac, #094228, #42d692, #16a765
+	// BackgroundColor: The background color represented as hex string #RRGGBB (ex
+	// #000000). This field is required in order to set the color of a label. Only
+	// the following predefined set of color values are allowed: \#000000, #434343,
+	// #666666, #999999, #cccccc, #efefef, #f3f3f3, #ffffff, \#fb4c2f, #ffad47,
+	// #fad165, #16a766, #43d692, #4a86e8, #a479e2, #f691b3, \#f6c5be, #ffe6c7,
+	// #fef1d1, #b9e4d0, #c6f3de, #c9daf8, #e4d7f5, #fcdee8, \#efa093, #ffd6a2,
+	// #fce8b3, #89d3b2, #a0eac9, #a4c2f4, #d0bcf1, #fbc8d9, \#e66550, #ffbc6b,
+	// #fcda83, #44b984, #68dfa9, #6d9eeb, #b694e8, #f7a7c0, \#cc3a21, #eaa041,
+	// #f2c960, #149e60, #3dc789, #3c78d8, #8e63ce, #e07798, \#ac2b16, #cf8933,
+	// #d5ae49, #0b804b, #2a9c68, #285bac, #653e9b, #b65775, \#822111, #a46a21,
+	// #aa8831, #076239, #1a764d, #1c4587, #41236d, #83334c \#464646, #e7e7e7,
+	// #0d3472, #b6cff5, #0d3b44, #98d7e4, #3d188e, #e3d7ff, \#711a36, #fbd3e0,
+	// #8a1c0a, #f2b2a8, #7a2e0b, #ffc8af, #7a4706, #ffdeb5, \#594c05, #fbe983,
+	// #684e07, #fdedc1, #0b4f30, #b3efd3, #04502e, #a2dcc1, \#c2c2c2, #4986e7,
+	// #2da2bb, #b99aff, #994a64, #f691b2, #ff7537, #ffad46, \#662e37, #ebdbde,
+	// #cca6ac, #094228, #42d692, #16a765
 	BackgroundColor string `json:"backgroundColor,omitempty"`
-
-	// TextColor: The text color of the label, represented as hex string.
-	// This field is required in order to set the color of a label. Only the
-	// following predefined set of color values are allowed: \#000000,
-	// #434343, #666666, #999999, #cccccc, #efefef, #f3f3f3, #ffffff,
-	// \#fb4c2f, #ffad47, #fad165, #16a766, #43d692, #4a86e8, #a479e2,
-	// #f691b3, \#f6c5be, #ffe6c7, #fef1d1, #b9e4d0, #c6f3de, #c9daf8,
-	// #e4d7f5, #fcdee8, \#efa093, #ffd6a2, #fce8b3, #89d3b2, #a0eac9,
-	// #a4c2f4, #d0bcf1, #fbc8d9, \#e66550, #ffbc6b, #fcda83, #44b984,
-	// #68dfa9, #6d9eeb, #b694e8, #f7a7c0, \#cc3a21, #eaa041, #f2c960,
-	// #149e60, #3dc789, #3c78d8, #8e63ce, #e07798, \#ac2b16, #cf8933,
-	// #d5ae49, #0b804b, #2a9c68, #285bac, #653e9b, #b65775, \#822111,
-	// #a46a21, #aa8831, #076239, #1a764d, #1c4587, #41236d, #83334c
-	// \#464646, #e7e7e7, #0d3472, #b6cff5, #0d3b44, #98d7e4, #3d188e,
-	// #e3d7ff, \#711a36, #fbd3e0, #8a1c0a, #f2b2a8, #7a2e0b, #ffc8af,
-	// #7a4706, #ffdeb5, \#594c05, #fbe983, #684e07, #fdedc1, #0b4f30,
-	// #b3efd3, #04502e, #a2dcc1, \#c2c2c2, #4986e7, #2da2bb, #b99aff,
-	// #994a64, #f691b2, #ff7537, #ffad46, \#662e37, #ebdbde, #cca6ac,
+	// TextColor: The text color of the label, represented as hex string. This
+	// field is required in order to set the color of a label. Only the following
+	// predefined set of color values are allowed: \#000000, #434343, #666666,
+	// #999999, #cccccc, #efefef, #f3f3f3, #ffffff, \#fb4c2f, #ffad47, #fad165,
+	// #16a766, #43d692, #4a86e8, #a479e2, #f691b3, \#f6c5be, #ffe6c7, #fef1d1,
+	// #b9e4d0, #c6f3de, #c9daf8, #e4d7f5, #fcdee8, \#efa093, #ffd6a2, #fce8b3,
+	// #89d3b2, #a0eac9, #a4c2f4, #d0bcf1, #fbc8d9, \#e66550, #ffbc6b, #fcda83,
+	// #44b984, #68dfa9, #6d9eeb, #b694e8, #f7a7c0, \#cc3a21, #eaa041, #f2c960,
+	// #149e60, #3dc789, #3c78d8, #8e63ce, #e07798, \#ac2b16, #cf8933, #d5ae49,
+	// #0b804b, #2a9c68, #285bac, #653e9b, #b65775, \#822111, #a46a21, #aa8831,
+	// #076239, #1a764d, #1c4587, #41236d, #83334c \#464646, #e7e7e7, #0d3472,
+	// #b6cff5, #0d3b44, #98d7e4, #3d188e, #e3d7ff, \#711a36, #fbd3e0, #8a1c0a,
+	// #f2b2a8, #7a2e0b, #ffc8af, #7a4706, #ffdeb5, \#594c05, #fbe983, #684e07,
+	// #fdedc1, #0b4f30, #b3efd3, #04502e, #a2dcc1, \#c2c2c2, #4986e7, #2da2bb,
+	// #b99aff, #994a64, #f691b2, #ff7537, #ffad46, \#662e37, #ebdbde, #cca6ac,
 	// #094228, #42d692, #16a765
 	TextColor string `json:"textColor,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "BackgroundColor") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "BackgroundColor") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "BackgroundColor") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LabelColor) MarshalJSON() ([]byte, error) {
 	type NoMethod LabelColor
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // LanguageSettings: Language settings for an account. These settings
 // correspond to the "Language settings" feature in the web interface.
 type LanguageSettings struct {
-	// DisplayLanguage: The language to display Gmail in, formatted as an
-	// RFC 3066 Language Tag (for example `en-GB`, `fr` or `ja` for British
-	// English, French, or Japanese respectively). The set of languages
-	// supported by Gmail evolves over time, so please refer to the
-	// "Language" dropdown in the Gmail settings for all available options,
-	// as described in the language settings help article. A table of sample
-	// values is also provided in the Managing Language Settings guide Not
-	// all Gmail clients can display the same set of languages. In the case
-	// that a user's display language is not available for use on a
-	// particular client, said client automatically chooses to display in
-	// the closest supported variant (or a reasonable default).
+	// DisplayLanguage: The language to display Gmail in, formatted as an RFC 3066
+	// Language Tag (for example `en-GB`, `fr` or `ja` for British English, French,
+	// or Japanese respectively). The set of languages supported by Gmail evolves
+	// over time, so please refer to the "Language" dropdown in the Gmail settings
+	// for all available options, as described in the language settings help
+	// article. A table of sample values is also provided in the Managing Language
+	// Settings guide Not all Gmail clients can display the same set of languages.
+	// In the case that a user's display language is not available for use on a
+	// particular client, said client automatically chooses to display in the
+	// closest supported variant (or a reasonable default).
 	DisplayLanguage string `json:"displayLanguage,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "DisplayLanguage") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DisplayLanguage") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "DisplayLanguage") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LanguageSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod LanguageSettings
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+type ListCseIdentitiesResponse struct {
+	// CseIdentities: One page of the list of CSE identities configured for the
+	// user.
+	CseIdentities []*CseIdentity `json:"cseIdentities,omitempty"`
+	// NextPageToken: Pagination token to be passed to a subsequent
+	// ListCseIdentities call in order to retrieve the next page of identities. If
+	// this value is not returned or is the empty string, then no further pages
+	// remain.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "CseIdentities") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "CseIdentities") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListCseIdentitiesResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListCseIdentitiesResponse
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+type ListCseKeyPairsResponse struct {
+	// CseKeyPairs: One page of the list of CSE key pairs installed for the user.
+	CseKeyPairs []*CseKeyPair `json:"cseKeyPairs,omitempty"`
+	// NextPageToken: Pagination token to be passed to a subsequent ListCseKeyPairs
+	// call in order to retrieve the next page of key pairs. If this value is not
+	// returned, then no further pages remain.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "CseKeyPairs") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "CseKeyPairs") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListCseKeyPairsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListCseKeyPairsResponse
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListDelegatesResponse: Response for the ListDelegates method.
 type ListDelegatesResponse struct {
-	// Delegates: List of the user's delegates (with any verification
-	// status). If an account doesn't have delegates, this field doesn't
-	// appear.
+	// Delegates: List of the user's delegates (with any verification status). If
+	// an account doesn't have delegates, this field doesn't appear.
 	Delegates []*Delegate `json:"delegates,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Delegates") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Delegates") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Delegates") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListDelegatesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListDelegatesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type ListDraftsResponse struct {
-	// Drafts: List of drafts. Note that the `Message` property in each
-	// `Draft` resource only contains an `id` and a `threadId`. The
-	// messages.get method can fetch additional message details.
+	// Drafts: List of drafts. Note that the `Message` property in each `Draft`
+	// resource only contains an `id` and a `threadId`. The messages.get method can
+	// fetch additional message details.
 	Drafts []*Draft `json:"drafts,omitempty"`
-
-	// NextPageToken: Token to retrieve the next page of results in the
-	// list.
+	// NextPageToken: Token to retrieve the next page of results in the list.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// ResultSizeEstimate: Estimated total number of results.
 	ResultSizeEstimate int64 `json:"resultSizeEstimate,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Drafts") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Drafts") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Drafts") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListDraftsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListDraftsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListFiltersResponse: Response for the ListFilters method.
@@ -1212,179 +1320,135 @@ type ListFiltersResponse struct {
 	// Filter: List of a user's filters.
 	Filter []*Filter `json:"filter,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Filter") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Filter") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Filter") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListFiltersResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListFiltersResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// ListForwardingAddressesResponse: Response for the
-// ListForwardingAddresses method.
+// ListForwardingAddressesResponse: Response for the ListForwardingAddresses
+// method.
 type ListForwardingAddressesResponse struct {
-	// ForwardingAddresses: List of addresses that may be used for
-	// forwarding.
+	// ForwardingAddresses: List of addresses that may be used for forwarding.
 	ForwardingAddresses []*ForwardingAddress `json:"forwardingAddresses,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "ForwardingAddresses")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "ForwardingAddresses") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ForwardingAddresses") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "ForwardingAddresses") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListForwardingAddressesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListForwardingAddressesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type ListHistoryResponse struct {
-	// History: List of history records. Any `messages` contained in the
-	// response will typically only have `id` and `threadId` fields
-	// populated.
+	// History: List of history records. Any `messages` contained in the response
+	// will typically only have `id` and `threadId` fields populated.
 	History []*History `json:"history,omitempty"`
-
 	// HistoryId: The ID of the mailbox's current history record.
 	HistoryId uint64 `json:"historyId,omitempty,string"`
-
-	// NextPageToken: Page token to retrieve the next page of results in the
-	// list.
+	// NextPageToken: Page token to retrieve the next page of results in the list.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "History") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "History") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "History") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "History") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListHistoryResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListHistoryResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type ListLabelsResponse struct {
-	// Labels: List of labels. Note that each label resource only contains
-	// an `id`, `name`, `messageListVisibility`, `labelListVisibility`, and
-	// `type`. The labels.get method can fetch additional label details.
+	// Labels: List of labels. Note that each label resource only contains an `id`,
+	// `name`, `messageListVisibility`, `labelListVisibility`, and `type`. The
+	// labels.get method can fetch additional label details.
 	Labels []*Label `json:"labels,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Labels") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Labels") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Labels") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListLabelsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListLabelsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type ListMessagesResponse struct {
-	// Messages: List of messages. Note that each message resource contains
-	// only an `id` and a `threadId`. Additional message details can be
-	// fetched using the messages.get method.
+	// Messages: List of messages. Note that each message resource contains only an
+	// `id` and a `threadId`. Additional message details can be fetched using the
+	// messages.get method.
 	Messages []*Message `json:"messages,omitempty"`
-
-	// NextPageToken: Token to retrieve the next page of results in the
-	// list.
+	// NextPageToken: Token to retrieve the next page of results in the list.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// ResultSizeEstimate: Estimated total number of results.
 	ResultSizeEstimate int64 `json:"resultSizeEstimate,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Messages") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Messages") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Messages") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListMessagesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListMessagesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListSendAsResponse: Response for the ListSendAs method.
@@ -1392,365 +1456,282 @@ type ListSendAsResponse struct {
 	// SendAs: List of send-as aliases.
 	SendAs []*SendAs `json:"sendAs,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "SendAs") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "SendAs") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "SendAs") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListSendAsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListSendAsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type ListSmimeInfoResponse struct {
 	// SmimeInfo: List of SmimeInfo.
 	SmimeInfo []*SmimeInfo `json:"smimeInfo,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "SmimeInfo") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "SmimeInfo") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "SmimeInfo") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListSmimeInfoResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListSmimeInfoResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type ListThreadsResponse struct {
-	// NextPageToken: Page token to retrieve the next page of results in the
-	// list.
+	// NextPageToken: Page token to retrieve the next page of results in the list.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// ResultSizeEstimate: Estimated total number of results.
 	ResultSizeEstimate int64 `json:"resultSizeEstimate,omitempty"`
-
-	// Threads: List of threads. Note that each thread resource does not
-	// contain a list of `messages`. The list of `messages` for a given
-	// thread can be fetched using the threads.get method.
+	// Threads: List of threads. Note that each thread resource does not contain a
+	// list of `messages`. The list of `messages` for a given thread can be fetched
+	// using the threads.get method.
 	Threads []*Thread `json:"threads,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListThreadsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListThreadsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Message: An email message.
 type Message struct {
-	// HistoryId: The ID of the last history record that modified this
-	// message.
+	// HistoryId: The ID of the last history record that modified this message.
 	HistoryId uint64 `json:"historyId,omitempty,string"`
-
 	// Id: The immutable ID of the message.
 	Id string `json:"id,omitempty"`
-
-	// InternalDate: The internal message creation timestamp (epoch ms),
-	// which determines ordering in the inbox. For normal SMTP-received
-	// email, this represents the time the message was originally accepted
-	// by Google, which is more reliable than the `Date` header. However,
-	// for API-migrated mail, it can be configured by client to be based on
-	// the `Date` header.
+	// InternalDate: The internal message creation timestamp (epoch ms), which
+	// determines ordering in the inbox. For normal SMTP-received email, this
+	// represents the time the message was originally accepted by Google, which is
+	// more reliable than the `Date` header. However, for API-migrated mail, it can
+	// be configured by client to be based on the `Date` header.
 	InternalDate int64 `json:"internalDate,omitempty,string"`
-
 	// LabelIds: List of IDs of labels applied to this message.
 	LabelIds []string `json:"labelIds,omitempty"`
-
 	// Payload: The parsed email structure in the message parts.
 	Payload *MessagePart `json:"payload,omitempty"`
-
-	// Raw: The entire email message in an RFC 2822 formatted and base64url
-	// encoded string. Returned in `messages.get` and `drafts.get` responses
-	// when the `format=RAW` parameter is supplied.
+	// Raw: The entire email message in an RFC 2822 formatted and base64url encoded
+	// string. Returned in `messages.get` and `drafts.get` responses when the
+	// `format=RAW` parameter is supplied.
 	Raw string `json:"raw,omitempty"`
-
 	// SizeEstimate: Estimated size in bytes of the message.
 	SizeEstimate int64 `json:"sizeEstimate,omitempty"`
-
 	// Snippet: A short part of the message text.
 	Snippet string `json:"snippet,omitempty"`
-
-	// ThreadId: The ID of the thread the message belongs to. To add a
-	// message or draft to a thread, the following criteria must be met: 1.
-	// The requested `threadId` must be specified on the `Message` or
-	// `Draft.Message` you supply with your request. 2. The `References` and
-	// `In-Reply-To` headers must be set in compliance with the RFC 2822
-	// (https://tools.ietf.org/html/rfc2822) standard. 3. The `Subject`
-	// headers must match.
+	// ThreadId: The ID of the thread the message belongs to. To add a message or
+	// draft to a thread, the following criteria must be met: 1. The requested
+	// `threadId` must be specified on the `Message` or `Draft.Message` you supply
+	// with your request. 2. The `References` and `In-Reply-To` headers must be set
+	// in compliance with the RFC 2822 (https://tools.ietf.org/html/rfc2822)
+	// standard. 3. The `Subject` headers must match.
 	ThreadId string `json:"threadId,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "HistoryId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "HistoryId") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "HistoryId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Message) MarshalJSON() ([]byte, error) {
 	type NoMethod Message
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // MessagePart: A single MIME message part.
 type MessagePart struct {
-	// Body: The message part body for this part, which may be empty for
-	// container MIME message parts.
+	// Body: The message part body for this part, which may be empty for container
+	// MIME message parts.
 	Body *MessagePartBody `json:"body,omitempty"`
-
-	// Filename: The filename of the attachment. Only present if this
-	// message part represents an attachment.
+	// Filename: The filename of the attachment. Only present if this message part
+	// represents an attachment.
 	Filename string `json:"filename,omitempty"`
-
-	// Headers: List of headers on this message part. For the top-level
-	// message part, representing the entire message payload, it will
-	// contain the standard RFC 2822 email headers such as `To`, `From`, and
-	// `Subject`.
+	// Headers: List of headers on this message part. For the top-level message
+	// part, representing the entire message payload, it will contain the standard
+	// RFC 2822 email headers such as `To`, `From`, and `Subject`.
 	Headers []*MessagePartHeader `json:"headers,omitempty"`
-
 	// MimeType: The MIME type of the message part.
 	MimeType string `json:"mimeType,omitempty"`
-
 	// PartId: The immutable ID of the message part.
 	PartId string `json:"partId,omitempty"`
-
-	// Parts: The child MIME message parts of this part. This only applies
-	// to container MIME message parts, for example `multipart/*`. For non-
-	// container MIME message part types, such as `text/plain`, this field
-	// is empty. For more information, see RFC 1521.
+	// Parts: The child MIME message parts of this part. This only applies to
+	// container MIME message parts, for example `multipart/*`. For non- container
+	// MIME message part types, such as `text/plain`, this field is empty. For more
+	// information, see RFC 1521.
 	Parts []*MessagePart `json:"parts,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Body") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Body") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Body") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Body") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *MessagePart) MarshalJSON() ([]byte, error) {
 	type NoMethod MessagePart
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // MessagePartBody: The body of a single MIME message part.
 type MessagePartBody struct {
-	// AttachmentId: When present, contains the ID of an external attachment
-	// that can be retrieved in a separate `messages.attachments.get`
-	// request. When not present, the entire content of the message part
-	// body is contained in the data field.
+	// AttachmentId: When present, contains the ID of an external attachment that
+	// can be retrieved in a separate `messages.attachments.get` request. When not
+	// present, the entire content of the message part body is contained in the
+	// data field.
 	AttachmentId string `json:"attachmentId,omitempty"`
-
-	// Data: The body data of a MIME message part as a base64url encoded
-	// string. May be empty for MIME container types that have no message
-	// body or when the body data is sent as a separate attachment. An
-	// attachment ID is present if the body data is contained in a separate
-	// attachment.
+	// Data: The body data of a MIME message part as a base64url encoded string.
+	// May be empty for MIME container types that have no message body or when the
+	// body data is sent as a separate attachment. An attachment ID is present if
+	// the body data is contained in a separate attachment.
 	Data string `json:"data,omitempty"`
-
-	// Size: Number of bytes for the message part data (encoding
-	// notwithstanding).
+	// Size: Number of bytes for the message part data (encoding notwithstanding).
 	Size int64 `json:"size,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "AttachmentId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AttachmentId") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AttachmentId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *MessagePartBody) MarshalJSON() ([]byte, error) {
 	type NoMethod MessagePartBody
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type MessagePartHeader struct {
-	// Name: The name of the header before the `:` separator. For example,
-	// `To`.
+	// Name: The name of the header before the `:` separator. For example, `To`.
 	Name string `json:"name,omitempty"`
-
 	// Value: The value of the header after the `:` separator. For example,
 	// `someuser@example.com`.
 	Value string `json:"value,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Name") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Name") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Name") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Name") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *MessagePartHeader) MarshalJSON() ([]byte, error) {
 	type NoMethod MessagePartHeader
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type ModifyMessageRequest struct {
-	// AddLabelIds: A list of IDs of labels to add to this message. You can
-	// add up to 100 labels with each update.
+	// AddLabelIds: A list of IDs of labels to add to this message. You can add up
+	// to 100 labels with each update.
 	AddLabelIds []string `json:"addLabelIds,omitempty"`
-
-	// RemoveLabelIds: A list IDs of labels to remove from this message. You
-	// can remove up to 100 labels with each update.
+	// RemoveLabelIds: A list IDs of labels to remove from this message. You can
+	// remove up to 100 labels with each update.
 	RemoveLabelIds []string `json:"removeLabelIds,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AddLabelIds") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AddLabelIds") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AddLabelIds") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ModifyMessageRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod ModifyMessageRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type ModifyThreadRequest struct {
-	// AddLabelIds: A list of IDs of labels to add to this thread. You can
-	// add up to 100 labels with each update.
+	// AddLabelIds: A list of IDs of labels to add to this thread. You can add up
+	// to 100 labels with each update.
 	AddLabelIds []string `json:"addLabelIds,omitempty"`
-
-	// RemoveLabelIds: A list of IDs of labels to remove from this thread.
-	// You can remove up to 100 labels with each update.
+	// RemoveLabelIds: A list of IDs of labels to remove from this thread. You can
+	// remove up to 100 labels with each update.
 	RemoveLabelIds []string `json:"removeLabelIds,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AddLabelIds") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AddLabelIds") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AddLabelIds") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ModifyThreadRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod ModifyThreadRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// ObliterateCseKeyPairRequest: Request to obliterate a CSE key pair.
+type ObliterateCseKeyPairRequest struct {
 }
 
 // PopSettings: POP settings for an account.
@@ -1760,14 +1741,12 @@ type PopSettings struct {
 	// Possible values:
 	//   "accessWindowUnspecified" - Unspecified range.
 	//   "disabled" - Indicates that no messages are accessible via POP.
-	//   "fromNowOn" - Indicates that unfetched messages received after some
-	// past point in time are accessible via POP.
-	//   "allMail" - Indicates that all unfetched messages are accessible
-	// via POP.
+	//   "fromNowOn" - Indicates that unfetched messages received after some past
+	// point in time are accessible via POP.
+	//   "allMail" - Indicates that all unfetched messages are accessible via POP.
 	AccessWindow string `json:"accessWindow,omitempty"`
-
-	// Disposition: The action that will be executed on a message after it
-	// has been fetched via POP.
+	// Disposition: The action that will be executed on a message after it has been
+	// fetched via POP.
 	//
 	// Possible values:
 	//   "dispositionUnspecified" - Unspecified disposition.
@@ -1777,131 +1756,103 @@ type PopSettings struct {
 	//   "markRead" - Leave the message in the `INBOX` and mark it as read.
 	Disposition string `json:"disposition,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "AccessWindow") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AccessWindow") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AccessWindow") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *PopSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod PopSettings
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Profile: Profile for a Gmail user.
 type Profile struct {
 	// EmailAddress: The user's email address.
 	EmailAddress string `json:"emailAddress,omitempty"`
-
 	// HistoryId: The ID of the mailbox's current history record.
 	HistoryId uint64 `json:"historyId,omitempty,string"`
-
 	// MessagesTotal: The total number of messages in the mailbox.
 	MessagesTotal int64 `json:"messagesTotal,omitempty"`
-
 	// ThreadsTotal: The total number of threads in the mailbox.
 	ThreadsTotal int64 `json:"threadsTotal,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "EmailAddress") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "EmailAddress") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "EmailAddress") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Profile) MarshalJSON() ([]byte, error) {
 	type NoMethod Profile
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SendAs: Settings associated with a send-as alias, which can be either
-// the primary login address associated with the account or a custom
-// "from" address. Send-as aliases correspond to the "Send Mail As"
-// feature in the web interface.
+// SendAs: Settings associated with a send-as alias, which can be either the
+// primary login address associated with the account or a custom "from"
+// address. Send-as aliases correspond to the "Send Mail As" feature in the web
+// interface.
 type SendAs struct {
-	// DisplayName: A name that appears in the "From:" header for mail sent
-	// using this alias. For custom "from" addresses, when this is empty,
-	// Gmail will populate the "From:" header with the name that is used for
-	// the primary address associated with the account. If the admin has
-	// disabled the ability for users to update their name format, requests
-	// to update this field for the primary login will silently fail.
+	// DisplayName: A name that appears in the "From:" header for mail sent using
+	// this alias. For custom "from" addresses, when this is empty, Gmail will
+	// populate the "From:" header with the name that is used for the primary
+	// address associated with the account. If the admin has disabled the ability
+	// for users to update their name format, requests to update this field for the
+	// primary login will silently fail.
 	DisplayName string `json:"displayName,omitempty"`
-
-	// IsDefault: Whether this address is selected as the default "From:"
-	// address in situations such as composing a new message or sending a
-	// vacation auto-reply. Every Gmail account has exactly one default
-	// send-as address, so the only legal value that clients may write to
-	// this field is `true`. Changing this from `false` to `true` for an
-	// address will result in this field becoming `false` for the other
-	// previous default address.
+	// IsDefault: Whether this address is selected as the default "From:" address
+	// in situations such as composing a new message or sending a vacation
+	// auto-reply. Every Gmail account has exactly one default send-as address, so
+	// the only legal value that clients may write to this field is `true`.
+	// Changing this from `false` to `true` for an address will result in this
+	// field becoming `false` for the other previous default address.
 	IsDefault bool `json:"isDefault,omitempty"`
-
-	// IsPrimary: Whether this address is the primary address used to login
-	// to the account. Every Gmail account has exactly one primary address,
-	// and it cannot be deleted from the collection of send-as aliases. This
-	// field is read-only.
+	// IsPrimary: Whether this address is the primary address used to login to the
+	// account. Every Gmail account has exactly one primary address, and it cannot
+	// be deleted from the collection of send-as aliases. This field is read-only.
 	IsPrimary bool `json:"isPrimary,omitempty"`
-
-	// ReplyToAddress: An optional email address that is included in a
-	// "Reply-To:" header for mail sent using this alias. If this is empty,
-	// Gmail will not generate a "Reply-To:" header.
+	// ReplyToAddress: An optional email address that is included in a "Reply-To:"
+	// header for mail sent using this alias. If this is empty, Gmail will not
+	// generate a "Reply-To:" header.
 	ReplyToAddress string `json:"replyToAddress,omitempty"`
-
-	// SendAsEmail: The email address that appears in the "From:" header for
-	// mail sent using this alias. This is read-only for all operations
-	// except create.
+	// SendAsEmail: The email address that appears in the "From:" header for mail
+	// sent using this alias. This is read-only for all operations except create.
 	SendAsEmail string `json:"sendAsEmail,omitempty"`
-
-	// Signature: An optional HTML signature that is included in messages
-	// composed with this alias in the Gmail web UI. This signature is added
-	// to new emails only.
+	// Signature: An optional HTML signature that is included in messages composed
+	// with this alias in the Gmail web UI. This signature is added to new emails
+	// only.
 	Signature string `json:"signature,omitempty"`
-
-	// SmtpMsa: An optional SMTP service that will be used as an outbound
-	// relay for mail sent using this alias. If this is empty, outbound mail
-	// will be sent directly from Gmail's servers to the destination SMTP
-	// service. This setting only applies to custom "from" aliases.
+	// SmtpMsa: An optional SMTP service that will be used as an outbound relay for
+	// mail sent using this alias. If this is empty, outbound mail will be sent
+	// directly from Gmail's servers to the destination SMTP service. This setting
+	// only applies to custom "from" aliases.
 	SmtpMsa *SmtpMsa `json:"smtpMsa,omitempty"`
-
-	// TreatAsAlias: Whether Gmail should treat this address as an alias for
-	// the user's primary email address. This setting only applies to custom
-	// "from" aliases.
+	// TreatAsAlias: Whether Gmail should treat this address as an alias for the
+	// user's primary email address. This setting only applies to custom "from"
+	// aliases.
 	TreatAsAlias bool `json:"treatAsAlias,omitempty"`
-
-	// VerificationStatus: Indicates whether this address has been verified
-	// for use as a send-as alias. Read-only. This setting only applies to
-	// custom "from" aliases.
+	// VerificationStatus: Indicates whether this address has been verified for use
+	// as a send-as alias. Read-only. This setting only applies to custom "from"
+	// aliases.
 	//
 	// Possible values:
 	//   "verificationStatusUnspecified" - Unspecified verification status.
@@ -1909,354 +1860,307 @@ type SendAs struct {
 	//   "pending" - The address is awaiting verification by the owner.
 	VerificationStatus string `json:"verificationStatus,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "DisplayName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DisplayName") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "DisplayName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SendAs) MarshalJSON() ([]byte, error) {
 	type NoMethod SendAs
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SignAndEncryptKeyPairs: The configuration of a CSE identity that uses
+// different key pairs for signing and encryption.
+type SignAndEncryptKeyPairs struct {
+	// EncryptionKeyPairId: The ID of the CseKeyPair that encrypts signed outgoing
+	// mail.
+	EncryptionKeyPairId string `json:"encryptionKeyPairId,omitempty"`
+	// SigningKeyPairId: The ID of the CseKeyPair that signs outgoing mail.
+	SigningKeyPairId string `json:"signingKeyPairId,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "EncryptionKeyPairId") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "EncryptionKeyPairId") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SignAndEncryptKeyPairs) MarshalJSON() ([]byte, error) {
+	type NoMethod SignAndEncryptKeyPairs
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SmimeInfo: An S/MIME email config.
 type SmimeInfo struct {
 	// EncryptedKeyPassword: Encrypted key password, when key is encrypted.
 	EncryptedKeyPassword string `json:"encryptedKeyPassword,omitempty"`
-
-	// Expiration: When the certificate expires (in milliseconds since
-	// epoch).
+	// Expiration: When the certificate expires (in milliseconds since epoch).
 	Expiration int64 `json:"expiration,omitempty,string"`
-
 	// Id: The immutable ID for the SmimeInfo.
 	Id string `json:"id,omitempty"`
-
-	// IsDefault: Whether this SmimeInfo is the default one for this user's
-	// send-as address.
+	// IsDefault: Whether this SmimeInfo is the default one for this user's send-as
+	// address.
 	IsDefault bool `json:"isDefault,omitempty"`
-
 	// IssuerCn: The S/MIME certificate issuer's common name.
 	IssuerCn string `json:"issuerCn,omitempty"`
-
-	// Pem: PEM formatted X509 concatenated certificate string (standard
-	// base64 encoding). Format used for returning key, which includes
-	// public key as well as certificate chain (not private key).
+	// Pem: PEM formatted X509 concatenated certificate string (standard base64
+	// encoding). Format used for returning key, which includes public key as well
+	// as certificate chain (not private key).
 	Pem string `json:"pem,omitempty"`
-
-	// Pkcs12: PKCS#12 format containing a single private/public key pair
-	// and certificate chain. This format is only accepted from client for
-	// creating a new SmimeInfo and is never returned, because the private
-	// key is not intended to be exported. PKCS#12 may be encrypted, in
-	// which case encryptedKeyPassword should be set appropriately.
+	// Pkcs12: PKCS#12 format containing a single private/public key pair and
+	// certificate chain. This format is only accepted from client for creating a
+	// new SmimeInfo and is never returned, because the private key is not intended
+	// to be exported. PKCS#12 may be encrypted, in which case encryptedKeyPassword
+	// should be set appropriately.
 	Pkcs12 string `json:"pkcs12,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "EncryptedKeyPassword") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "EncryptedKeyPassword") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "EncryptedKeyPassword") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "EncryptedKeyPassword") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SmimeInfo) MarshalJSON() ([]byte, error) {
 	type NoMethod SmimeInfo
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SmtpMsa: Configuration for communication with an SMTP service.
 type SmtpMsa struct {
 	// Host: The hostname of the SMTP service. Required.
 	Host string `json:"host,omitempty"`
-
-	// Password: The password that will be used for authentication with the
-	// SMTP service. This is a write-only field that can be specified in
-	// requests to create or update SendAs settings; it is never populated
-	// in responses.
+	// Password: The password that will be used for authentication with the SMTP
+	// service. This is a write-only field that can be specified in requests to
+	// create or update SendAs settings; it is never populated in responses.
 	Password string `json:"password,omitempty"`
-
 	// Port: The port of the SMTP service. Required.
 	Port int64 `json:"port,omitempty"`
-
-	// SecurityMode: The protocol that will be used to secure communication
-	// with the SMTP service. Required.
+	// SecurityMode: The protocol that will be used to secure communication with
+	// the SMTP service. Required.
 	//
 	// Possible values:
 	//   "securityModeUnspecified" - Unspecified security mode.
-	//   "none" - Communication with the remote SMTP service is unsecured.
-	// Requires port 25.
-	//   "ssl" - Communication with the remote SMTP service is secured using
-	// SSL.
-	//   "starttls" - Communication with the remote SMTP service is secured
-	// using STARTTLS.
+	//   "none" - Communication with the remote SMTP service is unsecured. Requires
+	// port 25.
+	//   "ssl" - Communication with the remote SMTP service is secured using SSL.
+	//   "starttls" - Communication with the remote SMTP service is secured using
+	// STARTTLS.
 	SecurityMode string `json:"securityMode,omitempty"`
-
-	// Username: The username that will be used for authentication with the
-	// SMTP service. This is a write-only field that can be specified in
-	// requests to create or update SendAs settings; it is never populated
-	// in responses.
+	// Username: The username that will be used for authentication with the SMTP
+	// service. This is a write-only field that can be specified in requests to
+	// create or update SendAs settings; it is never populated in responses.
 	Username string `json:"username,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Host") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Host") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Host") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Host") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SmtpMsa) MarshalJSON() ([]byte, error) {
 	type NoMethod SmtpMsa
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Thread: A collection of messages representing a conversation.
 type Thread struct {
-	// HistoryId: The ID of the last history record that modified this
-	// thread.
+	// HistoryId: The ID of the last history record that modified this thread.
 	HistoryId uint64 `json:"historyId,omitempty,string"`
-
 	// Id: The unique ID of the thread.
 	Id string `json:"id,omitempty"`
-
 	// Messages: The list of messages in the thread.
 	Messages []*Message `json:"messages,omitempty"`
-
 	// Snippet: A short part of the message text.
 	Snippet string `json:"snippet,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "HistoryId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "HistoryId") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "HistoryId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Thread) MarshalJSON() ([]byte, error) {
 	type NoMethod Thread
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // VacationSettings: Vacation auto-reply settings for an account. These
 // settings correspond to the "Vacation responder" feature in the web
 // interface.
 type VacationSettings struct {
-	// EnableAutoReply: Flag that controls whether Gmail automatically
-	// replies to messages.
+	// EnableAutoReply: Flag that controls whether Gmail automatically replies to
+	// messages.
 	EnableAutoReply bool `json:"enableAutoReply,omitempty"`
-
-	// EndTime: An optional end time for sending auto-replies (epoch ms).
-	// When this is specified, Gmail will automatically reply only to
-	// messages that it receives before the end time. If both `startTime`
-	// and `endTime` are specified, `startTime` must precede `endTime`.
+	// EndTime: An optional end time for sending auto-replies (epoch ms). When this
+	// is specified, Gmail will automatically reply only to messages that it
+	// receives before the end time. If both `startTime` and `endTime` are
+	// specified, `startTime` must precede `endTime`.
 	EndTime int64 `json:"endTime,omitempty,string"`
-
-	// ResponseBodyHtml: Response body in HTML format. Gmail will sanitize
-	// the HTML before storing it. If both `response_body_plain_text` and
-	// `response_body_html` are specified, `response_body_html` will be
-	// used.
+	// ResponseBodyHtml: Response body in HTML format. Gmail will sanitize the HTML
+	// before storing it. If both `response_body_plain_text` and
+	// `response_body_html` are specified, `response_body_html` will be used.
 	ResponseBodyHtml string `json:"responseBodyHtml,omitempty"`
-
 	// ResponseBodyPlainText: Response body in plain text format. If both
 	// `response_body_plain_text` and `response_body_html` are specified,
 	// `response_body_html` will be used.
 	ResponseBodyPlainText string `json:"responseBodyPlainText,omitempty"`
-
-	// ResponseSubject: Optional text to prepend to the subject line in
-	// vacation responses. In order to enable auto-replies, either the
-	// response subject or the response body must be nonempty.
+	// ResponseSubject: Optional text to prepend to the subject line in vacation
+	// responses. In order to enable auto-replies, either the response subject or
+	// the response body must be nonempty.
 	ResponseSubject string `json:"responseSubject,omitempty"`
-
-	// RestrictToContacts: Flag that determines whether responses are sent
-	// to recipients who are not in the user's list of contacts.
+	// RestrictToContacts: Flag that determines whether responses are sent to
+	// recipients who are not in the user's list of contacts.
 	RestrictToContacts bool `json:"restrictToContacts,omitempty"`
-
 	// RestrictToDomain: Flag that determines whether responses are sent to
 	// recipients who are outside of the user's domain. This feature is only
-	// available for G Suite users.
+	// available for Google Workspace users.
 	RestrictToDomain bool `json:"restrictToDomain,omitempty"`
-
-	// StartTime: An optional start time for sending auto-replies (epoch
-	// ms). When this is specified, Gmail will automatically reply only to
-	// messages that it receives after the start time. If both `startTime`
-	// and `endTime` are specified, `startTime` must precede `endTime`.
+	// StartTime: An optional start time for sending auto-replies (epoch ms). When
+	// this is specified, Gmail will automatically reply only to messages that it
+	// receives after the start time. If both `startTime` and `endTime` are
+	// specified, `startTime` must precede `endTime`.
 	StartTime int64 `json:"startTime,omitempty,string"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "EnableAutoReply") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "EnableAutoReply") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "EnableAutoReply") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *VacationSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod VacationSettings
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// WatchRequest: Set up or update a new push notification watch on this
-// user's mailbox.
+// WatchRequest: Set up or update a new push notification watch on this user's
+// mailbox.
 type WatchRequest struct {
-	// LabelFilterAction: Filtering behavior of labelIds list specified.
+	// LabelFilterAction: Filtering behavior of `labelIds list` specified. This
+	// field is deprecated because it caused incorrect behavior in some cases; use
+	// `label_filter_behavior` instead.
 	//
 	// Possible values:
-	//   "include" - Only get push notifications for message changes
+	//   "include" - Only get push notifications for message changes relating to
+	// labelIds specified.
+	//   "exclude" - Get push notifications for all message changes except those
 	// relating to labelIds specified.
-	//   "exclude" - Get push notifications for all message changes except
-	// those relating to labelIds specified.
 	LabelFilterAction string `json:"labelFilterAction,omitempty"`
-
-	// LabelIds: List of label_ids to restrict notifications about. By
-	// default, if unspecified, all changes are pushed out. If specified
-	// then dictates which labels are required for a push notification to be
-	// generated.
+	// LabelFilterBehavior: Filtering behavior of `labelIds list` specified. This
+	// field replaces `label_filter_action`; if set, `label_filter_action` is
+	// ignored.
+	//
+	// Possible values:
+	//   "include" - Only get push notifications for message changes relating to
+	// labelIds specified.
+	//   "exclude" - Get push notifications for all message changes except those
+	// relating to labelIds specified.
+	LabelFilterBehavior string `json:"labelFilterBehavior,omitempty"`
+	// LabelIds: List of label_ids to restrict notifications about. By default, if
+	// unspecified, all changes are pushed out. If specified then dictates which
+	// labels are required for a push notification to be generated.
 	LabelIds []string `json:"labelIds,omitempty"`
-
-	// TopicName: A fully qualified Google Cloud Pub/Sub API topic name to
-	// publish the events to. This topic name **must** already exist in
-	// Cloud Pub/Sub and you **must** have already granted gmail "publish"
-	// permission on it. For example,
-	// "projects/my-project-identifier/topics/my-topic-name" (using the
+	// TopicName: A fully qualified Google Cloud Pub/Sub API topic name to publish
+	// the events to. This topic name **must** already exist in Cloud Pub/Sub and
+	// you **must** have already granted gmail "publish" permission on it. For
+	// example, "projects/my-project-identifier/topics/my-topic-name" (using the
 	// Cloud Pub/Sub "v1" topic naming format). Note that the
-	// "my-project-identifier" portion must exactly match your Google
-	// developer project id (the one executing this watch request).
+	// "my-project-identifier" portion must exactly match your Google developer
+	// project id (the one executing this watch request).
 	TopicName string `json:"topicName,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "LabelFilterAction")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "LabelFilterAction") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "LabelFilterAction") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "LabelFilterAction") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *WatchRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod WatchRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // WatchResponse: Push notification watch response.
 type WatchResponse struct {
-	// Expiration: When Gmail will stop sending notifications for mailbox
-	// updates (epoch millis). Call `watch` again before this time to renew
-	// the watch.
+	// Expiration: When Gmail will stop sending notifications for mailbox updates
+	// (epoch millis). Call `watch` again before this time to renew the watch.
 	Expiration int64 `json:"expiration,omitempty,string"`
-
 	// HistoryId: The ID of the mailbox's current history record.
 	HistoryId uint64 `json:"historyId,omitempty,string"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Expiration") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Expiration") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Expiration") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *WatchResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod WatchResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
-
-// method id "gmail.users.getProfile":
 
 type UsersGetProfileCall struct {
 	s            *Service
@@ -2269,42 +2173,44 @@ type UsersGetProfileCall struct {
 
 // GetProfile: Gets the current user's Gmail profile.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersService) GetProfile(userId string) *UsersGetProfileCall {
 	c := &UsersGetProfileCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
 	return c
 }
 
+// TemporaryEeccBypass sets the optional parameter "temporaryEeccBypass":
+func (c *UsersGetProfileCall) TemporaryEeccBypass(temporaryEeccBypass bool) *UsersGetProfileCall {
+	c.urlParams_.Set("temporaryEeccBypass", fmt.Sprint(temporaryEeccBypass))
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersGetProfileCall) Fields(s ...googleapi.Field) *UsersGetProfileCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersGetProfileCall) IfNoneMatch(entityTag string) *UsersGetProfileCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersGetProfileCall) Context(ctx context.Context) *UsersGetProfileCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersGetProfileCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2313,12 +2219,7 @@ func (c *UsersGetProfileCall) Header() http.Header {
 }
 
 func (c *UsersGetProfileCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -2339,12 +2240,10 @@ func (c *UsersGetProfileCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.getProfile" call.
-// Exactly one of *Profile or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Profile.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Profile.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersGetProfileCall) Do(opts ...googleapi.CallOption) (*Profile, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2352,17 +2251,17 @@ func (c *UsersGetProfileCall) Do(opts ...googleapi.CallOption) (*Profile, error)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Profile{
 		ServerResponse: googleapi.ServerResponse{
@@ -2375,39 +2274,7 @@ func (c *UsersGetProfileCall) Do(opts ...googleapi.CallOption) (*Profile, error)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the current user's Gmail profile.",
-	//   "flatPath": "gmail/v1/users/{userId}/profile",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.getProfile",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/profile",
-	//   "response": {
-	//     "$ref": "Profile"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.compose",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.stop":
 
 type UsersStopCall struct {
 	s          *Service
@@ -2419,8 +2286,8 @@ type UsersStopCall struct {
 
 // Stop: Stop receiving push notifications for the given user mailbox.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersService) Stop(userId string) *UsersStopCall {
 	c := &UsersStopCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -2428,23 +2295,21 @@ func (r *UsersService) Stop(userId string) *UsersStopCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersStopCall) Fields(s ...googleapi.Field) *UsersStopCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersStopCall) Context(ctx context.Context) *UsersStopCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersStopCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2453,12 +2318,7 @@ func (c *UsersStopCall) Header() http.Header {
 }
 
 func (c *UsersStopCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -2484,38 +2344,10 @@ func (c *UsersStopCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Stop receiving push notifications for the given user mailbox.",
-	//   "flatPath": "gmail/v1/users/{userId}/stop",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.stop",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/stop",
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.watch":
 
 type UsersWatchCall struct {
 	s            *Service
@@ -2526,11 +2358,10 @@ type UsersWatchCall struct {
 	header_      http.Header
 }
 
-// Watch: Set up or update a push notification watch on the given user
-// mailbox.
+// Watch: Set up or update a push notification watch on the given user mailbox.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersService) Watch(userId string, watchrequest *WatchRequest) *UsersWatchCall {
 	c := &UsersWatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -2539,23 +2370,21 @@ func (r *UsersService) Watch(userId string, watchrequest *WatchRequest) *UsersWa
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersWatchCall) Fields(s ...googleapi.Field) *UsersWatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersWatchCall) Context(ctx context.Context) *UsersWatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersWatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2564,18 +2393,12 @@ func (c *UsersWatchCall) Header() http.Header {
 }
 
 func (c *UsersWatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.watchrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/watch")
@@ -2592,12 +2415,10 @@ func (c *UsersWatchCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.watch" call.
-// Exactly one of *WatchResponse or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *WatchResponse.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *WatchResponse.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersWatchCall) Do(opts ...googleapi.CallOption) (*WatchResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2605,17 +2426,17 @@ func (c *UsersWatchCall) Do(opts ...googleapi.CallOption) (*WatchResponse, error
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &WatchResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -2628,41 +2449,7 @@ func (c *UsersWatchCall) Do(opts ...googleapi.CallOption) (*WatchResponse, error
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Set up or update a push notification watch on the given user mailbox.",
-	//   "flatPath": "gmail/v1/users/{userId}/watch",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.watch",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/watch",
-	//   "request": {
-	//     "$ref": "WatchRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "WatchResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.drafts.create":
 
 type UsersDraftsCreateCall struct {
 	s          *Service
@@ -2676,8 +2463,8 @@ type UsersDraftsCreateCall struct {
 
 // Create: Creates a new draft with the `DRAFT` label.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersDraftsService) Create(userId string, draft *Draft) *UsersDraftsCreateCall {
 	c := &UsersDraftsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -2685,54 +2472,51 @@ func (r *UsersDraftsService) Create(userId string, draft *Draft) *UsersDraftsCre
 	return c
 }
 
-// Media specifies the media to upload in one or more chunks. The chunk
-// size may be controlled by supplying a MediaOption generated by
+// Media specifies the media to upload in one or more chunks. The chunk size
+// may be controlled by supplying a MediaOption generated by
 // googleapi.ChunkSize. The chunk size defaults to
-// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
-// upload request will be determined by sniffing the contents of r,
-// unless a MediaOption generated by googleapi.ContentType is
-// supplied.
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the upload
+// request will be determined by sniffing the contents of r, unless a
+// MediaOption generated by googleapi.ContentType is supplied.
 // At most one of Media and ResumableMedia may be set.
 func (c *UsersDraftsCreateCall) Media(r io.Reader, options ...googleapi.MediaOption) *UsersDraftsCreateCall {
 	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be
-// canceled with ctx.
+// ResumableMedia specifies the media to upload in chunks and can be canceled
+// with ctx.
 //
 // Deprecated: use Media instead.
 //
-// At most one of Media and ResumableMedia may be set. mediaType
-// identifies the MIME media type of the upload, such as "image/png". If
-// mediaType is "", it will be auto-detected. The provided ctx will
-// supersede any context previously provided to the Context method.
+// At most one of Media and ResumableMedia may be set. mediaType identifies the
+// MIME media type of the upload, such as "image/png". If mediaType is "", it
+// will be auto-detected. The provided ctx will supersede any context
+// previously provided to the Context method.
 func (c *UsersDraftsCreateCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *UsersDraftsCreateCall {
 	c.ctx_ = ctx
 	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called
-// after every chunk. It should be a low-latency function in order to
-// not slow down the upload operation. This should only be called when
-// using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called after every
+// chunk. It should be a low-latency function in order to not slow down the
+// upload operation. This should only be called when using ResumableMedia (as
+// opposed to Media).
 func (c *UsersDraftsCreateCall) ProgressUpdater(pu googleapi.ProgressUpdater) *UsersDraftsCreateCall {
 	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersDraftsCreateCall) Fields(s ...googleapi.Field) *UsersDraftsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 // This context will supersede any context previously provided to the
 // ResumableMedia method.
 func (c *UsersDraftsCreateCall) Context(ctx context.Context) *UsersDraftsCreateCall {
@@ -2740,8 +2524,8 @@ func (c *UsersDraftsCreateCall) Context(ctx context.Context) *UsersDraftsCreateC
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersDraftsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2750,18 +2534,12 @@ func (c *UsersDraftsCreateCall) Header() http.Header {
 }
 
 func (c *UsersDraftsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.draft)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/drafts")
@@ -2789,12 +2567,10 @@ func (c *UsersDraftsCreateCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.drafts.create" call.
-// Exactly one of *Draft or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Draft.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Draft.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersDraftsCreateCall) Do(opts ...googleapi.CallOption) (*Draft, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -2802,17 +2578,17 @@ func (c *UsersDraftsCreateCall) Do(opts ...googleapi.CallOption) (*Draft, error)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -2828,7 +2604,7 @@ func (c *UsersDraftsCreateCall) Do(opts ...googleapi.CallOption) (*Draft, error)
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &Draft{
@@ -2842,58 +2618,7 @@ func (c *UsersDraftsCreateCall) Do(opts ...googleapi.CallOption) (*Draft, error)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new draft with the `DRAFT` label.",
-	//   "flatPath": "gmail/v1/users/{userId}/drafts",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.drafts.create",
-	//   "mediaUpload": {
-	//     "accept": [
-	//       "message/*"
-	//     ],
-	//     "maxSize": "36700160",
-	//     "protocols": {
-	//       "resumable": {
-	//         "multipart": true,
-	//         "path": "/resumable/upload/gmail/v1/users/{userId}/drafts"
-	//       },
-	//       "simple": {
-	//         "multipart": true,
-	//         "path": "/upload/gmail/v1/users/{userId}/drafts"
-	//       }
-	//     }
-	//   },
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/drafts",
-	//   "request": {
-	//     "$ref": "Draft"
-	//   },
-	//   "response": {
-	//     "$ref": "Draft"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
-	//     "https://www.googleapis.com/auth/gmail.compose",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ],
-	//   "supportsMediaUpload": true
-	// }
-
 }
-
-// method id "gmail.users.drafts.delete":
 
 type UsersDraftsDeleteCall struct {
 	s          *Service
@@ -2904,12 +2629,12 @@ type UsersDraftsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Immediately and permanently deletes the specified draft. Does
-// not simply trash it.
+// Delete: Immediately and permanently deletes the specified draft. Does not
+// simply trash it.
 //
 //   - id: The ID of the draft to delete.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersDraftsService) Delete(userId string, id string) *UsersDraftsDeleteCall {
 	c := &UsersDraftsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -2918,23 +2643,21 @@ func (r *UsersDraftsService) Delete(userId string, id string) *UsersDraftsDelete
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersDraftsDeleteCall) Fields(s ...googleapi.Field) *UsersDraftsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersDraftsDeleteCall) Context(ctx context.Context) *UsersDraftsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersDraftsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -2943,12 +2666,7 @@ func (c *UsersDraftsDeleteCall) Header() http.Header {
 }
 
 func (c *UsersDraftsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -2975,45 +2693,10 @@ func (c *UsersDraftsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Immediately and permanently deletes the specified draft. Does not simply trash it.",
-	//   "flatPath": "gmail/v1/users/{userId}/drafts/{id}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gmail.users.drafts.delete",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the draft to delete.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/drafts/{id}",
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
-	//     "https://www.googleapis.com/auth/gmail.compose",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.drafts.get":
 
 type UsersDraftsGetCall struct {
 	s            *Service
@@ -3028,8 +2711,8 @@ type UsersDraftsGetCall struct {
 // Get: Gets the specified draft.
 //
 //   - id: The ID of the draft to retrieve.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersDraftsService) Get(userId string, id string) *UsersDraftsGetCall {
 	c := &UsersDraftsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -3037,63 +2720,55 @@ func (r *UsersDraftsService) Get(userId string, id string) *UsersDraftsGetCall {
 	return c
 }
 
-// Format sets the optional parameter "format": The format to return the
-// draft in.
+// Format sets the optional parameter "format": The format to return the draft
+// in.
 //
 // Possible values:
 //
-//	"minimal" - Returns only email message ID and labels; does not
+//	"minimal" - Returns only email message ID and labels; does not return the
 //
-// return the email headers, body, or payload.
+// email headers, body, or payload.
 //
-//	"full" (default) - Returns the full email message data with body
+//	"full" (default) - Returns the full email message data with body content
 //
-// content parsed in the `payload` field; the `raw` field is not used.
-// Format cannot be used when accessing the api using the gmail.metadata
-// scope.
+// parsed in the `payload` field; the `raw` field is not used. Format cannot be
+// used when accessing the api using the gmail.metadata scope.
 //
-//	"raw" - Returns the full email message data with body content in
+//	"raw" - Returns the full email message data with body content in the `raw`
 //
-// the `raw` field as a base64url encoded string; the `payload` field is
-// not used. Format cannot be used when accessing the api using the
-// gmail.metadata scope.
+// field as a base64url encoded string; the `payload` field is not used. Format
+// cannot be used when accessing the api using the gmail.metadata scope.
 //
-//	"metadata" - Returns only email message ID, labels, and email
-//
-// headers.
+//	"metadata" - Returns only email message ID, labels, and email headers.
 func (c *UsersDraftsGetCall) Format(format string) *UsersDraftsGetCall {
 	c.urlParams_.Set("format", format)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersDraftsGetCall) Fields(s ...googleapi.Field) *UsersDraftsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersDraftsGetCall) IfNoneMatch(entityTag string) *UsersDraftsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersDraftsGetCall) Context(ctx context.Context) *UsersDraftsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersDraftsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3102,12 +2777,7 @@ func (c *UsersDraftsGetCall) Header() http.Header {
 }
 
 func (c *UsersDraftsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -3129,12 +2799,10 @@ func (c *UsersDraftsGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.drafts.get" call.
-// Exactly one of *Draft or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Draft.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Draft.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersDraftsGetCall) Do(opts ...googleapi.CallOption) (*Draft, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3142,17 +2810,17 @@ func (c *UsersDraftsGetCall) Do(opts ...googleapi.CallOption) (*Draft, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Draft{
 		ServerResponse: googleapi.ServerResponse{
@@ -3165,63 +2833,7 @@ func (c *UsersDraftsGetCall) Do(opts ...googleapi.CallOption) (*Draft, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the specified draft.",
-	//   "flatPath": "gmail/v1/users/{userId}/drafts/{id}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.drafts.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "format": {
-	//       "default": "full",
-	//       "description": "The format to return the draft in.",
-	//       "enum": [
-	//         "minimal",
-	//         "full",
-	//         "raw",
-	//         "metadata"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Returns only email message ID and labels; does not return the email headers, body, or payload.",
-	//         "Returns the full email message data with body content parsed in the `payload` field; the `raw` field is not used. Format cannot be used when accessing the api using the gmail.metadata scope.",
-	//         "Returns the full email message data with body content in the `raw` field as a base64url encoded string; the `payload` field is not used. Format cannot be used when accessing the api using the gmail.metadata scope.",
-	//         "Returns only email message ID, labels, and email headers."
-	//       ],
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "id": {
-	//       "description": "The ID of the draft to retrieve.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/drafts/{id}",
-	//   "response": {
-	//     "$ref": "Draft"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.compose",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.drafts.list":
 
 type UsersDraftsListCall struct {
 	s            *Service
@@ -3234,73 +2846,68 @@ type UsersDraftsListCall struct {
 
 // List: Lists the drafts in the user's mailbox.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersDraftsService) List(userId string) *UsersDraftsListCall {
 	c := &UsersDraftsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
 	return c
 }
 
-// IncludeSpamTrash sets the optional parameter "includeSpamTrash":
-// Include drafts from `SPAM` and `TRASH` in the results.
+// IncludeSpamTrash sets the optional parameter "includeSpamTrash": Include
+// drafts from `SPAM` and `TRASH` in the results.
 func (c *UsersDraftsListCall) IncludeSpamTrash(includeSpamTrash bool) *UsersDraftsListCall {
 	c.urlParams_.Set("includeSpamTrash", fmt.Sprint(includeSpamTrash))
 	return c
 }
 
-// MaxResults sets the optional parameter "maxResults": Maximum number
-// of drafts to return. This field defaults to 100. The maximum allowed
-// value for this field is 500.
+// MaxResults sets the optional parameter "maxResults": Maximum number of
+// drafts to return. This field defaults to 100. The maximum allowed value for
+// this field is 500.
 func (c *UsersDraftsListCall) MaxResults(maxResults int64) *UsersDraftsListCall {
 	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Page token to
-// retrieve a specific page of results in the list.
+// PageToken sets the optional parameter "pageToken": Page token to retrieve a
+// specific page of results in the list.
 func (c *UsersDraftsListCall) PageToken(pageToken string) *UsersDraftsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Q sets the optional parameter "q": Only return draft messages
-// matching the specified query. Supports the same query format as the
-// Gmail search box. For example, "from:someuser@example.com
-// rfc822msgid: is:unread".
+// Q sets the optional parameter "q": Only return draft messages matching the
+// specified query. Supports the same query format as the Gmail search box. For
+// example, "from:someuser@example.com rfc822msgid: is:unread".
 func (c *UsersDraftsListCall) Q(q string) *UsersDraftsListCall {
 	c.urlParams_.Set("q", q)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersDraftsListCall) Fields(s ...googleapi.Field) *UsersDraftsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersDraftsListCall) IfNoneMatch(entityTag string) *UsersDraftsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersDraftsListCall) Context(ctx context.Context) *UsersDraftsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersDraftsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3309,12 +2916,7 @@ func (c *UsersDraftsListCall) Header() http.Header {
 }
 
 func (c *UsersDraftsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -3335,12 +2937,11 @@ func (c *UsersDraftsListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.drafts.list" call.
-// Exactly one of *ListDraftsResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListDraftsResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListDraftsResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersDraftsListCall) Do(opts ...googleapi.CallOption) (*ListDraftsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3348,17 +2949,17 @@ func (c *UsersDraftsListCall) Do(opts ...googleapi.CallOption) (*ListDraftsRespo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListDraftsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -3371,58 +2972,6 @@ func (c *UsersDraftsListCall) Do(opts ...googleapi.CallOption) (*ListDraftsRespo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the drafts in the user's mailbox.",
-	//   "flatPath": "gmail/v1/users/{userId}/drafts",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.drafts.list",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "includeSpamTrash": {
-	//       "default": "false",
-	//       "description": "Include drafts from `SPAM` and `TRASH` in the results.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "maxResults": {
-	//       "default": "100",
-	//       "description": "Maximum number of drafts to return. This field defaults to 100. The maximum allowed value for this field is 500.",
-	//       "format": "uint32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Page token to retrieve a specific page of results in the list.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "q": {
-	//       "description": "Only return draft messages matching the specified query. Supports the same query format as the Gmail search box. For example, `\"from:someuser@example.com rfc822msgid: is:unread\"`.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/drafts",
-	//   "response": {
-	//     "$ref": "ListDraftsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.compose",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -3430,7 +2979,7 @@ func (c *UsersDraftsListCall) Do(opts ...googleapi.CallOption) (*ListDraftsRespo
 // The provided context supersedes any context provided to the Context method.
 func (c *UsersDraftsListCall) Pages(ctx context.Context, f func(*ListDraftsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -3446,8 +2995,6 @@ func (c *UsersDraftsListCall) Pages(ctx context.Context, f func(*ListDraftsRespo
 	}
 }
 
-// method id "gmail.users.drafts.send":
-
 type UsersDraftsSendCall struct {
 	s          *Service
 	userId     string
@@ -3458,11 +3005,11 @@ type UsersDraftsSendCall struct {
 	header_    http.Header
 }
 
-// Send: Sends the specified, existing draft to the recipients in the
-// `To`, `Cc`, and `Bcc` headers.
+// Send: Sends the specified, existing draft to the recipients in the `To`,
+// `Cc`, and `Bcc` headers.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersDraftsService) Send(userId string, draft *Draft) *UsersDraftsSendCall {
 	c := &UsersDraftsSendCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -3470,54 +3017,51 @@ func (r *UsersDraftsService) Send(userId string, draft *Draft) *UsersDraftsSendC
 	return c
 }
 
-// Media specifies the media to upload in one or more chunks. The chunk
-// size may be controlled by supplying a MediaOption generated by
+// Media specifies the media to upload in one or more chunks. The chunk size
+// may be controlled by supplying a MediaOption generated by
 // googleapi.ChunkSize. The chunk size defaults to
-// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
-// upload request will be determined by sniffing the contents of r,
-// unless a MediaOption generated by googleapi.ContentType is
-// supplied.
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the upload
+// request will be determined by sniffing the contents of r, unless a
+// MediaOption generated by googleapi.ContentType is supplied.
 // At most one of Media and ResumableMedia may be set.
 func (c *UsersDraftsSendCall) Media(r io.Reader, options ...googleapi.MediaOption) *UsersDraftsSendCall {
 	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be
-// canceled with ctx.
+// ResumableMedia specifies the media to upload in chunks and can be canceled
+// with ctx.
 //
 // Deprecated: use Media instead.
 //
-// At most one of Media and ResumableMedia may be set. mediaType
-// identifies the MIME media type of the upload, such as "image/png". If
-// mediaType is "", it will be auto-detected. The provided ctx will
-// supersede any context previously provided to the Context method.
+// At most one of Media and ResumableMedia may be set. mediaType identifies the
+// MIME media type of the upload, such as "image/png". If mediaType is "", it
+// will be auto-detected. The provided ctx will supersede any context
+// previously provided to the Context method.
 func (c *UsersDraftsSendCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *UsersDraftsSendCall {
 	c.ctx_ = ctx
 	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called
-// after every chunk. It should be a low-latency function in order to
-// not slow down the upload operation. This should only be called when
-// using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called after every
+// chunk. It should be a low-latency function in order to not slow down the
+// upload operation. This should only be called when using ResumableMedia (as
+// opposed to Media).
 func (c *UsersDraftsSendCall) ProgressUpdater(pu googleapi.ProgressUpdater) *UsersDraftsSendCall {
 	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersDraftsSendCall) Fields(s ...googleapi.Field) *UsersDraftsSendCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 // This context will supersede any context previously provided to the
 // ResumableMedia method.
 func (c *UsersDraftsSendCall) Context(ctx context.Context) *UsersDraftsSendCall {
@@ -3525,8 +3069,8 @@ func (c *UsersDraftsSendCall) Context(ctx context.Context) *UsersDraftsSendCall 
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersDraftsSendCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3535,18 +3079,12 @@ func (c *UsersDraftsSendCall) Header() http.Header {
 }
 
 func (c *UsersDraftsSendCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.draft)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/drafts/send")
@@ -3574,12 +3112,10 @@ func (c *UsersDraftsSendCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.drafts.send" call.
-// Exactly one of *Message or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Message.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Message.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersDraftsSendCall) Do(opts ...googleapi.CallOption) (*Message, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3587,17 +3123,17 @@ func (c *UsersDraftsSendCall) Do(opts ...googleapi.CallOption) (*Message, error)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -3613,7 +3149,7 @@ func (c *UsersDraftsSendCall) Do(opts ...googleapi.CallOption) (*Message, error)
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &Message{
@@ -3627,58 +3163,7 @@ func (c *UsersDraftsSendCall) Do(opts ...googleapi.CallOption) (*Message, error)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers.",
-	//   "flatPath": "gmail/v1/users/{userId}/drafts/send",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.drafts.send",
-	//   "mediaUpload": {
-	//     "accept": [
-	//       "message/*"
-	//     ],
-	//     "maxSize": "36700160",
-	//     "protocols": {
-	//       "resumable": {
-	//         "multipart": true,
-	//         "path": "/resumable/upload/gmail/v1/users/{userId}/drafts/send"
-	//       },
-	//       "simple": {
-	//         "multipart": true,
-	//         "path": "/upload/gmail/v1/users/{userId}/drafts/send"
-	//       }
-	//     }
-	//   },
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/drafts/send",
-	//   "request": {
-	//     "$ref": "Draft"
-	//   },
-	//   "response": {
-	//     "$ref": "Message"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
-	//     "https://www.googleapis.com/auth/gmail.compose",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ],
-	//   "supportsMediaUpload": true
-	// }
-
 }
-
-// method id "gmail.users.drafts.update":
 
 type UsersDraftsUpdateCall struct {
 	s          *Service
@@ -3694,8 +3179,8 @@ type UsersDraftsUpdateCall struct {
 // Update: Replaces a draft's content.
 //
 //   - id: The ID of the draft to update.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersDraftsService) Update(userId string, id string, draft *Draft) *UsersDraftsUpdateCall {
 	c := &UsersDraftsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -3704,54 +3189,51 @@ func (r *UsersDraftsService) Update(userId string, id string, draft *Draft) *Use
 	return c
 }
 
-// Media specifies the media to upload in one or more chunks. The chunk
-// size may be controlled by supplying a MediaOption generated by
+// Media specifies the media to upload in one or more chunks. The chunk size
+// may be controlled by supplying a MediaOption generated by
 // googleapi.ChunkSize. The chunk size defaults to
-// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
-// upload request will be determined by sniffing the contents of r,
-// unless a MediaOption generated by googleapi.ContentType is
-// supplied.
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the upload
+// request will be determined by sniffing the contents of r, unless a
+// MediaOption generated by googleapi.ContentType is supplied.
 // At most one of Media and ResumableMedia may be set.
 func (c *UsersDraftsUpdateCall) Media(r io.Reader, options ...googleapi.MediaOption) *UsersDraftsUpdateCall {
 	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be
-// canceled with ctx.
+// ResumableMedia specifies the media to upload in chunks and can be canceled
+// with ctx.
 //
 // Deprecated: use Media instead.
 //
-// At most one of Media and ResumableMedia may be set. mediaType
-// identifies the MIME media type of the upload, such as "image/png". If
-// mediaType is "", it will be auto-detected. The provided ctx will
-// supersede any context previously provided to the Context method.
+// At most one of Media and ResumableMedia may be set. mediaType identifies the
+// MIME media type of the upload, such as "image/png". If mediaType is "", it
+// will be auto-detected. The provided ctx will supersede any context
+// previously provided to the Context method.
 func (c *UsersDraftsUpdateCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *UsersDraftsUpdateCall {
 	c.ctx_ = ctx
 	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called
-// after every chunk. It should be a low-latency function in order to
-// not slow down the upload operation. This should only be called when
-// using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called after every
+// chunk. It should be a low-latency function in order to not slow down the
+// upload operation. This should only be called when using ResumableMedia (as
+// opposed to Media).
 func (c *UsersDraftsUpdateCall) ProgressUpdater(pu googleapi.ProgressUpdater) *UsersDraftsUpdateCall {
 	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersDraftsUpdateCall) Fields(s ...googleapi.Field) *UsersDraftsUpdateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 // This context will supersede any context previously provided to the
 // ResumableMedia method.
 func (c *UsersDraftsUpdateCall) Context(ctx context.Context) *UsersDraftsUpdateCall {
@@ -3759,8 +3241,8 @@ func (c *UsersDraftsUpdateCall) Context(ctx context.Context) *UsersDraftsUpdateC
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersDraftsUpdateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -3769,18 +3251,12 @@ func (c *UsersDraftsUpdateCall) Header() http.Header {
 }
 
 func (c *UsersDraftsUpdateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.draft)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/drafts/{id}")
@@ -3809,12 +3285,10 @@ func (c *UsersDraftsUpdateCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.drafts.update" call.
-// Exactly one of *Draft or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Draft.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Draft.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersDraftsUpdateCall) Do(opts ...googleapi.CallOption) (*Draft, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -3822,17 +3296,17 @@ func (c *UsersDraftsUpdateCall) Do(opts ...googleapi.CallOption) (*Draft, error)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -3848,7 +3322,7 @@ func (c *UsersDraftsUpdateCall) Do(opts ...googleapi.CallOption) (*Draft, error)
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &Draft{
@@ -3862,65 +3336,7 @@ func (c *UsersDraftsUpdateCall) Do(opts ...googleapi.CallOption) (*Draft, error)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Replaces a draft's content.",
-	//   "flatPath": "gmail/v1/users/{userId}/drafts/{id}",
-	//   "httpMethod": "PUT",
-	//   "id": "gmail.users.drafts.update",
-	//   "mediaUpload": {
-	//     "accept": [
-	//       "message/*"
-	//     ],
-	//     "maxSize": "36700160",
-	//     "protocols": {
-	//       "resumable": {
-	//         "multipart": true,
-	//         "path": "/resumable/upload/gmail/v1/users/{userId}/drafts/{id}"
-	//       },
-	//       "simple": {
-	//         "multipart": true,
-	//         "path": "/upload/gmail/v1/users/{userId}/drafts/{id}"
-	//       }
-	//     }
-	//   },
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the draft to update.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/drafts/{id}",
-	//   "request": {
-	//     "$ref": "Draft"
-	//   },
-	//   "response": {
-	//     "$ref": "Draft"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
-	//     "https://www.googleapis.com/auth/gmail.compose",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ],
-	//   "supportsMediaUpload": true
-	// }
-
 }
-
-// method id "gmail.users.history.list":
 
 type UsersHistoryListCall struct {
 	s            *Service
@@ -3931,19 +3347,19 @@ type UsersHistoryListCall struct {
 	header_      http.Header
 }
 
-// List: Lists the history of all changes to the given mailbox. History
-// results are returned in chronological order (increasing `historyId`).
+// List: Lists the history of all changes to the given mailbox. History results
+// are returned in chronological order (increasing `historyId`).
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersHistoryService) List(userId string) *UsersHistoryListCall {
 	c := &UsersHistoryListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
 	return c
 }
 
-// HistoryTypes sets the optional parameter "historyTypes": History
-// types to be returned by the function
+// HistoryTypes sets the optional parameter "historyTypes": History types to be
+// returned by the function
 //
 // Possible values:
 //
@@ -3956,74 +3372,68 @@ func (c *UsersHistoryListCall) HistoryTypes(historyTypes ...string) *UsersHistor
 	return c
 }
 
-// LabelId sets the optional parameter "labelId": Only return messages
-// with a label matching the ID.
+// LabelId sets the optional parameter "labelId": Only return messages with a
+// label matching the ID.
 func (c *UsersHistoryListCall) LabelId(labelId string) *UsersHistoryListCall {
 	c.urlParams_.Set("labelId", labelId)
 	return c
 }
 
-// MaxResults sets the optional parameter "maxResults": Maximum number
-// of history records to return. This field defaults to 100. The maximum
-// allowed value for this field is 500.
+// MaxResults sets the optional parameter "maxResults": Maximum number of
+// history records to return. This field defaults to 100. The maximum allowed
+// value for this field is 500.
 func (c *UsersHistoryListCall) MaxResults(maxResults int64) *UsersHistoryListCall {
 	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Page token to
-// retrieve a specific page of results in the list.
+// PageToken sets the optional parameter "pageToken": Page token to retrieve a
+// specific page of results in the list.
 func (c *UsersHistoryListCall) PageToken(pageToken string) *UsersHistoryListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// StartHistoryId sets the optional parameter "startHistoryId":
-// Required. Returns history records after the specified
-// `startHistoryId`. The supplied `startHistoryId` should be obtained
-// from the `historyId` of a message, thread, or previous `list`
-// response. History IDs increase chronologically but are not contiguous
-// with random gaps in between valid IDs. Supplying an invalid or out of
-// date `startHistoryId` typically returns an `HTTP 404` error code. A
-// `historyId` is typically valid for at least a week, but in some rare
-// circumstances may be valid for only a few hours. If you receive an
-// `HTTP 404` error response, your application should perform a full
-// sync. If you receive no `nextPageToken` in the response, there are no
-// updates to retrieve and you can store the returned `historyId` for a
-// future request.
+// StartHistoryId sets the optional parameter "startHistoryId": Required.
+// Returns history records after the specified `startHistoryId`. The supplied
+// `startHistoryId` should be obtained from the `historyId` of a message,
+// thread, or previous `list` response. History IDs increase chronologically
+// but are not contiguous with random gaps in between valid IDs. Supplying an
+// invalid or out of date `startHistoryId` typically returns an `HTTP 404`
+// error code. A `historyId` is typically valid for at least a week, but in
+// some rare circumstances may be valid for only a few hours. If you receive an
+// `HTTP 404` error response, your application should perform a full sync. If
+// you receive no `nextPageToken` in the response, there are no updates to
+// retrieve and you can store the returned `historyId` for a future request.
 func (c *UsersHistoryListCall) StartHistoryId(startHistoryId uint64) *UsersHistoryListCall {
 	c.urlParams_.Set("startHistoryId", fmt.Sprint(startHistoryId))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersHistoryListCall) Fields(s ...googleapi.Field) *UsersHistoryListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersHistoryListCall) IfNoneMatch(entityTag string) *UsersHistoryListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersHistoryListCall) Context(ctx context.Context) *UsersHistoryListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersHistoryListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4032,12 +3442,7 @@ func (c *UsersHistoryListCall) Header() http.Header {
 }
 
 func (c *UsersHistoryListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -4058,12 +3463,11 @@ func (c *UsersHistoryListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.history.list" call.
-// Exactly one of *ListHistoryResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListHistoryResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListHistoryResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersHistoryListCall) Do(opts ...googleapi.CallOption) (*ListHistoryResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4071,17 +3475,17 @@ func (c *UsersHistoryListCall) Do(opts ...googleapi.CallOption) (*ListHistoryRes
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListHistoryResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -4094,76 +3498,6 @@ func (c *UsersHistoryListCall) Do(opts ...googleapi.CallOption) (*ListHistoryRes
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the history of all changes to the given mailbox. History results are returned in chronological order (increasing `historyId`).",
-	//   "flatPath": "gmail/v1/users/{userId}/history",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.history.list",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "historyTypes": {
-	//       "description": "History types to be returned by the function",
-	//       "enum": [
-	//         "messageAdded",
-	//         "messageDeleted",
-	//         "labelAdded",
-	//         "labelRemoved"
-	//       ],
-	//       "enumDescriptions": [
-	//         "",
-	//         "",
-	//         "",
-	//         ""
-	//       ],
-	//       "location": "query",
-	//       "repeated": true,
-	//       "type": "string"
-	//     },
-	//     "labelId": {
-	//       "description": "Only return messages with a label matching the ID.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "maxResults": {
-	//       "default": "100",
-	//       "description": "Maximum number of history records to return. This field defaults to 100. The maximum allowed value for this field is 500.",
-	//       "format": "uint32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Page token to retrieve a specific page of results in the list.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "startHistoryId": {
-	//       "description": "Required. Returns history records after the specified `startHistoryId`. The supplied `startHistoryId` should be obtained from the `historyId` of a message, thread, or previous `list` response. History IDs increase chronologically but are not contiguous with random gaps in between valid IDs. Supplying an invalid or out of date `startHistoryId` typically returns an `HTTP 404` error code. A `historyId` is typically valid for at least a week, but in some rare circumstances may be valid for only a few hours. If you receive an `HTTP 404` error response, your application should perform a full sync. If you receive no `nextPageToken` in the response, there are no updates to retrieve and you can store the returned `historyId` for a future request.",
-	//       "format": "uint64",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/history",
-	//   "response": {
-	//     "$ref": "ListHistoryResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -4171,7 +3505,7 @@ func (c *UsersHistoryListCall) Do(opts ...googleapi.CallOption) (*ListHistoryRes
 // The provided context supersedes any context provided to the Context method.
 func (c *UsersHistoryListCall) Pages(ctx context.Context, f func(*ListHistoryResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -4187,8 +3521,6 @@ func (c *UsersHistoryListCall) Pages(ctx context.Context, f func(*ListHistoryRes
 	}
 }
 
-// method id "gmail.users.labels.create":
-
 type UsersLabelsCreateCall struct {
 	s          *Service
 	userId     string
@@ -4200,8 +3532,8 @@ type UsersLabelsCreateCall struct {
 
 // Create: Creates a new label.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersLabelsService) Create(userId string, label *Label) *UsersLabelsCreateCall {
 	c := &UsersLabelsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -4210,23 +3542,21 @@ func (r *UsersLabelsService) Create(userId string, label *Label) *UsersLabelsCre
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersLabelsCreateCall) Fields(s ...googleapi.Field) *UsersLabelsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersLabelsCreateCall) Context(ctx context.Context) *UsersLabelsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersLabelsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4235,18 +3565,12 @@ func (c *UsersLabelsCreateCall) Header() http.Header {
 }
 
 func (c *UsersLabelsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.label)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/labels")
@@ -4263,12 +3587,10 @@ func (c *UsersLabelsCreateCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.labels.create" call.
-// Exactly one of *Label or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Label.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Label.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersLabelsCreateCall) Do(opts ...googleapi.CallOption) (*Label, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4276,17 +3598,17 @@ func (c *UsersLabelsCreateCall) Do(opts ...googleapi.CallOption) (*Label, error)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Label{
 		ServerResponse: googleapi.ServerResponse{
@@ -4299,40 +3621,7 @@ func (c *UsersLabelsCreateCall) Do(opts ...googleapi.CallOption) (*Label, error)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new label.",
-	//   "flatPath": "gmail/v1/users/{userId}/labels",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.labels.create",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/labels",
-	//   "request": {
-	//     "$ref": "Label"
-	//   },
-	//   "response": {
-	//     "$ref": "Label"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.labels",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.labels.delete":
 
 type UsersLabelsDeleteCall struct {
 	s          *Service
@@ -4343,12 +3632,12 @@ type UsersLabelsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Immediately and permanently deletes the specified label and
-// removes it from any messages and threads that it is applied to.
+// Delete: Immediately and permanently deletes the specified label and removes
+// it from any messages and threads that it is applied to.
 //
 //   - id: The ID of the label to delete.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersLabelsService) Delete(userId string, id string) *UsersLabelsDeleteCall {
 	c := &UsersLabelsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -4357,23 +3646,21 @@ func (r *UsersLabelsService) Delete(userId string, id string) *UsersLabelsDelete
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersLabelsDeleteCall) Fields(s ...googleapi.Field) *UsersLabelsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersLabelsDeleteCall) Context(ctx context.Context) *UsersLabelsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersLabelsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4382,12 +3669,7 @@ func (c *UsersLabelsDeleteCall) Header() http.Header {
 }
 
 func (c *UsersLabelsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -4414,44 +3696,10 @@ func (c *UsersLabelsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to.",
-	//   "flatPath": "gmail/v1/users/{userId}/labels/{id}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gmail.users.labels.delete",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the label to delete.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/labels/{id}",
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.labels",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.labels.get":
 
 type UsersLabelsGetCall struct {
 	s            *Service
@@ -4466,8 +3714,8 @@ type UsersLabelsGetCall struct {
 // Get: Gets the specified label.
 //
 //   - id: The ID of the label to retrieve.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersLabelsService) Get(userId string, id string) *UsersLabelsGetCall {
 	c := &UsersLabelsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -4476,33 +3724,29 @@ func (r *UsersLabelsService) Get(userId string, id string) *UsersLabelsGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersLabelsGetCall) Fields(s ...googleapi.Field) *UsersLabelsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersLabelsGetCall) IfNoneMatch(entityTag string) *UsersLabelsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersLabelsGetCall) Context(ctx context.Context) *UsersLabelsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersLabelsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4511,12 +3755,7 @@ func (c *UsersLabelsGetCall) Header() http.Header {
 }
 
 func (c *UsersLabelsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -4538,12 +3777,10 @@ func (c *UsersLabelsGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.labels.get" call.
-// Exactly one of *Label or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Label.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Label.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersLabelsGetCall) Do(opts ...googleapi.CallOption) (*Label, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4551,17 +3788,17 @@ func (c *UsersLabelsGetCall) Do(opts ...googleapi.CallOption) (*Label, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Label{
 		ServerResponse: googleapi.ServerResponse{
@@ -4574,46 +3811,7 @@ func (c *UsersLabelsGetCall) Do(opts ...googleapi.CallOption) (*Label, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the specified label.",
-	//   "flatPath": "gmail/v1/users/{userId}/labels/{id}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.labels.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the label to retrieve.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/labels/{id}",
-	//   "response": {
-	//     "$ref": "Label"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.labels",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.labels.list":
 
 type UsersLabelsListCall struct {
 	s            *Service
@@ -4626,8 +3824,8 @@ type UsersLabelsListCall struct {
 
 // List: Lists all labels in the user's mailbox.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersLabelsService) List(userId string) *UsersLabelsListCall {
 	c := &UsersLabelsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -4635,33 +3833,29 @@ func (r *UsersLabelsService) List(userId string) *UsersLabelsListCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersLabelsListCall) Fields(s ...googleapi.Field) *UsersLabelsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersLabelsListCall) IfNoneMatch(entityTag string) *UsersLabelsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersLabelsListCall) Context(ctx context.Context) *UsersLabelsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersLabelsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4670,12 +3864,7 @@ func (c *UsersLabelsListCall) Header() http.Header {
 }
 
 func (c *UsersLabelsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -4696,12 +3885,11 @@ func (c *UsersLabelsListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.labels.list" call.
-// Exactly one of *ListLabelsResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListLabelsResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListLabelsResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersLabelsListCall) Do(opts ...googleapi.CallOption) (*ListLabelsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4709,17 +3897,17 @@ func (c *UsersLabelsListCall) Do(opts ...googleapi.CallOption) (*ListLabelsRespo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListLabelsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -4732,39 +3920,7 @@ func (c *UsersLabelsListCall) Do(opts ...googleapi.CallOption) (*ListLabelsRespo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all labels in the user's mailbox.",
-	//   "flatPath": "gmail/v1/users/{userId}/labels",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.labels.list",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/labels",
-	//   "response": {
-	//     "$ref": "ListLabelsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.labels",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.labels.patch":
 
 type UsersLabelsPatchCall struct {
 	s          *Service
@@ -4779,8 +3935,8 @@ type UsersLabelsPatchCall struct {
 // Patch: Patch the specified label.
 //
 //   - id: The ID of the label to update.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersLabelsService) Patch(userId string, id string, label *Label) *UsersLabelsPatchCall {
 	c := &UsersLabelsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -4790,23 +3946,21 @@ func (r *UsersLabelsService) Patch(userId string, id string, label *Label) *User
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersLabelsPatchCall) Fields(s ...googleapi.Field) *UsersLabelsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersLabelsPatchCall) Context(ctx context.Context) *UsersLabelsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersLabelsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4815,18 +3969,12 @@ func (c *UsersLabelsPatchCall) Header() http.Header {
 }
 
 func (c *UsersLabelsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.label)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/labels/{id}")
@@ -4844,12 +3992,10 @@ func (c *UsersLabelsPatchCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.labels.patch" call.
-// Exactly one of *Label or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Label.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Label.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersLabelsPatchCall) Do(opts ...googleapi.CallOption) (*Label, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4857,17 +4003,17 @@ func (c *UsersLabelsPatchCall) Do(opts ...googleapi.CallOption) (*Label, error) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Label{
 		ServerResponse: googleapi.ServerResponse{
@@ -4880,47 +4026,7 @@ func (c *UsersLabelsPatchCall) Do(opts ...googleapi.CallOption) (*Label, error) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Patch the specified label.",
-	//   "flatPath": "gmail/v1/users/{userId}/labels/{id}",
-	//   "httpMethod": "PATCH",
-	//   "id": "gmail.users.labels.patch",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the label to update.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/labels/{id}",
-	//   "request": {
-	//     "$ref": "Label"
-	//   },
-	//   "response": {
-	//     "$ref": "Label"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.labels",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.labels.update":
 
 type UsersLabelsUpdateCall struct {
 	s          *Service
@@ -4935,8 +4041,8 @@ type UsersLabelsUpdateCall struct {
 // Update: Updates the specified label.
 //
 //   - id: The ID of the label to update.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersLabelsService) Update(userId string, id string, label *Label) *UsersLabelsUpdateCall {
 	c := &UsersLabelsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -4946,23 +4052,21 @@ func (r *UsersLabelsService) Update(userId string, id string, label *Label) *Use
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersLabelsUpdateCall) Fields(s ...googleapi.Field) *UsersLabelsUpdateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersLabelsUpdateCall) Context(ctx context.Context) *UsersLabelsUpdateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersLabelsUpdateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4971,18 +4075,12 @@ func (c *UsersLabelsUpdateCall) Header() http.Header {
 }
 
 func (c *UsersLabelsUpdateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.label)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/labels/{id}")
@@ -5000,12 +4098,10 @@ func (c *UsersLabelsUpdateCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.labels.update" call.
-// Exactly one of *Label or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Label.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Label.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersLabelsUpdateCall) Do(opts ...googleapi.CallOption) (*Label, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5013,17 +4109,17 @@ func (c *UsersLabelsUpdateCall) Do(opts ...googleapi.CallOption) (*Label, error)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Label{
 		ServerResponse: googleapi.ServerResponse{
@@ -5036,47 +4132,7 @@ func (c *UsersLabelsUpdateCall) Do(opts ...googleapi.CallOption) (*Label, error)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates the specified label.",
-	//   "flatPath": "gmail/v1/users/{userId}/labels/{id}",
-	//   "httpMethod": "PUT",
-	//   "id": "gmail.users.labels.update",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the label to update.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/labels/{id}",
-	//   "request": {
-	//     "$ref": "Label"
-	//   },
-	//   "response": {
-	//     "$ref": "Label"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.labels",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.messages.batchDelete":
 
 type UsersMessagesBatchDeleteCall struct {
 	s                          *Service
@@ -5087,12 +4143,11 @@ type UsersMessagesBatchDeleteCall struct {
 	header_                    http.Header
 }
 
-// BatchDelete: Deletes many messages by message ID. Provides no
-// guarantees that messages were not already deleted or even existed at
-// all.
+// BatchDelete: Deletes many messages by message ID. Provides no guarantees
+// that messages were not already deleted or even existed at all.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) BatchDelete(userId string, batchdeletemessagesrequest *BatchDeleteMessagesRequest) *UsersMessagesBatchDeleteCall {
 	c := &UsersMessagesBatchDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -5101,23 +4156,21 @@ func (r *UsersMessagesService) BatchDelete(userId string, batchdeletemessagesreq
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesBatchDeleteCall) Fields(s ...googleapi.Field) *UsersMessagesBatchDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersMessagesBatchDeleteCall) Context(ctx context.Context) *UsersMessagesBatchDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesBatchDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5126,18 +4179,12 @@ func (c *UsersMessagesBatchDeleteCall) Header() http.Header {
 }
 
 func (c *UsersMessagesBatchDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.batchdeletemessagesrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/messages/batchDelete")
@@ -5162,38 +4209,10 @@ func (c *UsersMessagesBatchDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Deletes many messages by message ID. Provides no guarantees that messages were not already deleted or even existed at all.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/batchDelete",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.messages.batchDelete",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/batchDelete",
-	//   "request": {
-	//     "$ref": "BatchDeleteMessagesRequest"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.messages.batchModify":
 
 type UsersMessagesBatchModifyCall struct {
 	s                          *Service
@@ -5206,8 +4225,8 @@ type UsersMessagesBatchModifyCall struct {
 
 // BatchModify: Modifies the labels on the specified messages.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) BatchModify(userId string, batchmodifymessagesrequest *BatchModifyMessagesRequest) *UsersMessagesBatchModifyCall {
 	c := &UsersMessagesBatchModifyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -5216,23 +4235,21 @@ func (r *UsersMessagesService) BatchModify(userId string, batchmodifymessagesreq
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesBatchModifyCall) Fields(s ...googleapi.Field) *UsersMessagesBatchModifyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersMessagesBatchModifyCall) Context(ctx context.Context) *UsersMessagesBatchModifyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesBatchModifyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5241,18 +4258,12 @@ func (c *UsersMessagesBatchModifyCall) Header() http.Header {
 }
 
 func (c *UsersMessagesBatchModifyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.batchmodifymessagesrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/messages/batchModify")
@@ -5277,39 +4288,10 @@ func (c *UsersMessagesBatchModifyCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Modifies the labels on the specified messages.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/batchModify",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.messages.batchModify",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/batchModify",
-	//   "request": {
-	//     "$ref": "BatchModifyMessagesRequest"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.messages.delete":
 
 type UsersMessagesDeleteCall struct {
 	s          *Service
@@ -5320,12 +4302,12 @@ type UsersMessagesDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Immediately and permanently deletes the specified message.
-// This operation cannot be undone. Prefer `messages.trash` instead.
+// Delete: Immediately and permanently deletes the specified message. This
+// operation cannot be undone. Prefer `messages.trash` instead.
 //
 //   - id: The ID of the message to delete.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) Delete(userId string, id string) *UsersMessagesDeleteCall {
 	c := &UsersMessagesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -5334,23 +4316,21 @@ func (r *UsersMessagesService) Delete(userId string, id string) *UsersMessagesDe
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesDeleteCall) Fields(s ...googleapi.Field) *UsersMessagesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersMessagesDeleteCall) Context(ctx context.Context) *UsersMessagesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5359,12 +4339,7 @@ func (c *UsersMessagesDeleteCall) Header() http.Header {
 }
 
 func (c *UsersMessagesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -5391,42 +4366,10 @@ func (c *UsersMessagesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Immediately and permanently deletes the specified message. This operation cannot be undone. Prefer `messages.trash` instead.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/{id}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gmail.users.messages.delete",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the message to delete.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/{id}",
-	//   "scopes": [
-	//     "https://mail.google.com/"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.messages.get":
 
 type UsersMessagesGetCall struct {
 	s            *Service
@@ -5440,12 +4383,11 @@ type UsersMessagesGetCall struct {
 
 // Get: Gets the specified message.
 //
-//   - id: The ID of the message to retrieve. This ID is usually retrieved
-//     using `messages.list`. The ID is also contained in the result when
-//     a message is inserted (`messages.insert`) or imported
-//     (`messages.import`).
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - id: The ID of the message to retrieve. This ID is usually retrieved using
+//     `messages.list`. The ID is also contained in the result when a message is
+//     inserted (`messages.insert`) or imported (`messages.import`).
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) Get(userId string, id string) *UsersMessagesGetCall {
 	c := &UsersMessagesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -5458,65 +4400,63 @@ func (r *UsersMessagesService) Get(userId string, id string) *UsersMessagesGetCa
 //
 // Possible values:
 //
-//	"minimal" - Returns only email message ID and labels; does not
+//	"minimal" - Returns only email message ID and labels; does not return the
 //
-// return the email headers, body, or payload.
+// email headers, body, or payload.
 //
-//	"full" (default) - Returns the full email message data with body
+//	"full" (default) - Returns the full email message data with body content
 //
-// content parsed in the `payload` field; the `raw` field is not used.
-// Format cannot be used when accessing the api using the gmail.metadata
-// scope.
+// parsed in the `payload` field; the `raw` field is not used. Format cannot be
+// used when accessing the api using the gmail.metadata scope.
 //
-//	"raw" - Returns the full email message data with body content in
+//	"raw" - Returns the full email message data with body content in the `raw`
 //
-// the `raw` field as a base64url encoded string; the `payload` field is
-// not used. Format cannot be used when accessing the api using the
-// gmail.metadata scope.
+// field as a base64url encoded string; the `payload` field is not used. Format
+// cannot be used when accessing the api using the gmail.metadata scope.
 //
-//	"metadata" - Returns only email message ID, labels, and email
-//
-// headers.
+//	"metadata" - Returns only email message ID, labels, and email headers.
 func (c *UsersMessagesGetCall) Format(format string) *UsersMessagesGetCall {
 	c.urlParams_.Set("format", format)
 	return c
 }
 
-// MetadataHeaders sets the optional parameter "metadataHeaders": When
-// given and format is `METADATA`, only include headers specified.
+// MetadataHeaders sets the optional parameter "metadataHeaders": When given
+// and format is `METADATA`, only include headers specified.
 func (c *UsersMessagesGetCall) MetadataHeaders(metadataHeaders ...string) *UsersMessagesGetCall {
 	c.urlParams_.SetMulti("metadataHeaders", append([]string{}, metadataHeaders...))
 	return c
 }
 
+// TemporaryEeccBypass sets the optional parameter "temporaryEeccBypass":
+func (c *UsersMessagesGetCall) TemporaryEeccBypass(temporaryEeccBypass bool) *UsersMessagesGetCall {
+	c.urlParams_.Set("temporaryEeccBypass", fmt.Sprint(temporaryEeccBypass))
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesGetCall) Fields(s ...googleapi.Field) *UsersMessagesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersMessagesGetCall) IfNoneMatch(entityTag string) *UsersMessagesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersMessagesGetCall) Context(ctx context.Context) *UsersMessagesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5525,12 +4465,7 @@ func (c *UsersMessagesGetCall) Header() http.Header {
 }
 
 func (c *UsersMessagesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -5552,12 +4487,10 @@ func (c *UsersMessagesGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.messages.get" call.
-// Exactly one of *Message or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Message.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Message.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersMessagesGetCall) Do(opts ...googleapi.CallOption) (*Message, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5565,17 +4498,17 @@ func (c *UsersMessagesGetCall) Do(opts ...googleapi.CallOption) (*Message, error
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Message{
 		ServerResponse: googleapi.ServerResponse{
@@ -5588,72 +4521,7 @@ func (c *UsersMessagesGetCall) Do(opts ...googleapi.CallOption) (*Message, error
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the specified message.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/{id}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.messages.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "format": {
-	//       "default": "full",
-	//       "description": "The format to return the message in.",
-	//       "enum": [
-	//         "minimal",
-	//         "full",
-	//         "raw",
-	//         "metadata"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Returns only email message ID and labels; does not return the email headers, body, or payload.",
-	//         "Returns the full email message data with body content parsed in the `payload` field; the `raw` field is not used. Format cannot be used when accessing the api using the gmail.metadata scope.",
-	//         "Returns the full email message data with body content in the `raw` field as a base64url encoded string; the `payload` field is not used. Format cannot be used when accessing the api using the gmail.metadata scope.",
-	//         "Returns only email message ID, labels, and email headers."
-	//       ],
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "id": {
-	//       "description": "The ID of the message to retrieve. This ID is usually retrieved using `messages.list`. The ID is also contained in the result when a message is inserted (`messages.insert`) or imported (`messages.import`).",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "metadataHeaders": {
-	//       "description": "When given and format is `METADATA`, only include headers specified.",
-	//       "location": "query",
-	//       "repeated": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/{id}",
-	//   "response": {
-	//     "$ref": "Message"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.message.action",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.message.metadata",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.message.readonly",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.messages.import":
 
 type UsersMessagesImportCall struct {
 	s          *Service
@@ -5665,16 +4533,14 @@ type UsersMessagesImportCall struct {
 	header_    http.Header
 }
 
-// Import: Imports a message into only this user's mailbox, with
-// standard email delivery scanning and classification similar to
-// receiving via SMTP. This method doesn't perform SPF checks, so it
-// might not work for some spam messages, such as those attempting to
-// perform domain spoofing. This method does not send a message. Note:
-// This function doesn't trigger forwarding rules or filters set up by
-// the user.
+// Import: Imports a message into only this user's mailbox, with standard email
+// delivery scanning and classification similar to receiving via SMTP. This
+// method doesn't perform SPF checks, so it might not work for some spam
+// messages, such as those attempting to perform domain spoofing. This method
+// does not send a message.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) Import(userId string, message *Message) *UsersMessagesImportCall {
 	c := &UsersMessagesImportCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -5682,95 +4548,91 @@ func (r *UsersMessagesService) Import(userId string, message *Message) *UsersMes
 	return c
 }
 
-// Deleted sets the optional parameter "deleted": Mark the email as
-// permanently deleted (not TRASH) and only visible in Google Vault to a
-// Vault administrator. Only used for G Suite accounts.
+// Deleted sets the optional parameter "deleted": Mark the email as permanently
+// deleted (not TRASH) and only visible in Google Vault to a Vault
+// administrator. Only used for Google Workspace accounts.
 func (c *UsersMessagesImportCall) Deleted(deleted bool) *UsersMessagesImportCall {
 	c.urlParams_.Set("deleted", fmt.Sprint(deleted))
 	return c
 }
 
-// InternalDateSource sets the optional parameter "internalDateSource":
-// Source for Gmail's internal date of the message.
+// InternalDateSource sets the optional parameter "internalDateSource": Source
+// for Gmail's internal date of the message.
 //
 // Possible values:
 //
-//	"receivedTime" - Internal message date set to current time when
+//	"receivedTime" - Internal message date set to current time when received
 //
-// received by Gmail.
+// by Gmail.
 //
-//	"dateHeader" (default) - Internal message time based on 'Date'
+//	"dateHeader" (default) - Internal message time based on 'Date' header in
 //
-// header in email, when valid.
+// email, when valid.
 func (c *UsersMessagesImportCall) InternalDateSource(internalDateSource string) *UsersMessagesImportCall {
 	c.urlParams_.Set("internalDateSource", internalDateSource)
 	return c
 }
 
-// NeverMarkSpam sets the optional parameter "neverMarkSpam": Ignore the
-// Gmail spam classifier decision and never mark this email as SPAM in
-// the mailbox.
+// NeverMarkSpam sets the optional parameter "neverMarkSpam": Ignore the Gmail
+// spam classifier decision and never mark this email as SPAM in the mailbox.
 func (c *UsersMessagesImportCall) NeverMarkSpam(neverMarkSpam bool) *UsersMessagesImportCall {
 	c.urlParams_.Set("neverMarkSpam", fmt.Sprint(neverMarkSpam))
 	return c
 }
 
-// ProcessForCalendar sets the optional parameter "processForCalendar":
-// Process calendar invites in the email and add any extracted meetings
-// to the Google Calendar for this user.
+// ProcessForCalendar sets the optional parameter "processForCalendar": Process
+// calendar invites in the email and add any extracted meetings to the Google
+// Calendar for this user.
 func (c *UsersMessagesImportCall) ProcessForCalendar(processForCalendar bool) *UsersMessagesImportCall {
 	c.urlParams_.Set("processForCalendar", fmt.Sprint(processForCalendar))
 	return c
 }
 
-// Media specifies the media to upload in one or more chunks. The chunk
-// size may be controlled by supplying a MediaOption generated by
+// Media specifies the media to upload in one or more chunks. The chunk size
+// may be controlled by supplying a MediaOption generated by
 // googleapi.ChunkSize. The chunk size defaults to
-// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
-// upload request will be determined by sniffing the contents of r,
-// unless a MediaOption generated by googleapi.ContentType is
-// supplied.
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the upload
+// request will be determined by sniffing the contents of r, unless a
+// MediaOption generated by googleapi.ContentType is supplied.
 // At most one of Media and ResumableMedia may be set.
 func (c *UsersMessagesImportCall) Media(r io.Reader, options ...googleapi.MediaOption) *UsersMessagesImportCall {
 	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be
-// canceled with ctx.
+// ResumableMedia specifies the media to upload in chunks and can be canceled
+// with ctx.
 //
 // Deprecated: use Media instead.
 //
-// At most one of Media and ResumableMedia may be set. mediaType
-// identifies the MIME media type of the upload, such as "image/png". If
-// mediaType is "", it will be auto-detected. The provided ctx will
-// supersede any context previously provided to the Context method.
+// At most one of Media and ResumableMedia may be set. mediaType identifies the
+// MIME media type of the upload, such as "image/png". If mediaType is "", it
+// will be auto-detected. The provided ctx will supersede any context
+// previously provided to the Context method.
 func (c *UsersMessagesImportCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *UsersMessagesImportCall {
 	c.ctx_ = ctx
 	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called
-// after every chunk. It should be a low-latency function in order to
-// not slow down the upload operation. This should only be called when
-// using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called after every
+// chunk. It should be a low-latency function in order to not slow down the
+// upload operation. This should only be called when using ResumableMedia (as
+// opposed to Media).
 func (c *UsersMessagesImportCall) ProgressUpdater(pu googleapi.ProgressUpdater) *UsersMessagesImportCall {
 	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesImportCall) Fields(s ...googleapi.Field) *UsersMessagesImportCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 // This context will supersede any context previously provided to the
 // ResumableMedia method.
 func (c *UsersMessagesImportCall) Context(ctx context.Context) *UsersMessagesImportCall {
@@ -5778,8 +4640,8 @@ func (c *UsersMessagesImportCall) Context(ctx context.Context) *UsersMessagesImp
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesImportCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5788,18 +4650,12 @@ func (c *UsersMessagesImportCall) Header() http.Header {
 }
 
 func (c *UsersMessagesImportCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.message)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/messages/import")
@@ -5827,12 +4683,10 @@ func (c *UsersMessagesImportCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "gmail.users.messages.import" call.
-// Exactly one of *Message or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Message.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Message.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersMessagesImportCall) Do(opts ...googleapi.CallOption) (*Message, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5840,17 +4694,17 @@ func (c *UsersMessagesImportCall) Do(opts ...googleapi.CallOption) (*Message, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -5866,7 +4720,7 @@ func (c *UsersMessagesImportCall) Do(opts ...googleapi.CallOption) (*Message, er
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &Message{
@@ -5880,89 +4734,7 @@ func (c *UsersMessagesImportCall) Do(opts ...googleapi.CallOption) (*Message, er
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Imports a message into only this user's mailbox, with standard email delivery scanning and classification similar to receiving via SMTP. This method doesn't perform SPF checks, so it might not work for some spam messages, such as those attempting to perform domain spoofing. This method does not send a message. Note: This function doesn't trigger forwarding rules or filters set up by the user.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/import",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.messages.import",
-	//   "mediaUpload": {
-	//     "accept": [
-	//       "message/*"
-	//     ],
-	//     "maxSize": "52428800",
-	//     "protocols": {
-	//       "resumable": {
-	//         "multipart": true,
-	//         "path": "/resumable/upload/gmail/v1/users/{userId}/messages/import"
-	//       },
-	//       "simple": {
-	//         "multipart": true,
-	//         "path": "/upload/gmail/v1/users/{userId}/messages/import"
-	//       }
-	//     }
-	//   },
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "deleted": {
-	//       "default": "false",
-	//       "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Vault to a Vault administrator. Only used for G Suite accounts.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "internalDateSource": {
-	//       "default": "dateHeader",
-	//       "description": "Source for Gmail's internal date of the message.",
-	//       "enum": [
-	//         "receivedTime",
-	//         "dateHeader"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Internal message date set to current time when received by Gmail.",
-	//         "Internal message time based on 'Date' header in email, when valid."
-	//       ],
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "neverMarkSpam": {
-	//       "default": "false",
-	//       "description": "Ignore the Gmail spam classifier decision and never mark this email as SPAM in the mailbox.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "processForCalendar": {
-	//       "default": "false",
-	//       "description": "Process calendar invites in the email and add any extracted meetings to the Google Calendar for this user.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/import",
-	//   "request": {
-	//     "$ref": "Message"
-	//   },
-	//   "response": {
-	//     "$ref": "Message"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.insert",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ],
-	//   "supportsMediaUpload": true
-	// }
-
 }
-
-// method id "gmail.users.messages.insert":
 
 type UsersMessagesInsertCall struct {
 	s          *Service
@@ -5974,12 +4746,12 @@ type UsersMessagesInsertCall struct {
 	header_    http.Header
 }
 
-// Insert: Directly inserts a message into only this user's mailbox
-// similar to `IMAP APPEND`, bypassing most scanning and classification.
-// Does not send a message.
+// Insert: Directly inserts a message into only this user's mailbox similar to
+// `IMAP APPEND`, bypassing most scanning and classification. Does not send a
+// message.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) Insert(userId string, message *Message) *UsersMessagesInsertCall {
 	c := &UsersMessagesInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -5987,79 +4759,76 @@ func (r *UsersMessagesService) Insert(userId string, message *Message) *UsersMes
 	return c
 }
 
-// Deleted sets the optional parameter "deleted": Mark the email as
-// permanently deleted (not TRASH) and only visible in Google Vault to a
-// Vault administrator. Only used for G Suite accounts.
+// Deleted sets the optional parameter "deleted": Mark the email as permanently
+// deleted (not TRASH) and only visible in Google Vault to a Vault
+// administrator. Only used for Google Workspace accounts.
 func (c *UsersMessagesInsertCall) Deleted(deleted bool) *UsersMessagesInsertCall {
 	c.urlParams_.Set("deleted", fmt.Sprint(deleted))
 	return c
 }
 
-// InternalDateSource sets the optional parameter "internalDateSource":
-// Source for Gmail's internal date of the message.
+// InternalDateSource sets the optional parameter "internalDateSource": Source
+// for Gmail's internal date of the message.
 //
 // Possible values:
 //
-//	"receivedTime" (default) - Internal message date set to current
+//	"receivedTime" (default) - Internal message date set to current time when
 //
-// time when received by Gmail.
+// received by Gmail.
 //
-//	"dateHeader" - Internal message time based on 'Date' header in
+//	"dateHeader" - Internal message time based on 'Date' header in email, when
 //
-// email, when valid.
+// valid.
 func (c *UsersMessagesInsertCall) InternalDateSource(internalDateSource string) *UsersMessagesInsertCall {
 	c.urlParams_.Set("internalDateSource", internalDateSource)
 	return c
 }
 
-// Media specifies the media to upload in one or more chunks. The chunk
-// size may be controlled by supplying a MediaOption generated by
+// Media specifies the media to upload in one or more chunks. The chunk size
+// may be controlled by supplying a MediaOption generated by
 // googleapi.ChunkSize. The chunk size defaults to
-// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
-// upload request will be determined by sniffing the contents of r,
-// unless a MediaOption generated by googleapi.ContentType is
-// supplied.
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the upload
+// request will be determined by sniffing the contents of r, unless a
+// MediaOption generated by googleapi.ContentType is supplied.
 // At most one of Media and ResumableMedia may be set.
 func (c *UsersMessagesInsertCall) Media(r io.Reader, options ...googleapi.MediaOption) *UsersMessagesInsertCall {
 	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be
-// canceled with ctx.
+// ResumableMedia specifies the media to upload in chunks and can be canceled
+// with ctx.
 //
 // Deprecated: use Media instead.
 //
-// At most one of Media and ResumableMedia may be set. mediaType
-// identifies the MIME media type of the upload, such as "image/png". If
-// mediaType is "", it will be auto-detected. The provided ctx will
-// supersede any context previously provided to the Context method.
+// At most one of Media and ResumableMedia may be set. mediaType identifies the
+// MIME media type of the upload, such as "image/png". If mediaType is "", it
+// will be auto-detected. The provided ctx will supersede any context
+// previously provided to the Context method.
 func (c *UsersMessagesInsertCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *UsersMessagesInsertCall {
 	c.ctx_ = ctx
 	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called
-// after every chunk. It should be a low-latency function in order to
-// not slow down the upload operation. This should only be called when
-// using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called after every
+// chunk. It should be a low-latency function in order to not slow down the
+// upload operation. This should only be called when using ResumableMedia (as
+// opposed to Media).
 func (c *UsersMessagesInsertCall) ProgressUpdater(pu googleapi.ProgressUpdater) *UsersMessagesInsertCall {
 	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesInsertCall) Fields(s ...googleapi.Field) *UsersMessagesInsertCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 // This context will supersede any context previously provided to the
 // ResumableMedia method.
 func (c *UsersMessagesInsertCall) Context(ctx context.Context) *UsersMessagesInsertCall {
@@ -6067,8 +4836,8 @@ func (c *UsersMessagesInsertCall) Context(ctx context.Context) *UsersMessagesIns
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesInsertCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6077,18 +4846,12 @@ func (c *UsersMessagesInsertCall) Header() http.Header {
 }
 
 func (c *UsersMessagesInsertCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.message)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/messages")
@@ -6116,12 +4879,10 @@ func (c *UsersMessagesInsertCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "gmail.users.messages.insert" call.
-// Exactly one of *Message or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Message.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Message.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersMessagesInsertCall) Do(opts ...googleapi.CallOption) (*Message, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6129,17 +4890,17 @@ func (c *UsersMessagesInsertCall) Do(opts ...googleapi.CallOption) (*Message, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -6155,7 +4916,7 @@ func (c *UsersMessagesInsertCall) Do(opts ...googleapi.CallOption) (*Message, er
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &Message{
@@ -6169,77 +4930,7 @@ func (c *UsersMessagesInsertCall) Do(opts ...googleapi.CallOption) (*Message, er
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Directly inserts a message into only this user's mailbox similar to `IMAP APPEND`, bypassing most scanning and classification. Does not send a message.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.messages.insert",
-	//   "mediaUpload": {
-	//     "accept": [
-	//       "message/*"
-	//     ],
-	//     "maxSize": "52428800",
-	//     "protocols": {
-	//       "resumable": {
-	//         "multipart": true,
-	//         "path": "/resumable/upload/gmail/v1/users/{userId}/messages"
-	//       },
-	//       "simple": {
-	//         "multipart": true,
-	//         "path": "/upload/gmail/v1/users/{userId}/messages"
-	//       }
-	//     }
-	//   },
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "deleted": {
-	//       "default": "false",
-	//       "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Vault to a Vault administrator. Only used for G Suite accounts.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "internalDateSource": {
-	//       "default": "receivedTime",
-	//       "description": "Source for Gmail's internal date of the message.",
-	//       "enum": [
-	//         "receivedTime",
-	//         "dateHeader"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Internal message date set to current time when received by Gmail.",
-	//         "Internal message time based on 'Date' header in email, when valid."
-	//       ],
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages",
-	//   "request": {
-	//     "$ref": "Message"
-	//   },
-	//   "response": {
-	//     "$ref": "Message"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.insert",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ],
-	//   "supportsMediaUpload": true
-	// }
-
 }
-
-// method id "gmail.users.messages.list":
 
 type UsersMessagesListCall struct {
 	s            *Service
@@ -6252,81 +4943,85 @@ type UsersMessagesListCall struct {
 
 // List: Lists the messages in the user's mailbox.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) List(userId string) *UsersMessagesListCall {
 	c := &UsersMessagesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
 	return c
 }
 
-// IncludeSpamTrash sets the optional parameter "includeSpamTrash":
-// Include messages from `SPAM` and `TRASH` in the results.
+// IncludeSpamTrash sets the optional parameter "includeSpamTrash": Include
+// messages from `SPAM` and `TRASH` in the results.
 func (c *UsersMessagesListCall) IncludeSpamTrash(includeSpamTrash bool) *UsersMessagesListCall {
 	c.urlParams_.Set("includeSpamTrash", fmt.Sprint(includeSpamTrash))
 	return c
 }
 
-// LabelIds sets the optional parameter "labelIds": Only return messages
-// with labels that match all of the specified label IDs.
+// LabelIds sets the optional parameter "labelIds": Only return messages with
+// labels that match all of the specified label IDs. Messages in a thread might
+// have labels that other messages in the same thread don't have. To learn
+// more, see Manage labels on messages and threads
+// (https://developers.google.com/gmail/api/guides/labels#manage_labels_on_messages_threads).
 func (c *UsersMessagesListCall) LabelIds(labelIds ...string) *UsersMessagesListCall {
 	c.urlParams_.SetMulti("labelIds", append([]string{}, labelIds...))
 	return c
 }
 
-// MaxResults sets the optional parameter "maxResults": Maximum number
-// of messages to return. This field defaults to 100. The maximum
-// allowed value for this field is 500.
+// MaxResults sets the optional parameter "maxResults": Maximum number of
+// messages to return. This field defaults to 100. The maximum allowed value
+// for this field is 500.
 func (c *UsersMessagesListCall) MaxResults(maxResults int64) *UsersMessagesListCall {
 	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Page token to
-// retrieve a specific page of results in the list.
+// PageToken sets the optional parameter "pageToken": Page token to retrieve a
+// specific page of results in the list.
 func (c *UsersMessagesListCall) PageToken(pageToken string) *UsersMessagesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Q sets the optional parameter "q": Only return messages matching the
-// specified query. Supports the same query format as the Gmail search
-// box. For example, "from:someuser@example.com rfc822msgid:
-// is:unread". Parameter cannot be used when accessing the api using
-// the gmail.metadata scope.
+// specified query. Supports the same query format as the Gmail search box. For
+// example, "from:someuser@example.com rfc822msgid: is:unread". Parameter
+// cannot be used when accessing the api using the gmail.metadata scope.
 func (c *UsersMessagesListCall) Q(q string) *UsersMessagesListCall {
 	c.urlParams_.Set("q", q)
 	return c
 }
 
+// TemporaryEeccBypass sets the optional parameter "temporaryEeccBypass":
+func (c *UsersMessagesListCall) TemporaryEeccBypass(temporaryEeccBypass bool) *UsersMessagesListCall {
+	c.urlParams_.Set("temporaryEeccBypass", fmt.Sprint(temporaryEeccBypass))
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesListCall) Fields(s ...googleapi.Field) *UsersMessagesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersMessagesListCall) IfNoneMatch(entityTag string) *UsersMessagesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersMessagesListCall) Context(ctx context.Context) *UsersMessagesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6335,12 +5030,7 @@ func (c *UsersMessagesListCall) Header() http.Header {
 }
 
 func (c *UsersMessagesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -6361,12 +5051,11 @@ func (c *UsersMessagesListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.messages.list" call.
-// Exactly one of *ListMessagesResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListMessagesResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListMessagesResponse.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersMessagesListCall) Do(opts ...googleapi.CallOption) (*ListMessagesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6374,17 +5063,17 @@ func (c *UsersMessagesListCall) Do(opts ...googleapi.CallOption) (*ListMessagesR
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListMessagesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -6397,64 +5086,6 @@ func (c *UsersMessagesListCall) Do(opts ...googleapi.CallOption) (*ListMessagesR
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the messages in the user's mailbox.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.messages.list",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "includeSpamTrash": {
-	//       "default": "false",
-	//       "description": "Include messages from `SPAM` and `TRASH` in the results.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "labelIds": {
-	//       "description": "Only return messages with labels that match all of the specified label IDs.",
-	//       "location": "query",
-	//       "repeated": true,
-	//       "type": "string"
-	//     },
-	//     "maxResults": {
-	//       "default": "100",
-	//       "description": "Maximum number of messages to return. This field defaults to 100. The maximum allowed value for this field is 500.",
-	//       "format": "uint32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Page token to retrieve a specific page of results in the list.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "q": {
-	//       "description": "Only return messages matching the specified query. Supports the same query format as the Gmail search box. For example, `\"from:someuser@example.com rfc822msgid: is:unread\"`. Parameter cannot be used when accessing the api using the gmail.metadata scope.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages",
-	//   "response": {
-	//     "$ref": "ListMessagesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -6462,7 +5093,7 @@ func (c *UsersMessagesListCall) Do(opts ...googleapi.CallOption) (*ListMessagesR
 // The provided context supersedes any context provided to the Context method.
 func (c *UsersMessagesListCall) Pages(ctx context.Context, f func(*ListMessagesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -6478,8 +5109,6 @@ func (c *UsersMessagesListCall) Pages(ctx context.Context, f func(*ListMessagesR
 	}
 }
 
-// method id "gmail.users.messages.modify":
-
 type UsersMessagesModifyCall struct {
 	s                    *Service
 	userId               string
@@ -6493,8 +5122,8 @@ type UsersMessagesModifyCall struct {
 // Modify: Modifies the labels on the specified message.
 //
 //   - id: The ID of the message to modify.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) Modify(userId string, id string, modifymessagerequest *ModifyMessageRequest) *UsersMessagesModifyCall {
 	c := &UsersMessagesModifyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -6504,23 +5133,21 @@ func (r *UsersMessagesService) Modify(userId string, id string, modifymessagereq
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesModifyCall) Fields(s ...googleapi.Field) *UsersMessagesModifyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersMessagesModifyCall) Context(ctx context.Context) *UsersMessagesModifyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesModifyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6529,18 +5156,12 @@ func (c *UsersMessagesModifyCall) Header() http.Header {
 }
 
 func (c *UsersMessagesModifyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.modifymessagerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/messages/{id}/modify")
@@ -6558,12 +5179,10 @@ func (c *UsersMessagesModifyCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "gmail.users.messages.modify" call.
-// Exactly one of *Message or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Message.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Message.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersMessagesModifyCall) Do(opts ...googleapi.CallOption) (*Message, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6571,17 +5190,17 @@ func (c *UsersMessagesModifyCall) Do(opts ...googleapi.CallOption) (*Message, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Message{
 		ServerResponse: googleapi.ServerResponse{
@@ -6594,46 +5213,7 @@ func (c *UsersMessagesModifyCall) Do(opts ...googleapi.CallOption) (*Message, er
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Modifies the labels on the specified message.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/{id}/modify",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.messages.modify",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the message to modify.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/{id}/modify",
-	//   "request": {
-	//     "$ref": "ModifyMessageRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Message"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.messages.send":
 
 type UsersMessagesSendCall struct {
 	s          *Service
@@ -6645,11 +5225,12 @@ type UsersMessagesSendCall struct {
 	header_    http.Header
 }
 
-// Send: Sends the specified message to the recipients in the `To`,
-// `Cc`, and `Bcc` headers.
+// Send: Sends the specified message to the recipients in the `To`, `Cc`, and
+// `Bcc` headers. For example usage, see Sending email
+// (https://developers.google.com/gmail/api/guides/sending).
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) Send(userId string, message *Message) *UsersMessagesSendCall {
 	c := &UsersMessagesSendCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -6657,54 +5238,51 @@ func (r *UsersMessagesService) Send(userId string, message *Message) *UsersMessa
 	return c
 }
 
-// Media specifies the media to upload in one or more chunks. The chunk
-// size may be controlled by supplying a MediaOption generated by
+// Media specifies the media to upload in one or more chunks. The chunk size
+// may be controlled by supplying a MediaOption generated by
 // googleapi.ChunkSize. The chunk size defaults to
-// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
-// upload request will be determined by sniffing the contents of r,
-// unless a MediaOption generated by googleapi.ContentType is
-// supplied.
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the upload
+// request will be determined by sniffing the contents of r, unless a
+// MediaOption generated by googleapi.ContentType is supplied.
 // At most one of Media and ResumableMedia may be set.
 func (c *UsersMessagesSendCall) Media(r io.Reader, options ...googleapi.MediaOption) *UsersMessagesSendCall {
 	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be
-// canceled with ctx.
+// ResumableMedia specifies the media to upload in chunks and can be canceled
+// with ctx.
 //
 // Deprecated: use Media instead.
 //
-// At most one of Media and ResumableMedia may be set. mediaType
-// identifies the MIME media type of the upload, such as "image/png". If
-// mediaType is "", it will be auto-detected. The provided ctx will
-// supersede any context previously provided to the Context method.
+// At most one of Media and ResumableMedia may be set. mediaType identifies the
+// MIME media type of the upload, such as "image/png". If mediaType is "", it
+// will be auto-detected. The provided ctx will supersede any context
+// previously provided to the Context method.
 func (c *UsersMessagesSendCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *UsersMessagesSendCall {
 	c.ctx_ = ctx
 	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called
-// after every chunk. It should be a low-latency function in order to
-// not slow down the upload operation. This should only be called when
-// using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called after every
+// chunk. It should be a low-latency function in order to not slow down the
+// upload operation. This should only be called when using ResumableMedia (as
+// opposed to Media).
 func (c *UsersMessagesSendCall) ProgressUpdater(pu googleapi.ProgressUpdater) *UsersMessagesSendCall {
 	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesSendCall) Fields(s ...googleapi.Field) *UsersMessagesSendCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 // This context will supersede any context previously provided to the
 // ResumableMedia method.
 func (c *UsersMessagesSendCall) Context(ctx context.Context) *UsersMessagesSendCall {
@@ -6712,8 +5290,8 @@ func (c *UsersMessagesSendCall) Context(ctx context.Context) *UsersMessagesSendC
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesSendCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6722,18 +5300,12 @@ func (c *UsersMessagesSendCall) Header() http.Header {
 }
 
 func (c *UsersMessagesSendCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.message)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/messages/send")
@@ -6761,12 +5333,10 @@ func (c *UsersMessagesSendCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.messages.send" call.
-// Exactly one of *Message or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Message.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Message.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersMessagesSendCall) Do(opts ...googleapi.CallOption) (*Message, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6774,17 +5344,17 @@ func (c *UsersMessagesSendCall) Do(opts ...googleapi.CallOption) (*Message, erro
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -6800,7 +5370,7 @@ func (c *UsersMessagesSendCall) Do(opts ...googleapi.CallOption) (*Message, erro
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &Message{
@@ -6814,59 +5384,7 @@ func (c *UsersMessagesSendCall) Do(opts ...googleapi.CallOption) (*Message, erro
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/send",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.messages.send",
-	//   "mediaUpload": {
-	//     "accept": [
-	//       "message/*"
-	//     ],
-	//     "maxSize": "36700160",
-	//     "protocols": {
-	//       "resumable": {
-	//         "multipart": true,
-	//         "path": "/resumable/upload/gmail/v1/users/{userId}/messages/send"
-	//       },
-	//       "simple": {
-	//         "multipart": true,
-	//         "path": "/upload/gmail/v1/users/{userId}/messages/send"
-	//       }
-	//     }
-	//   },
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/send",
-	//   "request": {
-	//     "$ref": "Message"
-	//   },
-	//   "response": {
-	//     "$ref": "Message"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
-	//     "https://www.googleapis.com/auth/gmail.compose",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.send"
-	//   ],
-	//   "supportsMediaUpload": true
-	// }
-
 }
-
-// method id "gmail.users.messages.trash":
 
 type UsersMessagesTrashCall struct {
 	s          *Service
@@ -6880,8 +5398,8 @@ type UsersMessagesTrashCall struct {
 // Trash: Moves the specified message to the trash.
 //
 //   - id: The ID of the message to Trash.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) Trash(userId string, id string) *UsersMessagesTrashCall {
 	c := &UsersMessagesTrashCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -6890,23 +5408,21 @@ func (r *UsersMessagesService) Trash(userId string, id string) *UsersMessagesTra
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesTrashCall) Fields(s ...googleapi.Field) *UsersMessagesTrashCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersMessagesTrashCall) Context(ctx context.Context) *UsersMessagesTrashCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesTrashCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6915,12 +5431,7 @@ func (c *UsersMessagesTrashCall) Header() http.Header {
 }
 
 func (c *UsersMessagesTrashCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -6939,12 +5450,10 @@ func (c *UsersMessagesTrashCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.messages.trash" call.
-// Exactly one of *Message or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Message.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Message.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersMessagesTrashCall) Do(opts ...googleapi.CallOption) (*Message, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6952,17 +5461,17 @@ func (c *UsersMessagesTrashCall) Do(opts ...googleapi.CallOption) (*Message, err
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Message{
 		ServerResponse: googleapi.ServerResponse{
@@ -6975,43 +5484,7 @@ func (c *UsersMessagesTrashCall) Do(opts ...googleapi.CallOption) (*Message, err
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Moves the specified message to the trash.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/{id}/trash",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.messages.trash",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the message to Trash.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/{id}/trash",
-	//   "response": {
-	//     "$ref": "Message"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.messages.untrash":
 
 type UsersMessagesUntrashCall struct {
 	s          *Service
@@ -7025,8 +5498,8 @@ type UsersMessagesUntrashCall struct {
 // Untrash: Removes the specified message from the trash.
 //
 //   - id: The ID of the message to remove from Trash.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesService) Untrash(userId string, id string) *UsersMessagesUntrashCall {
 	c := &UsersMessagesUntrashCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -7035,23 +5508,21 @@ func (r *UsersMessagesService) Untrash(userId string, id string) *UsersMessagesU
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesUntrashCall) Fields(s ...googleapi.Field) *UsersMessagesUntrashCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersMessagesUntrashCall) Context(ctx context.Context) *UsersMessagesUntrashCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesUntrashCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7060,12 +5531,7 @@ func (c *UsersMessagesUntrashCall) Header() http.Header {
 }
 
 func (c *UsersMessagesUntrashCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -7084,12 +5550,10 @@ func (c *UsersMessagesUntrashCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "gmail.users.messages.untrash" call.
-// Exactly one of *Message or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Message.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Message.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersMessagesUntrashCall) Do(opts ...googleapi.CallOption) (*Message, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7097,17 +5561,17 @@ func (c *UsersMessagesUntrashCall) Do(opts ...googleapi.CallOption) (*Message, e
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Message{
 		ServerResponse: googleapi.ServerResponse{
@@ -7120,43 +5584,7 @@ func (c *UsersMessagesUntrashCall) Do(opts ...googleapi.CallOption) (*Message, e
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Removes the specified message from the trash.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/{id}/untrash",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.messages.untrash",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the message to remove from Trash.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/{id}/untrash",
-	//   "response": {
-	//     "$ref": "Message"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.messages.attachments.get":
 
 type UsersMessagesAttachmentsGetCall struct {
 	s            *Service
@@ -7173,8 +5601,8 @@ type UsersMessagesAttachmentsGetCall struct {
 //
 //   - id: The ID of the attachment.
 //   - messageId: The ID of the message containing the attachment.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersMessagesAttachmentsService) Get(userId string, messageId string, id string) *UsersMessagesAttachmentsGetCall {
 	c := &UsersMessagesAttachmentsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -7183,34 +5611,36 @@ func (r *UsersMessagesAttachmentsService) Get(userId string, messageId string, i
 	return c
 }
 
+// TemporaryEeccBypass sets the optional parameter "temporaryEeccBypass":
+func (c *UsersMessagesAttachmentsGetCall) TemporaryEeccBypass(temporaryEeccBypass bool) *UsersMessagesAttachmentsGetCall {
+	c.urlParams_.Set("temporaryEeccBypass", fmt.Sprint(temporaryEeccBypass))
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersMessagesAttachmentsGetCall) Fields(s ...googleapi.Field) *UsersMessagesAttachmentsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersMessagesAttachmentsGetCall) IfNoneMatch(entityTag string) *UsersMessagesAttachmentsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersMessagesAttachmentsGetCall) Context(ctx context.Context) *UsersMessagesAttachmentsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersMessagesAttachmentsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7219,12 +5649,7 @@ func (c *UsersMessagesAttachmentsGetCall) Header() http.Header {
 }
 
 func (c *UsersMessagesAttachmentsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7247,12 +5672,11 @@ func (c *UsersMessagesAttachmentsGetCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "gmail.users.messages.attachments.get" call.
-// Exactly one of *MessagePartBody or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *MessagePartBody.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *MessagePartBody.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersMessagesAttachmentsGetCall) Do(opts ...googleapi.CallOption) (*MessagePartBody, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7260,17 +5684,17 @@ func (c *UsersMessagesAttachmentsGetCall) Do(opts ...googleapi.CallOption) (*Mes
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &MessagePartBody{
 		ServerResponse: googleapi.ServerResponse{
@@ -7283,53 +5707,7 @@ func (c *UsersMessagesAttachmentsGetCall) Do(opts ...googleapi.CallOption) (*Mes
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the specified message attachment.",
-	//   "flatPath": "gmail/v1/users/{userId}/messages/{messageId}/attachments/{id}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.messages.attachments.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "messageId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the attachment.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "messageId": {
-	//       "description": "The ID of the message containing the attachment.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/messages/{messageId}/attachments/{id}",
-	//   "response": {
-	//     "$ref": "MessagePartBody"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.message.action",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.message.readonly",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.getAutoForwarding":
 
 type UsersSettingsGetAutoForwardingCall struct {
 	s            *Service
@@ -7352,33 +5730,29 @@ func (r *UsersSettingsService) GetAutoForwarding(userId string) *UsersSettingsGe
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsGetAutoForwardingCall) Fields(s ...googleapi.Field) *UsersSettingsGetAutoForwardingCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsGetAutoForwardingCall) IfNoneMatch(entityTag string) *UsersSettingsGetAutoForwardingCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsGetAutoForwardingCall) Context(ctx context.Context) *UsersSettingsGetAutoForwardingCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsGetAutoForwardingCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7387,12 +5761,7 @@ func (c *UsersSettingsGetAutoForwardingCall) Header() http.Header {
 }
 
 func (c *UsersSettingsGetAutoForwardingCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7413,12 +5782,10 @@ func (c *UsersSettingsGetAutoForwardingCall) doRequest(alt string) (*http.Respon
 }
 
 // Do executes the "gmail.users.settings.getAutoForwarding" call.
-// Exactly one of *AutoForwarding or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *AutoForwarding.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *AutoForwarding.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsGetAutoForwardingCall) Do(opts ...googleapi.CallOption) (*AutoForwarding, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7426,17 +5793,17 @@ func (c *UsersSettingsGetAutoForwardingCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AutoForwarding{
 		ServerResponse: googleapi.ServerResponse{
@@ -7449,38 +5816,7 @@ func (c *UsersSettingsGetAutoForwardingCall) Do(opts ...googleapi.CallOption) (*
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the auto-forwarding setting for the specified account.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/autoForwarding",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.getAutoForwarding",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/autoForwarding",
-	//   "response": {
-	//     "$ref": "AutoForwarding"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.getImap":
 
 type UsersSettingsGetImapCall struct {
 	s            *Service
@@ -7502,33 +5838,29 @@ func (r *UsersSettingsService) GetImap(userId string) *UsersSettingsGetImapCall 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsGetImapCall) Fields(s ...googleapi.Field) *UsersSettingsGetImapCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsGetImapCall) IfNoneMatch(entityTag string) *UsersSettingsGetImapCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsGetImapCall) Context(ctx context.Context) *UsersSettingsGetImapCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsGetImapCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7537,12 +5869,7 @@ func (c *UsersSettingsGetImapCall) Header() http.Header {
 }
 
 func (c *UsersSettingsGetImapCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7563,12 +5890,10 @@ func (c *UsersSettingsGetImapCall) doRequest(alt string) (*http.Response, error)
 }
 
 // Do executes the "gmail.users.settings.getImap" call.
-// Exactly one of *ImapSettings or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *ImapSettings.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ImapSettings.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsGetImapCall) Do(opts ...googleapi.CallOption) (*ImapSettings, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7576,17 +5901,17 @@ func (c *UsersSettingsGetImapCall) Do(opts ...googleapi.CallOption) (*ImapSettin
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ImapSettings{
 		ServerResponse: googleapi.ServerResponse{
@@ -7599,38 +5924,7 @@ func (c *UsersSettingsGetImapCall) Do(opts ...googleapi.CallOption) (*ImapSettin
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets IMAP settings.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/imap",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.getImap",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/imap",
-	//   "response": {
-	//     "$ref": "ImapSettings"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.getLanguage":
 
 type UsersSettingsGetLanguageCall struct {
 	s            *Service
@@ -7652,33 +5946,29 @@ func (r *UsersSettingsService) GetLanguage(userId string) *UsersSettingsGetLangu
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsGetLanguageCall) Fields(s ...googleapi.Field) *UsersSettingsGetLanguageCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsGetLanguageCall) IfNoneMatch(entityTag string) *UsersSettingsGetLanguageCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsGetLanguageCall) Context(ctx context.Context) *UsersSettingsGetLanguageCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsGetLanguageCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7687,12 +5977,7 @@ func (c *UsersSettingsGetLanguageCall) Header() http.Header {
 }
 
 func (c *UsersSettingsGetLanguageCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7713,12 +5998,11 @@ func (c *UsersSettingsGetLanguageCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "gmail.users.settings.getLanguage" call.
-// Exactly one of *LanguageSettings or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *LanguageSettings.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *LanguageSettings.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsGetLanguageCall) Do(opts ...googleapi.CallOption) (*LanguageSettings, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7726,17 +6010,17 @@ func (c *UsersSettingsGetLanguageCall) Do(opts ...googleapi.CallOption) (*Langua
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LanguageSettings{
 		ServerResponse: googleapi.ServerResponse{
@@ -7749,38 +6033,7 @@ func (c *UsersSettingsGetLanguageCall) Do(opts ...googleapi.CallOption) (*Langua
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets language settings.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/language",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.getLanguage",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/language",
-	//   "response": {
-	//     "$ref": "LanguageSettings"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.getPop":
 
 type UsersSettingsGetPopCall struct {
 	s            *Service
@@ -7802,33 +6055,29 @@ func (r *UsersSettingsService) GetPop(userId string) *UsersSettingsGetPopCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsGetPopCall) Fields(s ...googleapi.Field) *UsersSettingsGetPopCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsGetPopCall) IfNoneMatch(entityTag string) *UsersSettingsGetPopCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsGetPopCall) Context(ctx context.Context) *UsersSettingsGetPopCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsGetPopCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7837,12 +6086,7 @@ func (c *UsersSettingsGetPopCall) Header() http.Header {
 }
 
 func (c *UsersSettingsGetPopCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7863,12 +6107,10 @@ func (c *UsersSettingsGetPopCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "gmail.users.settings.getPop" call.
-// Exactly one of *PopSettings or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *PopSettings.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *PopSettings.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsGetPopCall) Do(opts ...googleapi.CallOption) (*PopSettings, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7876,17 +6118,17 @@ func (c *UsersSettingsGetPopCall) Do(opts ...googleapi.CallOption) (*PopSettings
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &PopSettings{
 		ServerResponse: googleapi.ServerResponse{
@@ -7899,38 +6141,7 @@ func (c *UsersSettingsGetPopCall) Do(opts ...googleapi.CallOption) (*PopSettings
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets POP settings.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/pop",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.getPop",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/pop",
-	//   "response": {
-	//     "$ref": "PopSettings"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.getVacation":
 
 type UsersSettingsGetVacationCall struct {
 	s            *Service
@@ -7952,33 +6163,29 @@ func (r *UsersSettingsService) GetVacation(userId string) *UsersSettingsGetVacat
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsGetVacationCall) Fields(s ...googleapi.Field) *UsersSettingsGetVacationCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsGetVacationCall) IfNoneMatch(entityTag string) *UsersSettingsGetVacationCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsGetVacationCall) Context(ctx context.Context) *UsersSettingsGetVacationCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsGetVacationCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7987,12 +6194,7 @@ func (c *UsersSettingsGetVacationCall) Header() http.Header {
 }
 
 func (c *UsersSettingsGetVacationCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -8013,12 +6215,11 @@ func (c *UsersSettingsGetVacationCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "gmail.users.settings.getVacation" call.
-// Exactly one of *VacationSettings or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *VacationSettings.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *VacationSettings.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsGetVacationCall) Do(opts ...googleapi.CallOption) (*VacationSettings, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8026,17 +6227,17 @@ func (c *UsersSettingsGetVacationCall) Do(opts ...googleapi.CallOption) (*Vacati
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &VacationSettings{
 		ServerResponse: googleapi.ServerResponse{
@@ -8049,38 +6250,7 @@ func (c *UsersSettingsGetVacationCall) Do(opts ...googleapi.CallOption) (*Vacati
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets vacation responder settings.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/vacation",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.getVacation",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/vacation",
-	//   "response": {
-	//     "$ref": "VacationSettings"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.updateAutoForwarding":
 
 type UsersSettingsUpdateAutoForwardingCall struct {
 	s              *Service
@@ -8091,11 +6261,10 @@ type UsersSettingsUpdateAutoForwardingCall struct {
 	header_        http.Header
 }
 
-// UpdateAutoForwarding: Updates the auto-forwarding setting for the
-// specified account. A verified forwarding address must be specified
-// when auto-forwarding is enabled. This method is only available to
-// service account clients that have been delegated domain-wide
-// authority.
+// UpdateAutoForwarding: Updates the auto-forwarding setting for the specified
+// account. A verified forwarding address must be specified when
+// auto-forwarding is enabled. This method is only available to service account
+// clients that have been delegated domain-wide authority.
 //
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
@@ -8107,23 +6276,21 @@ func (r *UsersSettingsService) UpdateAutoForwarding(userId string, autoforwardin
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsUpdateAutoForwardingCall) Fields(s ...googleapi.Field) *UsersSettingsUpdateAutoForwardingCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsUpdateAutoForwardingCall) Context(ctx context.Context) *UsersSettingsUpdateAutoForwardingCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsUpdateAutoForwardingCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8132,18 +6299,12 @@ func (c *UsersSettingsUpdateAutoForwardingCall) Header() http.Header {
 }
 
 func (c *UsersSettingsUpdateAutoForwardingCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.autoforwarding)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/autoForwarding")
@@ -8160,12 +6321,10 @@ func (c *UsersSettingsUpdateAutoForwardingCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "gmail.users.settings.updateAutoForwarding" call.
-// Exactly one of *AutoForwarding or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *AutoForwarding.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *AutoForwarding.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsUpdateAutoForwardingCall) Do(opts ...googleapi.CallOption) (*AutoForwarding, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8173,17 +6332,17 @@ func (c *UsersSettingsUpdateAutoForwardingCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AutoForwarding{
 		ServerResponse: googleapi.ServerResponse{
@@ -8196,38 +6355,7 @@ func (c *UsersSettingsUpdateAutoForwardingCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates the auto-forwarding setting for the specified account. A verified forwarding address must be specified when auto-forwarding is enabled. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/autoForwarding",
-	//   "httpMethod": "PUT",
-	//   "id": "gmail.users.settings.updateAutoForwarding",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/autoForwarding",
-	//   "request": {
-	//     "$ref": "AutoForwarding"
-	//   },
-	//   "response": {
-	//     "$ref": "AutoForwarding"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.updateImap":
 
 type UsersSettingsUpdateImapCall struct {
 	s            *Service
@@ -8250,23 +6378,21 @@ func (r *UsersSettingsService) UpdateImap(userId string, imapsettings *ImapSetti
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsUpdateImapCall) Fields(s ...googleapi.Field) *UsersSettingsUpdateImapCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsUpdateImapCall) Context(ctx context.Context) *UsersSettingsUpdateImapCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsUpdateImapCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8275,18 +6401,12 @@ func (c *UsersSettingsUpdateImapCall) Header() http.Header {
 }
 
 func (c *UsersSettingsUpdateImapCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.imapsettings)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/imap")
@@ -8303,12 +6423,10 @@ func (c *UsersSettingsUpdateImapCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "gmail.users.settings.updateImap" call.
-// Exactly one of *ImapSettings or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *ImapSettings.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ImapSettings.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsUpdateImapCall) Do(opts ...googleapi.CallOption) (*ImapSettings, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8316,17 +6434,17 @@ func (c *UsersSettingsUpdateImapCall) Do(opts ...googleapi.CallOption) (*ImapSet
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ImapSettings{
 		ServerResponse: googleapi.ServerResponse{
@@ -8339,38 +6457,7 @@ func (c *UsersSettingsUpdateImapCall) Do(opts ...googleapi.CallOption) (*ImapSet
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates IMAP settings.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/imap",
-	//   "httpMethod": "PUT",
-	//   "id": "gmail.users.settings.updateImap",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/imap",
-	//   "request": {
-	//     "$ref": "ImapSettings"
-	//   },
-	//   "response": {
-	//     "$ref": "ImapSettings"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.updateLanguage":
 
 type UsersSettingsUpdateLanguageCall struct {
 	s                *Service
@@ -8381,12 +6468,11 @@ type UsersSettingsUpdateLanguageCall struct {
 	header_          http.Header
 }
 
-// UpdateLanguage: Updates language settings. If successful, the return
-// object contains the `displayLanguage` that was saved for the user,
-// which may differ from the value passed into the request. This is
-// because the requested `displayLanguage` may not be directly supported
-// by Gmail but have a close variant that is, and so the variant may be
-// chosen and saved instead.
+// UpdateLanguage: Updates language settings. If successful, the return object
+// contains the `displayLanguage` that was saved for the user, which may differ
+// from the value passed into the request. This is because the requested
+// `displayLanguage` may not be directly supported by Gmail but have a close
+// variant that is, and so the variant may be chosen and saved instead.
 //
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
@@ -8398,23 +6484,21 @@ func (r *UsersSettingsService) UpdateLanguage(userId string, languagesettings *L
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsUpdateLanguageCall) Fields(s ...googleapi.Field) *UsersSettingsUpdateLanguageCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsUpdateLanguageCall) Context(ctx context.Context) *UsersSettingsUpdateLanguageCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsUpdateLanguageCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8423,18 +6507,12 @@ func (c *UsersSettingsUpdateLanguageCall) Header() http.Header {
 }
 
 func (c *UsersSettingsUpdateLanguageCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.languagesettings)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/language")
@@ -8451,12 +6529,11 @@ func (c *UsersSettingsUpdateLanguageCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "gmail.users.settings.updateLanguage" call.
-// Exactly one of *LanguageSettings or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *LanguageSettings.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *LanguageSettings.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsUpdateLanguageCall) Do(opts ...googleapi.CallOption) (*LanguageSettings, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8464,17 +6541,17 @@ func (c *UsersSettingsUpdateLanguageCall) Do(opts ...googleapi.CallOption) (*Lan
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LanguageSettings{
 		ServerResponse: googleapi.ServerResponse{
@@ -8487,38 +6564,7 @@ func (c *UsersSettingsUpdateLanguageCall) Do(opts ...googleapi.CallOption) (*Lan
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates language settings. If successful, the return object contains the `displayLanguage` that was saved for the user, which may differ from the value passed into the request. This is because the requested `displayLanguage` may not be directly supported by Gmail but have a close variant that is, and so the variant may be chosen and saved instead.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/language",
-	//   "httpMethod": "PUT",
-	//   "id": "gmail.users.settings.updateLanguage",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/language",
-	//   "request": {
-	//     "$ref": "LanguageSettings"
-	//   },
-	//   "response": {
-	//     "$ref": "LanguageSettings"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.updatePop":
 
 type UsersSettingsUpdatePopCall struct {
 	s           *Service
@@ -8541,23 +6587,21 @@ func (r *UsersSettingsService) UpdatePop(userId string, popsettings *PopSettings
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsUpdatePopCall) Fields(s ...googleapi.Field) *UsersSettingsUpdatePopCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsUpdatePopCall) Context(ctx context.Context) *UsersSettingsUpdatePopCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsUpdatePopCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8566,18 +6610,12 @@ func (c *UsersSettingsUpdatePopCall) Header() http.Header {
 }
 
 func (c *UsersSettingsUpdatePopCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.popsettings)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/pop")
@@ -8594,12 +6632,10 @@ func (c *UsersSettingsUpdatePopCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "gmail.users.settings.updatePop" call.
-// Exactly one of *PopSettings or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *PopSettings.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *PopSettings.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsUpdatePopCall) Do(opts ...googleapi.CallOption) (*PopSettings, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8607,17 +6643,17 @@ func (c *UsersSettingsUpdatePopCall) Do(opts ...googleapi.CallOption) (*PopSetti
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &PopSettings{
 		ServerResponse: googleapi.ServerResponse{
@@ -8630,38 +6666,7 @@ func (c *UsersSettingsUpdatePopCall) Do(opts ...googleapi.CallOption) (*PopSetti
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates POP settings.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/pop",
-	//   "httpMethod": "PUT",
-	//   "id": "gmail.users.settings.updatePop",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/pop",
-	//   "request": {
-	//     "$ref": "PopSettings"
-	//   },
-	//   "response": {
-	//     "$ref": "PopSettings"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.updateVacation":
 
 type UsersSettingsUpdateVacationCall struct {
 	s                *Service
@@ -8684,23 +6689,21 @@ func (r *UsersSettingsService) UpdateVacation(userId string, vacationsettings *V
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsUpdateVacationCall) Fields(s ...googleapi.Field) *UsersSettingsUpdateVacationCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsUpdateVacationCall) Context(ctx context.Context) *UsersSettingsUpdateVacationCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsUpdateVacationCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8709,18 +6712,12 @@ func (c *UsersSettingsUpdateVacationCall) Header() http.Header {
 }
 
 func (c *UsersSettingsUpdateVacationCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.vacationsettings)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/vacation")
@@ -8737,12 +6734,11 @@ func (c *UsersSettingsUpdateVacationCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "gmail.users.settings.updateVacation" call.
-// Exactly one of *VacationSettings or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *VacationSettings.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *VacationSettings.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsUpdateVacationCall) Do(opts ...googleapi.CallOption) (*VacationSettings, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8750,17 +6746,17 @@ func (c *UsersSettingsUpdateVacationCall) Do(opts ...googleapi.CallOption) (*Vac
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &VacationSettings{
 		ServerResponse: googleapi.ServerResponse{
@@ -8773,38 +6769,1226 @@ func (c *UsersSettingsUpdateVacationCall) Do(opts ...googleapi.CallOption) (*Vac
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates vacation responder settings.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/vacation",
-	//   "httpMethod": "PUT",
-	//   "id": "gmail.users.settings.updateVacation",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/vacation",
-	//   "request": {
-	//     "$ref": "VacationSettings"
-	//   },
-	//   "response": {
-	//     "$ref": "VacationSettings"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
 
-// method id "gmail.users.settings.delegates.create":
+type UsersSettingsCseIdentitiesCreateCall struct {
+	s           *Service
+	userId      string
+	cseidentity *CseIdentity
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
+}
+
+// Create: Creates and configures a client-side encryption identity that's
+// authorized to send mail from the user account. Google publishes the S/MIME
+// certificate to a shared domain-wide directory so that people within a Google
+// Workspace organization can encrypt and send mail to the identity.
+//
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseIdentitiesService) Create(userId string, cseidentity *CseIdentity) *UsersSettingsCseIdentitiesCreateCall {
+	c := &UsersSettingsCseIdentitiesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	c.cseidentity = cseidentity
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseIdentitiesCreateCall) Fields(s ...googleapi.Field) *UsersSettingsCseIdentitiesCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseIdentitiesCreateCall) Context(ctx context.Context) *UsersSettingsCseIdentitiesCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseIdentitiesCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseIdentitiesCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.cseidentity)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/identities")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId": c.userId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.identities.create" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *CseIdentity.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *UsersSettingsCseIdentitiesCreateCall) Do(opts ...googleapi.CallOption) (*CseIdentity, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &CseIdentity{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type UsersSettingsCseIdentitiesDeleteCall struct {
+	s               *Service
+	userId          string
+	cseEmailAddress string
+	urlParams_      gensupport.URLParams
+	ctx_            context.Context
+	header_         http.Header
+}
+
+// Delete: Deletes a client-side encryption identity. The authenticated user
+// can no longer use the identity to send encrypted messages. You cannot
+// restore the identity after you delete it. Instead, use the CreateCseIdentity
+// method to create another identity with the same configuration.
+//
+//   - cseEmailAddress: The primary email address associated with the client-side
+//     encryption identity configuration that's removed.
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseIdentitiesService) Delete(userId string, cseEmailAddress string) *UsersSettingsCseIdentitiesDeleteCall {
+	c := &UsersSettingsCseIdentitiesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	c.cseEmailAddress = cseEmailAddress
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseIdentitiesDeleteCall) Fields(s ...googleapi.Field) *UsersSettingsCseIdentitiesDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseIdentitiesDeleteCall) Context(ctx context.Context) *UsersSettingsCseIdentitiesDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseIdentitiesDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseIdentitiesDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/identities/{cseEmailAddress}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId":          c.userId,
+		"cseEmailAddress": c.cseEmailAddress,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.identities.delete" call.
+func (c *UsersSettingsCseIdentitiesDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if err != nil {
+		return err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return gensupport.WrapError(err)
+	}
+	return nil
+}
+
+type UsersSettingsCseIdentitiesGetCall struct {
+	s               *Service
+	userId          string
+	cseEmailAddress string
+	urlParams_      gensupport.URLParams
+	ifNoneMatch_    string
+	ctx_            context.Context
+	header_         http.Header
+}
+
+// Get: Retrieves a client-side encryption identity configuration.
+//
+//   - cseEmailAddress: The primary email address associated with the client-side
+//     encryption identity configuration that's retrieved.
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseIdentitiesService) Get(userId string, cseEmailAddress string) *UsersSettingsCseIdentitiesGetCall {
+	c := &UsersSettingsCseIdentitiesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	c.cseEmailAddress = cseEmailAddress
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseIdentitiesGetCall) Fields(s ...googleapi.Field) *UsersSettingsCseIdentitiesGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *UsersSettingsCseIdentitiesGetCall) IfNoneMatch(entityTag string) *UsersSettingsCseIdentitiesGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseIdentitiesGetCall) Context(ctx context.Context) *UsersSettingsCseIdentitiesGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseIdentitiesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseIdentitiesGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/identities/{cseEmailAddress}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId":          c.userId,
+		"cseEmailAddress": c.cseEmailAddress,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.identities.get" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *CseIdentity.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *UsersSettingsCseIdentitiesGetCall) Do(opts ...googleapi.CallOption) (*CseIdentity, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &CseIdentity{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type UsersSettingsCseIdentitiesListCall struct {
+	s            *Service
+	userId       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists the client-side encrypted identities for an authenticated user.
+//
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseIdentitiesService) List(userId string) *UsersSettingsCseIdentitiesListCall {
+	c := &UsersSettingsCseIdentitiesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The number of identities to
+// return. If not provided, the page size will default to 20 entries.
+func (c *UsersSettingsCseIdentitiesListCall) PageSize(pageSize int64) *UsersSettingsCseIdentitiesListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Pagination token
+// indicating which page of identities to return. If the token is not supplied,
+// then the API will return the first page of results.
+func (c *UsersSettingsCseIdentitiesListCall) PageToken(pageToken string) *UsersSettingsCseIdentitiesListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseIdentitiesListCall) Fields(s ...googleapi.Field) *UsersSettingsCseIdentitiesListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *UsersSettingsCseIdentitiesListCall) IfNoneMatch(entityTag string) *UsersSettingsCseIdentitiesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseIdentitiesListCall) Context(ctx context.Context) *UsersSettingsCseIdentitiesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseIdentitiesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseIdentitiesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/identities")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId": c.userId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.identities.list" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListCseIdentitiesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *UsersSettingsCseIdentitiesListCall) Do(opts ...googleapi.CallOption) (*ListCseIdentitiesResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListCseIdentitiesResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *UsersSettingsCseIdentitiesListCall) Pages(ctx context.Context, f func(*ListCseIdentitiesResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+type UsersSettingsCseIdentitiesPatchCall struct {
+	s            *Service
+	userId       string
+	emailAddress string
+	cseidentity  *CseIdentity
+	urlParams_   gensupport.URLParams
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Patch: Associates a different key pair with an existing client-side
+// encryption identity. The updated key pair must validate against Google's
+// S/MIME certificate profiles (https://support.google.com/a/answer/7300887).
+//
+//   - emailAddress: The email address of the client-side encryption identity to
+//     update.
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseIdentitiesService) Patch(userId string, emailAddress string, cseidentity *CseIdentity) *UsersSettingsCseIdentitiesPatchCall {
+	c := &UsersSettingsCseIdentitiesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	c.emailAddress = emailAddress
+	c.cseidentity = cseidentity
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseIdentitiesPatchCall) Fields(s ...googleapi.Field) *UsersSettingsCseIdentitiesPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseIdentitiesPatchCall) Context(ctx context.Context) *UsersSettingsCseIdentitiesPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseIdentitiesPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseIdentitiesPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.cseidentity)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/identities/{emailAddress}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId":       c.userId,
+		"emailAddress": c.emailAddress,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.identities.patch" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *CseIdentity.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *UsersSettingsCseIdentitiesPatchCall) Do(opts ...googleapi.CallOption) (*CseIdentity, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &CseIdentity{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type UsersSettingsCseKeypairsCreateCall struct {
+	s          *Service
+	userId     string
+	csekeypair *CseKeyPair
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Create: Creates and uploads a client-side encryption S/MIME public key
+// certificate chain and private key metadata for the authenticated user.
+//
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseKeypairsService) Create(userId string, csekeypair *CseKeyPair) *UsersSettingsCseKeypairsCreateCall {
+	c := &UsersSettingsCseKeypairsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	c.csekeypair = csekeypair
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseKeypairsCreateCall) Fields(s ...googleapi.Field) *UsersSettingsCseKeypairsCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseKeypairsCreateCall) Context(ctx context.Context) *UsersSettingsCseKeypairsCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseKeypairsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseKeypairsCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.csekeypair)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/keypairs")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId": c.userId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.keypairs.create" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *CseKeyPair.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *UsersSettingsCseKeypairsCreateCall) Do(opts ...googleapi.CallOption) (*CseKeyPair, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &CseKeyPair{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type UsersSettingsCseKeypairsDisableCall struct {
+	s                        *Service
+	userId                   string
+	keyPairId                string
+	disablecsekeypairrequest *DisableCseKeyPairRequest
+	urlParams_               gensupport.URLParams
+	ctx_                     context.Context
+	header_                  http.Header
+}
+
+// Disable: Turns off a client-side encryption key pair. The authenticated user
+// can no longer use the key pair to decrypt incoming CSE message texts or sign
+// outgoing CSE mail. To regain access, use the EnableCseKeyPair to turn on the
+// key pair. After 30 days, you can permanently delete the key pair by using
+// the ObliterateCseKeyPair method.
+//
+//   - keyPairId: The identifier of the key pair to turn off.
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseKeypairsService) Disable(userId string, keyPairId string, disablecsekeypairrequest *DisableCseKeyPairRequest) *UsersSettingsCseKeypairsDisableCall {
+	c := &UsersSettingsCseKeypairsDisableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	c.keyPairId = keyPairId
+	c.disablecsekeypairrequest = disablecsekeypairrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseKeypairsDisableCall) Fields(s ...googleapi.Field) *UsersSettingsCseKeypairsDisableCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseKeypairsDisableCall) Context(ctx context.Context) *UsersSettingsCseKeypairsDisableCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseKeypairsDisableCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseKeypairsDisableCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.disablecsekeypairrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:disable")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId":    c.userId,
+		"keyPairId": c.keyPairId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.keypairs.disable" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *CseKeyPair.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *UsersSettingsCseKeypairsDisableCall) Do(opts ...googleapi.CallOption) (*CseKeyPair, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &CseKeyPair{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type UsersSettingsCseKeypairsEnableCall struct {
+	s                       *Service
+	userId                  string
+	keyPairId               string
+	enablecsekeypairrequest *EnableCseKeyPairRequest
+	urlParams_              gensupport.URLParams
+	ctx_                    context.Context
+	header_                 http.Header
+}
+
+// Enable: Turns on a client-side encryption key pair that was turned off. The
+// key pair becomes active again for any associated client-side encryption
+// identities.
+//
+//   - keyPairId: The identifier of the key pair to turn on.
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseKeypairsService) Enable(userId string, keyPairId string, enablecsekeypairrequest *EnableCseKeyPairRequest) *UsersSettingsCseKeypairsEnableCall {
+	c := &UsersSettingsCseKeypairsEnableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	c.keyPairId = keyPairId
+	c.enablecsekeypairrequest = enablecsekeypairrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseKeypairsEnableCall) Fields(s ...googleapi.Field) *UsersSettingsCseKeypairsEnableCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseKeypairsEnableCall) Context(ctx context.Context) *UsersSettingsCseKeypairsEnableCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseKeypairsEnableCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseKeypairsEnableCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.enablecsekeypairrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:enable")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId":    c.userId,
+		"keyPairId": c.keyPairId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.keypairs.enable" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *CseKeyPair.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *UsersSettingsCseKeypairsEnableCall) Do(opts ...googleapi.CallOption) (*CseKeyPair, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &CseKeyPair{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type UsersSettingsCseKeypairsGetCall struct {
+	s            *Service
+	userId       string
+	keyPairId    string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Retrieves an existing client-side encryption key pair.
+//
+//   - keyPairId: The identifier of the key pair to retrieve.
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseKeypairsService) Get(userId string, keyPairId string) *UsersSettingsCseKeypairsGetCall {
+	c := &UsersSettingsCseKeypairsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	c.keyPairId = keyPairId
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseKeypairsGetCall) Fields(s ...googleapi.Field) *UsersSettingsCseKeypairsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *UsersSettingsCseKeypairsGetCall) IfNoneMatch(entityTag string) *UsersSettingsCseKeypairsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseKeypairsGetCall) Context(ctx context.Context) *UsersSettingsCseKeypairsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseKeypairsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseKeypairsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId":    c.userId,
+		"keyPairId": c.keyPairId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.keypairs.get" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *CseKeyPair.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *UsersSettingsCseKeypairsGetCall) Do(opts ...googleapi.CallOption) (*CseKeyPair, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &CseKeyPair{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type UsersSettingsCseKeypairsListCall struct {
+	s            *Service
+	userId       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists client-side encryption key pairs for an authenticated user.
+//
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseKeypairsService) List(userId string) *UsersSettingsCseKeypairsListCall {
+	c := &UsersSettingsCseKeypairsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The number of key pairs to
+// return. If not provided, the page size will default to 20 entries.
+func (c *UsersSettingsCseKeypairsListCall) PageSize(pageSize int64) *UsersSettingsCseKeypairsListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Pagination token
+// indicating which page of key pairs to return. If the token is not supplied,
+// then the API will return the first page of results.
+func (c *UsersSettingsCseKeypairsListCall) PageToken(pageToken string) *UsersSettingsCseKeypairsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseKeypairsListCall) Fields(s ...googleapi.Field) *UsersSettingsCseKeypairsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *UsersSettingsCseKeypairsListCall) IfNoneMatch(entityTag string) *UsersSettingsCseKeypairsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseKeypairsListCall) Context(ctx context.Context) *UsersSettingsCseKeypairsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseKeypairsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseKeypairsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/keypairs")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId": c.userId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.keypairs.list" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListCseKeyPairsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *UsersSettingsCseKeypairsListCall) Do(opts ...googleapi.CallOption) (*ListCseKeyPairsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListCseKeyPairsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *UsersSettingsCseKeypairsListCall) Pages(ctx context.Context, f func(*ListCseKeyPairsResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+type UsersSettingsCseKeypairsObliterateCall struct {
+	s                           *Service
+	userId                      string
+	keyPairId                   string
+	obliteratecsekeypairrequest *ObliterateCseKeyPairRequest
+	urlParams_                  gensupport.URLParams
+	ctx_                        context.Context
+	header_                     http.Header
+}
+
+// Obliterate: Deletes a client-side encryption key pair permanently and
+// immediately. You can only permanently delete key pairs that have been turned
+// off for more than 30 days. To turn off a key pair, use the DisableCseKeyPair
+// method. Gmail can't restore or decrypt any messages that were encrypted by
+// an obliterated key. Authenticated users and Google Workspace administrators
+// lose access to reading the encrypted messages.
+//
+//   - keyPairId: The identifier of the key pair to obliterate.
+//   - userId: The requester's primary email address. To indicate the
+//     authenticated user, you can use the special value `me`.
+func (r *UsersSettingsCseKeypairsService) Obliterate(userId string, keyPairId string, obliteratecsekeypairrequest *ObliterateCseKeyPairRequest) *UsersSettingsCseKeypairsObliterateCall {
+	c := &UsersSettingsCseKeypairsObliterateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.userId = userId
+	c.keyPairId = keyPairId
+	c.obliteratecsekeypairrequest = obliteratecsekeypairrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *UsersSettingsCseKeypairsObliterateCall) Fields(s ...googleapi.Field) *UsersSettingsCseKeypairsObliterateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *UsersSettingsCseKeypairsObliterateCall) Context(ctx context.Context) *UsersSettingsCseKeypairsObliterateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *UsersSettingsCseKeypairsObliterateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *UsersSettingsCseKeypairsObliterateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.obliteratecsekeypairrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/cse/keypairs/{keyPairId}:obliterate")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"userId":    c.userId,
+		"keyPairId": c.keyPairId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "gmail.users.settings.cse.keypairs.obliterate" call.
+func (c *UsersSettingsCseKeypairsObliterateCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if err != nil {
+		return err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return gensupport.WrapError(err)
+	}
+	return nil
+}
 
 type UsersSettingsDelegatesCreateCall struct {
 	s          *Service
@@ -8816,17 +8000,16 @@ type UsersSettingsDelegatesCreateCall struct {
 }
 
 // Create: Adds a delegate with its verification status set directly to
-// `accepted`, without sending any verification email. The delegate user
-// must be a member of the same G Suite organization as the delegator
-// user. Gmail imposes limitations on the number of delegates and
-// delegators each user in a G Suite organization can have. These limits
-// depend on your organization, but in general each user can have up to
-// 25 delegates and up to 10 delegators. Note that a delegate user must
-// be referred to by their primary email address, and not an email
-// alias. Also note that when a new delegate is created, there may be up
-// to a one minute delay before the new delegate is available for use.
-// This method is only available to service account clients that have
-// been delegated domain-wide authority.
+// `accepted`, without sending any verification email. The delegate user must
+// be a member of the same Google Workspace organization as the delegator user.
+// Gmail imposes limitations on the number of delegates and delegators each
+// user in a Google Workspace organization can have. These limits depend on
+// your organization, but in general each user can have up to 25 delegates and
+// up to 10 delegators. Note that a delegate user must be referred to by their
+// primary email address, and not an email alias. Also note that when a new
+// delegate is created, there may be up to a one minute delay before the new
+// delegate is available for use. This method is only available to service
+// account clients that have been delegated domain-wide authority.
 //
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
@@ -8838,23 +8021,21 @@ func (r *UsersSettingsDelegatesService) Create(userId string, delegate *Delegate
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsDelegatesCreateCall) Fields(s ...googleapi.Field) *UsersSettingsDelegatesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsDelegatesCreateCall) Context(ctx context.Context) *UsersSettingsDelegatesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsDelegatesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8863,18 +8044,12 @@ func (c *UsersSettingsDelegatesCreateCall) Header() http.Header {
 }
 
 func (c *UsersSettingsDelegatesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.delegate)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/delegates")
@@ -8891,12 +8066,10 @@ func (c *UsersSettingsDelegatesCreateCall) doRequest(alt string) (*http.Response
 }
 
 // Do executes the "gmail.users.settings.delegates.create" call.
-// Exactly one of *Delegate or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Delegate.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Delegate.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsDelegatesCreateCall) Do(opts ...googleapi.CallOption) (*Delegate, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8904,17 +8077,17 @@ func (c *UsersSettingsDelegatesCreateCall) Do(opts ...googleapi.CallOption) (*De
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Delegate{
 		ServerResponse: googleapi.ServerResponse{
@@ -8927,38 +8100,7 @@ func (c *UsersSettingsDelegatesCreateCall) Do(opts ...googleapi.CallOption) (*De
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Adds a delegate with its verification status set directly to `accepted`, without sending any verification email. The delegate user must be a member of the same G Suite organization as the delegator user. Gmail imposes limitations on the number of delegates and delegators each user in a G Suite organization can have. These limits depend on your organization, but in general each user can have up to 25 delegates and up to 10 delegators. Note that a delegate user must be referred to by their primary email address, and not an email alias. Also note that when a new delegate is created, there may be up to a one minute delay before the new delegate is available for use. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/delegates",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.settings.delegates.create",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/delegates",
-	//   "request": {
-	//     "$ref": "Delegate"
-	//   },
-	//   "response": {
-	//     "$ref": "Delegate"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.delegates.delete":
 
 type UsersSettingsDelegatesDeleteCall struct {
 	s             *Service
@@ -8969,15 +8111,13 @@ type UsersSettingsDelegatesDeleteCall struct {
 	header_       http.Header
 }
 
-// Delete: Removes the specified delegate (which can be of any
-// verification status), and revokes any verification that may have been
-// required for using it. Note that a delegate user must be referred to
-// by their primary email address, and not an email alias. This method
-// is only available to service account clients that have been delegated
-// domain-wide authority.
+// Delete: Removes the specified delegate (which can be of any verification
+// status), and revokes any verification that may have been required for using
+// it. Note that a delegate user must be referred to by their primary email
+// address, and not an email alias. This method is only available to service
+// account clients that have been delegated domain-wide authority.
 //
-//   - delegateEmail: The email address of the user to be removed as a
-//     delegate.
+//   - delegateEmail: The email address of the user to be removed as a delegate.
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
 func (r *UsersSettingsDelegatesService) Delete(userId string, delegateEmail string) *UsersSettingsDelegatesDeleteCall {
@@ -8988,23 +8128,21 @@ func (r *UsersSettingsDelegatesService) Delete(userId string, delegateEmail stri
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsDelegatesDeleteCall) Fields(s ...googleapi.Field) *UsersSettingsDelegatesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsDelegatesDeleteCall) Context(ctx context.Context) *UsersSettingsDelegatesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsDelegatesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9013,12 +8151,7 @@ func (c *UsersSettingsDelegatesDeleteCall) Header() http.Header {
 }
 
 func (c *UsersSettingsDelegatesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -9045,42 +8178,10 @@ func (c *UsersSettingsDelegatesDeleteCall) Do(opts ...googleapi.CallOption) erro
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Removes the specified delegate (which can be of any verification status), and revokes any verification that may have been required for using it. Note that a delegate user must be referred to by their primary email address, and not an email alias. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/delegates/{delegateEmail}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gmail.users.settings.delegates.delete",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "delegateEmail"
-	//   ],
-	//   "parameters": {
-	//     "delegateEmail": {
-	//       "description": "The email address of the user to be removed as a delegate.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/delegates/{delegateEmail}",
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.delegates.get":
 
 type UsersSettingsDelegatesGetCall struct {
 	s             *Service
@@ -9092,13 +8193,13 @@ type UsersSettingsDelegatesGetCall struct {
 	header_       http.Header
 }
 
-// Get: Gets the specified delegate. Note that a delegate user must be
-// referred to by their primary email address, and not an email alias.
-// This method is only available to service account clients that have
-// been delegated domain-wide authority.
+// Get: Gets the specified delegate. Note that a delegate user must be referred
+// to by their primary email address, and not an email alias. This method is
+// only available to service account clients that have been delegated
+// domain-wide authority.
 //
-//   - delegateEmail: The email address of the user whose delegate
-//     relationship is to be retrieved.
+//   - delegateEmail: The email address of the user whose delegate relationship
+//     is to be retrieved.
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
 func (r *UsersSettingsDelegatesService) Get(userId string, delegateEmail string) *UsersSettingsDelegatesGetCall {
@@ -9109,33 +8210,29 @@ func (r *UsersSettingsDelegatesService) Get(userId string, delegateEmail string)
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsDelegatesGetCall) Fields(s ...googleapi.Field) *UsersSettingsDelegatesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsDelegatesGetCall) IfNoneMatch(entityTag string) *UsersSettingsDelegatesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsDelegatesGetCall) Context(ctx context.Context) *UsersSettingsDelegatesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsDelegatesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9144,12 +8241,7 @@ func (c *UsersSettingsDelegatesGetCall) Header() http.Header {
 }
 
 func (c *UsersSettingsDelegatesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -9171,12 +8263,10 @@ func (c *UsersSettingsDelegatesGetCall) doRequest(alt string) (*http.Response, e
 }
 
 // Do executes the "gmail.users.settings.delegates.get" call.
-// Exactly one of *Delegate or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Delegate.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Delegate.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsDelegatesGetCall) Do(opts ...googleapi.CallOption) (*Delegate, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9184,17 +8274,17 @@ func (c *UsersSettingsDelegatesGetCall) Do(opts ...googleapi.CallOption) (*Deleg
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Delegate{
 		ServerResponse: googleapi.ServerResponse{
@@ -9207,45 +8297,7 @@ func (c *UsersSettingsDelegatesGetCall) Do(opts ...googleapi.CallOption) (*Deleg
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the specified delegate. Note that a delegate user must be referred to by their primary email address, and not an email alias. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/delegates/{delegateEmail}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.delegates.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "delegateEmail"
-	//   ],
-	//   "parameters": {
-	//     "delegateEmail": {
-	//       "description": "The email address of the user whose delegate relationship is to be retrieved.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/delegates/{delegateEmail}",
-	//   "response": {
-	//     "$ref": "Delegate"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.delegates.list":
 
 type UsersSettingsDelegatesListCall struct {
 	s            *Service
@@ -9256,9 +8308,9 @@ type UsersSettingsDelegatesListCall struct {
 	header_      http.Header
 }
 
-// List: Lists the delegates for the specified account. This method is
-// only available to service account clients that have been delegated
-// domain-wide authority.
+// List: Lists the delegates for the specified account. This method is only
+// available to service account clients that have been delegated domain-wide
+// authority.
 //
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
@@ -9269,33 +8321,29 @@ func (r *UsersSettingsDelegatesService) List(userId string) *UsersSettingsDelega
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsDelegatesListCall) Fields(s ...googleapi.Field) *UsersSettingsDelegatesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsDelegatesListCall) IfNoneMatch(entityTag string) *UsersSettingsDelegatesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsDelegatesListCall) Context(ctx context.Context) *UsersSettingsDelegatesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsDelegatesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9304,12 +8352,7 @@ func (c *UsersSettingsDelegatesListCall) Header() http.Header {
 }
 
 func (c *UsersSettingsDelegatesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -9330,12 +8373,11 @@ func (c *UsersSettingsDelegatesListCall) doRequest(alt string) (*http.Response, 
 }
 
 // Do executes the "gmail.users.settings.delegates.list" call.
-// Exactly one of *ListDelegatesResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListDelegatesResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListDelegatesResponse.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsDelegatesListCall) Do(opts ...googleapi.CallOption) (*ListDelegatesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9343,17 +8385,17 @@ func (c *UsersSettingsDelegatesListCall) Do(opts ...googleapi.CallOption) (*List
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListDelegatesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -9366,38 +8408,7 @@ func (c *UsersSettingsDelegatesListCall) Do(opts ...googleapi.CallOption) (*List
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the delegates for the specified account. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/delegates",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.delegates.list",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/delegates",
-	//   "response": {
-	//     "$ref": "ListDelegatesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.filters.create":
 
 type UsersSettingsFiltersCreateCall struct {
 	s          *Service
@@ -9408,8 +8419,8 @@ type UsersSettingsFiltersCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a filter. Note: you can only create a maximum of
-// 1,000 filters.
+// Create: Creates a filter. Note: you can only create a maximum of 1,000
+// filters.
 //
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
@@ -9421,23 +8432,21 @@ func (r *UsersSettingsFiltersService) Create(userId string, filter *Filter) *Use
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsFiltersCreateCall) Fields(s ...googleapi.Field) *UsersSettingsFiltersCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsFiltersCreateCall) Context(ctx context.Context) *UsersSettingsFiltersCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsFiltersCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9446,18 +8455,12 @@ func (c *UsersSettingsFiltersCreateCall) Header() http.Header {
 }
 
 func (c *UsersSettingsFiltersCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.filter)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/filters")
@@ -9474,12 +8477,10 @@ func (c *UsersSettingsFiltersCreateCall) doRequest(alt string) (*http.Response, 
 }
 
 // Do executes the "gmail.users.settings.filters.create" call.
-// Exactly one of *Filter or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Filter.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Filter.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsFiltersCreateCall) Do(opts ...googleapi.CallOption) (*Filter, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9487,17 +8488,17 @@ func (c *UsersSettingsFiltersCreateCall) Do(opts ...googleapi.CallOption) (*Filt
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Filter{
 		ServerResponse: googleapi.ServerResponse{
@@ -9510,38 +8511,7 @@ func (c *UsersSettingsFiltersCreateCall) Do(opts ...googleapi.CallOption) (*Filt
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a filter. Note: you can only create a maximum of 1,000 filters.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/filters",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.settings.filters.create",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/filters",
-	//   "request": {
-	//     "$ref": "Filter"
-	//   },
-	//   "response": {
-	//     "$ref": "Filter"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.filters.delete":
 
 type UsersSettingsFiltersDeleteCall struct {
 	s          *Service
@@ -9565,23 +8535,21 @@ func (r *UsersSettingsFiltersService) Delete(userId string, id string) *UsersSet
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsFiltersDeleteCall) Fields(s ...googleapi.Field) *UsersSettingsFiltersDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsFiltersDeleteCall) Context(ctx context.Context) *UsersSettingsFiltersDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsFiltersDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9590,12 +8558,7 @@ func (c *UsersSettingsFiltersDeleteCall) Header() http.Header {
 }
 
 func (c *UsersSettingsFiltersDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -9622,42 +8585,10 @@ func (c *UsersSettingsFiltersDeleteCall) Do(opts ...googleapi.CallOption) error 
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Immediately and permanently deletes the specified filter.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/filters/{id}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gmail.users.settings.filters.delete",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the filter to be deleted.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/filters/{id}",
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.filters.get":
 
 type UsersSettingsFiltersGetCall struct {
 	s            *Service
@@ -9682,33 +8613,29 @@ func (r *UsersSettingsFiltersService) Get(userId string, id string) *UsersSettin
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsFiltersGetCall) Fields(s ...googleapi.Field) *UsersSettingsFiltersGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsFiltersGetCall) IfNoneMatch(entityTag string) *UsersSettingsFiltersGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsFiltersGetCall) Context(ctx context.Context) *UsersSettingsFiltersGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsFiltersGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9717,12 +8644,7 @@ func (c *UsersSettingsFiltersGetCall) Header() http.Header {
 }
 
 func (c *UsersSettingsFiltersGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -9744,12 +8666,10 @@ func (c *UsersSettingsFiltersGetCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "gmail.users.settings.filters.get" call.
-// Exactly one of *Filter or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Filter.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Filter.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsFiltersGetCall) Do(opts ...googleapi.CallOption) (*Filter, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9757,17 +8677,17 @@ func (c *UsersSettingsFiltersGetCall) Do(opts ...googleapi.CallOption) (*Filter,
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Filter{
 		ServerResponse: googleapi.ServerResponse{
@@ -9780,45 +8700,7 @@ func (c *UsersSettingsFiltersGetCall) Do(opts ...googleapi.CallOption) (*Filter,
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a filter.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/filters/{id}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.filters.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the filter to be fetched.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/filters/{id}",
-	//   "response": {
-	//     "$ref": "Filter"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.filters.list":
 
 type UsersSettingsFiltersListCall struct {
 	s            *Service
@@ -9840,33 +8722,29 @@ func (r *UsersSettingsFiltersService) List(userId string) *UsersSettingsFiltersL
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsFiltersListCall) Fields(s ...googleapi.Field) *UsersSettingsFiltersListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsFiltersListCall) IfNoneMatch(entityTag string) *UsersSettingsFiltersListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsFiltersListCall) Context(ctx context.Context) *UsersSettingsFiltersListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsFiltersListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9875,12 +8753,7 @@ func (c *UsersSettingsFiltersListCall) Header() http.Header {
 }
 
 func (c *UsersSettingsFiltersListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -9901,12 +8774,11 @@ func (c *UsersSettingsFiltersListCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "gmail.users.settings.filters.list" call.
-// Exactly one of *ListFiltersResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListFiltersResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListFiltersResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsFiltersListCall) Do(opts ...googleapi.CallOption) (*ListFiltersResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9914,17 +8786,17 @@ func (c *UsersSettingsFiltersListCall) Do(opts ...googleapi.CallOption) (*ListFi
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListFiltersResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -9937,38 +8809,7 @@ func (c *UsersSettingsFiltersListCall) Do(opts ...googleapi.CallOption) (*ListFi
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the message filters of a Gmail user.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/filters",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.filters.list",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/filters",
-	//   "response": {
-	//     "$ref": "ListFiltersResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.forwardingAddresses.create":
 
 type UsersSettingsForwardingAddressesCreateCall struct {
 	s                 *Service
@@ -9979,12 +8820,11 @@ type UsersSettingsForwardingAddressesCreateCall struct {
 	header_           http.Header
 }
 
-// Create: Creates a forwarding address. If ownership verification is
-// required, a message will be sent to the recipient and the resource's
-// verification status will be set to `pending`; otherwise, the resource
-// will be created with verification status set to `accepted`. This
-// method is only available to service account clients that have been
-// delegated domain-wide authority.
+// Create: Creates a forwarding address. If ownership verification is required,
+// a message will be sent to the recipient and the resource's verification
+// status will be set to `pending`; otherwise, the resource will be created
+// with verification status set to `accepted`. This method is only available to
+// service account clients that have been delegated domain-wide authority.
 //
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
@@ -9996,23 +8836,21 @@ func (r *UsersSettingsForwardingAddressesService) Create(userId string, forwardi
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsForwardingAddressesCreateCall) Fields(s ...googleapi.Field) *UsersSettingsForwardingAddressesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsForwardingAddressesCreateCall) Context(ctx context.Context) *UsersSettingsForwardingAddressesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsForwardingAddressesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10021,18 +8859,12 @@ func (c *UsersSettingsForwardingAddressesCreateCall) Header() http.Header {
 }
 
 func (c *UsersSettingsForwardingAddressesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.forwardingaddress)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/forwardingAddresses")
@@ -10049,12 +8881,11 @@ func (c *UsersSettingsForwardingAddressesCreateCall) doRequest(alt string) (*htt
 }
 
 // Do executes the "gmail.users.settings.forwardingAddresses.create" call.
-// Exactly one of *ForwardingAddress or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ForwardingAddress.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ForwardingAddress.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsForwardingAddressesCreateCall) Do(opts ...googleapi.CallOption) (*ForwardingAddress, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10062,17 +8893,17 @@ func (c *UsersSettingsForwardingAddressesCreateCall) Do(opts ...googleapi.CallOp
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ForwardingAddress{
 		ServerResponse: googleapi.ServerResponse{
@@ -10085,38 +8916,7 @@ func (c *UsersSettingsForwardingAddressesCreateCall) Do(opts ...googleapi.CallOp
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a forwarding address. If ownership verification is required, a message will be sent to the recipient and the resource's verification status will be set to `pending`; otherwise, the resource will be created with verification status set to `accepted`. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/forwardingAddresses",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.settings.forwardingAddresses.create",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/forwardingAddresses",
-	//   "request": {
-	//     "$ref": "ForwardingAddress"
-	//   },
-	//   "response": {
-	//     "$ref": "ForwardingAddress"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.forwardingAddresses.delete":
 
 type UsersSettingsForwardingAddressesDeleteCall struct {
 	s               *Service
@@ -10128,9 +8928,8 @@ type UsersSettingsForwardingAddressesDeleteCall struct {
 }
 
 // Delete: Deletes the specified forwarding address and revokes any
-// verification that may have been required. This method is only
-// available to service account clients that have been delegated
-// domain-wide authority.
+// verification that may have been required. This method is only available to
+// service account clients that have been delegated domain-wide authority.
 //
 //   - forwardingEmail: The forwarding address to be deleted.
 //   - userId: User's email address. The special value "me" can be used to
@@ -10143,23 +8942,21 @@ func (r *UsersSettingsForwardingAddressesService) Delete(userId string, forwardi
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsForwardingAddressesDeleteCall) Fields(s ...googleapi.Field) *UsersSettingsForwardingAddressesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsForwardingAddressesDeleteCall) Context(ctx context.Context) *UsersSettingsForwardingAddressesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsForwardingAddressesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10168,12 +8965,7 @@ func (c *UsersSettingsForwardingAddressesDeleteCall) Header() http.Header {
 }
 
 func (c *UsersSettingsForwardingAddressesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -10200,42 +8992,10 @@ func (c *UsersSettingsForwardingAddressesDeleteCall) Do(opts ...googleapi.CallOp
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Deletes the specified forwarding address and revokes any verification that may have been required. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gmail.users.settings.forwardingAddresses.delete",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "forwardingEmail"
-	//   ],
-	//   "parameters": {
-	//     "forwardingEmail": {
-	//       "description": "The forwarding address to be deleted.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail}",
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.forwardingAddresses.get":
 
 type UsersSettingsForwardingAddressesGetCall struct {
 	s               *Service
@@ -10260,33 +9020,29 @@ func (r *UsersSettingsForwardingAddressesService) Get(userId string, forwardingE
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsForwardingAddressesGetCall) Fields(s ...googleapi.Field) *UsersSettingsForwardingAddressesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsForwardingAddressesGetCall) IfNoneMatch(entityTag string) *UsersSettingsForwardingAddressesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsForwardingAddressesGetCall) Context(ctx context.Context) *UsersSettingsForwardingAddressesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsForwardingAddressesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10295,12 +9051,7 @@ func (c *UsersSettingsForwardingAddressesGetCall) Header() http.Header {
 }
 
 func (c *UsersSettingsForwardingAddressesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -10322,12 +9073,11 @@ func (c *UsersSettingsForwardingAddressesGetCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "gmail.users.settings.forwardingAddresses.get" call.
-// Exactly one of *ForwardingAddress or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ForwardingAddress.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ForwardingAddress.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsForwardingAddressesGetCall) Do(opts ...googleapi.CallOption) (*ForwardingAddress, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10335,17 +9085,17 @@ func (c *UsersSettingsForwardingAddressesGetCall) Do(opts ...googleapi.CallOptio
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ForwardingAddress{
 		ServerResponse: googleapi.ServerResponse{
@@ -10358,45 +9108,7 @@ func (c *UsersSettingsForwardingAddressesGetCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the specified forwarding address.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.forwardingAddresses.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "forwardingEmail"
-	//   ],
-	//   "parameters": {
-	//     "forwardingEmail": {
-	//       "description": "The forwarding address to be retrieved.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail}",
-	//   "response": {
-	//     "$ref": "ForwardingAddress"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.forwardingAddresses.list":
 
 type UsersSettingsForwardingAddressesListCall struct {
 	s            *Service
@@ -10418,33 +9130,29 @@ func (r *UsersSettingsForwardingAddressesService) List(userId string) *UsersSett
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsForwardingAddressesListCall) Fields(s ...googleapi.Field) *UsersSettingsForwardingAddressesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsForwardingAddressesListCall) IfNoneMatch(entityTag string) *UsersSettingsForwardingAddressesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsForwardingAddressesListCall) Context(ctx context.Context) *UsersSettingsForwardingAddressesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsForwardingAddressesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10453,12 +9161,7 @@ func (c *UsersSettingsForwardingAddressesListCall) Header() http.Header {
 }
 
 func (c *UsersSettingsForwardingAddressesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -10479,12 +9182,11 @@ func (c *UsersSettingsForwardingAddressesListCall) doRequest(alt string) (*http.
 }
 
 // Do executes the "gmail.users.settings.forwardingAddresses.list" call.
-// Exactly one of *ListForwardingAddressesResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *ListForwardingAddressesResponse.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListForwardingAddressesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *UsersSettingsForwardingAddressesListCall) Do(opts ...googleapi.CallOption) (*ListForwardingAddressesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10492,17 +9194,17 @@ func (c *UsersSettingsForwardingAddressesListCall) Do(opts ...googleapi.CallOpti
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListForwardingAddressesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -10515,38 +9217,7 @@ func (c *UsersSettingsForwardingAddressesListCall) Do(opts ...googleapi.CallOpti
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the forwarding addresses for the specified account.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/forwardingAddresses",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.forwardingAddresses.list",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/forwardingAddresses",
-	//   "response": {
-	//     "$ref": "ListForwardingAddressesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.create":
 
 type UsersSettingsSendAsCreateCall struct {
 	s          *Service
@@ -10557,16 +9228,15 @@ type UsersSettingsSendAsCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a custom "from" send-as alias. If an SMTP MSA is
-// specified, Gmail will attempt to connect to the SMTP service to
-// validate the configuration before creating the alias. If ownership
-// verification is required for the alias, a message will be sent to the
-// email address and the resource's verification status will be set to
-// `pending`; otherwise, the resource will be created with verification
-// status set to `accepted`. If a signature is provided, Gmail will
-// sanitize the HTML before saving it with the alias. This method is
-// only available to service account clients that have been delegated
-// domain-wide authority.
+// Create: Creates a custom "from" send-as alias. If an SMTP MSA is specified,
+// Gmail will attempt to connect to the SMTP service to validate the
+// configuration before creating the alias. If ownership verification is
+// required for the alias, a message will be sent to the email address and the
+// resource's verification status will be set to `pending`; otherwise, the
+// resource will be created with verification status set to `accepted`. If a
+// signature is provided, Gmail will sanitize the HTML before saving it with
+// the alias. This method is only available to service account clients that
+// have been delegated domain-wide authority.
 //
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
@@ -10578,23 +9248,21 @@ func (r *UsersSettingsSendAsService) Create(userId string, sendas *SendAs) *User
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsCreateCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsCreateCall) Context(ctx context.Context) *UsersSettingsSendAsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10603,18 +9271,12 @@ func (c *UsersSettingsSendAsCreateCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sendas)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/sendAs")
@@ -10631,12 +9293,10 @@ func (c *UsersSettingsSendAsCreateCall) doRequest(alt string) (*http.Response, e
 }
 
 // Do executes the "gmail.users.settings.sendAs.create" call.
-// Exactly one of *SendAs or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *SendAs.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SendAs.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsSendAsCreateCall) Do(opts ...googleapi.CallOption) (*SendAs, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10644,17 +9304,17 @@ func (c *UsersSettingsSendAsCreateCall) Do(opts ...googleapi.CallOption) (*SendA
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SendAs{
 		ServerResponse: googleapi.ServerResponse{
@@ -10667,38 +9327,7 @@ func (c *UsersSettingsSendAsCreateCall) Do(opts ...googleapi.CallOption) (*SendA
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a custom \"from\" send-as alias. If an SMTP MSA is specified, Gmail will attempt to connect to the SMTP service to validate the configuration before creating the alias. If ownership verification is required for the alias, a message will be sent to the email address and the resource's verification status will be set to `pending`; otherwise, the resource will be created with verification status set to `accepted`. If a signature is provided, Gmail will sanitize the HTML before saving it with the alias. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.settings.sendAs.create",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs",
-	//   "request": {
-	//     "$ref": "SendAs"
-	//   },
-	//   "response": {
-	//     "$ref": "SendAs"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.delete":
 
 type UsersSettingsSendAsDeleteCall struct {
 	s           *Service
@@ -10709,10 +9338,9 @@ type UsersSettingsSendAsDeleteCall struct {
 	header_     http.Header
 }
 
-// Delete: Deletes the specified send-as alias. Revokes any verification
-// that may have been required for using it. This method is only
-// available to service account clients that have been delegated
-// domain-wide authority.
+// Delete: Deletes the specified send-as alias. Revokes any verification that
+// may have been required for using it. This method is only available to
+// service account clients that have been delegated domain-wide authority.
 //
 //   - sendAsEmail: The send-as alias to be deleted.
 //   - userId: User's email address. The special value "me" can be used to
@@ -10725,23 +9353,21 @@ func (r *UsersSettingsSendAsService) Delete(userId string, sendAsEmail string) *
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsDeleteCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsDeleteCall) Context(ctx context.Context) *UsersSettingsSendAsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10750,12 +9376,7 @@ func (c *UsersSettingsSendAsDeleteCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -10782,42 +9403,10 @@ func (c *UsersSettingsSendAsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Deletes the specified send-as alias. Revokes any verification that may have been required for using it. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gmail.users.settings.sendAs.delete",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail"
-	//   ],
-	//   "parameters": {
-	//     "sendAsEmail": {
-	//       "description": "The send-as alias to be deleted.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.get":
 
 type UsersSettingsSendAsGetCall struct {
 	s            *Service
@@ -10829,8 +9418,8 @@ type UsersSettingsSendAsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the specified send-as alias. Fails with an HTTP 404 error
-// if the specified address is not a member of the collection.
+// Get: Gets the specified send-as alias. Fails with an HTTP 404 error if the
+// specified address is not a member of the collection.
 //
 //   - sendAsEmail: The send-as alias to be retrieved.
 //   - userId: User's email address. The special value "me" can be used to
@@ -10843,33 +9432,29 @@ func (r *UsersSettingsSendAsService) Get(userId string, sendAsEmail string) *Use
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsGetCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsSendAsGetCall) IfNoneMatch(entityTag string) *UsersSettingsSendAsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsGetCall) Context(ctx context.Context) *UsersSettingsSendAsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10878,12 +9463,7 @@ func (c *UsersSettingsSendAsGetCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -10905,12 +9485,10 @@ func (c *UsersSettingsSendAsGetCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "gmail.users.settings.sendAs.get" call.
-// Exactly one of *SendAs or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *SendAs.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SendAs.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsSendAsGetCall) Do(opts ...googleapi.CallOption) (*SendAs, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10918,17 +9496,17 @@ func (c *UsersSettingsSendAsGetCall) Do(opts ...googleapi.CallOption) (*SendAs, 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SendAs{
 		ServerResponse: googleapi.ServerResponse{
@@ -10941,45 +9519,7 @@ func (c *UsersSettingsSendAsGetCall) Do(opts ...googleapi.CallOption) (*SendAs, 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the specified send-as alias. Fails with an HTTP 404 error if the specified address is not a member of the collection.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.sendAs.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail"
-	//   ],
-	//   "parameters": {
-	//     "sendAsEmail": {
-	//       "description": "The send-as alias to be retrieved.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
-	//   "response": {
-	//     "$ref": "SendAs"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.list":
 
 type UsersSettingsSendAsListCall struct {
 	s            *Service
@@ -10991,8 +9531,8 @@ type UsersSettingsSendAsListCall struct {
 }
 
 // List: Lists the send-as aliases for the specified account. The result
-// includes the primary send-as address associated with the account as
-// well as any custom "from" aliases.
+// includes the primary send-as address associated with the account as well as
+// any custom "from" aliases.
 //
 //   - userId: User's email address. The special value "me" can be used to
 //     indicate the authenticated user.
@@ -11003,33 +9543,29 @@ func (r *UsersSettingsSendAsService) List(userId string) *UsersSettingsSendAsLis
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsListCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsSendAsListCall) IfNoneMatch(entityTag string) *UsersSettingsSendAsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsListCall) Context(ctx context.Context) *UsersSettingsSendAsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11038,12 +9574,7 @@ func (c *UsersSettingsSendAsListCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -11064,12 +9595,11 @@ func (c *UsersSettingsSendAsListCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "gmail.users.settings.sendAs.list" call.
-// Exactly one of *ListSendAsResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListSendAsResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListSendAsResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsSendAsListCall) Do(opts ...googleapi.CallOption) (*ListSendAsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11077,17 +9607,17 @@ func (c *UsersSettingsSendAsListCall) Do(opts ...googleapi.CallOption) (*ListSen
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListSendAsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -11100,38 +9630,7 @@ func (c *UsersSettingsSendAsListCall) Do(opts ...googleapi.CallOption) (*ListSen
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the send-as aliases for the specified account. The result includes the primary send-as address associated with the account as well as any custom \"from\" aliases.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.sendAs.list",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs",
-	//   "response": {
-	//     "$ref": "ListSendAsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.patch":
 
 type UsersSettingsSendAsPatchCall struct {
 	s           *Service
@@ -11157,23 +9656,21 @@ func (r *UsersSettingsSendAsService) Patch(userId string, sendAsEmail string, se
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsPatchCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsPatchCall) Context(ctx context.Context) *UsersSettingsSendAsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11182,18 +9679,12 @@ func (c *UsersSettingsSendAsPatchCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sendas)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}")
@@ -11211,12 +9702,10 @@ func (c *UsersSettingsSendAsPatchCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "gmail.users.settings.sendAs.patch" call.
-// Exactly one of *SendAs or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *SendAs.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SendAs.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsSendAsPatchCall) Do(opts ...googleapi.CallOption) (*SendAs, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11224,17 +9713,17 @@ func (c *UsersSettingsSendAsPatchCall) Do(opts ...googleapi.CallOption) (*SendAs
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SendAs{
 		ServerResponse: googleapi.ServerResponse{
@@ -11247,46 +9736,7 @@ func (c *UsersSettingsSendAsPatchCall) Do(opts ...googleapi.CallOption) (*SendAs
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Patch the specified send-as alias.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
-	//   "httpMethod": "PATCH",
-	//   "id": "gmail.users.settings.sendAs.patch",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail"
-	//   ],
-	//   "parameters": {
-	//     "sendAsEmail": {
-	//       "description": "The send-as alias to be updated.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
-	//   "request": {
-	//     "$ref": "SendAs"
-	//   },
-	//   "response": {
-	//     "$ref": "SendAs"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic",
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.update":
 
 type UsersSettingsSendAsUpdateCall struct {
 	s           *Service
@@ -11298,11 +9748,10 @@ type UsersSettingsSendAsUpdateCall struct {
 	header_     http.Header
 }
 
-// Update: Updates a send-as alias. If a signature is provided, Gmail
-// will sanitize the HTML before saving it with the alias. Addresses
-// other than the primary address for the account can only be updated by
-// service account clients that have been delegated domain-wide
-// authority.
+// Update: Updates a send-as alias. If a signature is provided, Gmail will
+// sanitize the HTML before saving it with the alias. Addresses other than the
+// primary address for the account can only be updated by service account
+// clients that have been delegated domain-wide authority.
 //
 //   - sendAsEmail: The send-as alias to be updated.
 //   - userId: User's email address. The special value "me" can be used to
@@ -11316,23 +9765,21 @@ func (r *UsersSettingsSendAsService) Update(userId string, sendAsEmail string, s
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsUpdateCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsUpdateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsUpdateCall) Context(ctx context.Context) *UsersSettingsSendAsUpdateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsUpdateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11341,18 +9788,12 @@ func (c *UsersSettingsSendAsUpdateCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsUpdateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.sendas)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}")
@@ -11370,12 +9811,10 @@ func (c *UsersSettingsSendAsUpdateCall) doRequest(alt string) (*http.Response, e
 }
 
 // Do executes the "gmail.users.settings.sendAs.update" call.
-// Exactly one of *SendAs or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *SendAs.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SendAs.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsSendAsUpdateCall) Do(opts ...googleapi.CallOption) (*SendAs, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11383,17 +9822,17 @@ func (c *UsersSettingsSendAsUpdateCall) Do(opts ...googleapi.CallOption) (*SendA
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SendAs{
 		ServerResponse: googleapi.ServerResponse{
@@ -11406,46 +9845,7 @@ func (c *UsersSettingsSendAsUpdateCall) Do(opts ...googleapi.CallOption) (*SendA
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates a send-as alias. If a signature is provided, Gmail will sanitize the HTML before saving it with the alias. Addresses other than the primary address for the account can only be updated by service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
-	//   "httpMethod": "PUT",
-	//   "id": "gmail.users.settings.sendAs.update",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail"
-	//   ],
-	//   "parameters": {
-	//     "sendAsEmail": {
-	//       "description": "The send-as alias to be updated.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
-	//   "request": {
-	//     "$ref": "SendAs"
-	//   },
-	//   "response": {
-	//     "$ref": "SendAs"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic",
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.verify":
 
 type UsersSettingsSendAsVerifyCall struct {
 	s           *Service
@@ -11456,10 +9856,9 @@ type UsersSettingsSendAsVerifyCall struct {
 	header_     http.Header
 }
 
-// Verify: Sends a verification email to the specified send-as alias
-// address. The verification status must be `pending`. This method is
-// only available to service account clients that have been delegated
-// domain-wide authority.
+// Verify: Sends a verification email to the specified send-as alias address.
+// The verification status must be `pending`. This method is only available to
+// service account clients that have been delegated domain-wide authority.
 //
 //   - sendAsEmail: The send-as alias to be verified.
 //   - userId: User's email address. The special value "me" can be used to
@@ -11472,23 +9871,21 @@ func (r *UsersSettingsSendAsService) Verify(userId string, sendAsEmail string) *
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsVerifyCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsVerifyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsVerifyCall) Context(ctx context.Context) *UsersSettingsSendAsVerifyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsVerifyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11497,12 +9894,7 @@ func (c *UsersSettingsSendAsVerifyCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsVerifyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -11529,42 +9921,10 @@ func (c *UsersSettingsSendAsVerifyCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Sends a verification email to the specified send-as alias address. The verification status must be `pending`. This method is only available to service account clients that have been delegated domain-wide authority.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/verify",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.settings.sendAs.verify",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail"
-	//   ],
-	//   "parameters": {
-	//     "sendAsEmail": {
-	//       "description": "The send-as alias to be verified.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "User's email address. The special value \"me\" can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/verify",
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.smimeInfo.delete":
 
 type UsersSettingsSendAsSmimeInfoDeleteCall struct {
 	s           *Service
@@ -11576,14 +9936,13 @@ type UsersSettingsSendAsSmimeInfoDeleteCall struct {
 	header_     http.Header
 }
 
-// Delete: Deletes the specified S/MIME config for the specified send-as
-// alias.
+// Delete: Deletes the specified S/MIME config for the specified send-as alias.
 //
 //   - id: The immutable ID for the SmimeInfo.
-//   - sendAsEmail: The email address that appears in the "From:" header
-//     for mail sent using this alias.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - sendAsEmail: The email address that appears in the "From:" header for mail
+//     sent using this alias.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersSettingsSendAsSmimeInfoService) Delete(userId string, sendAsEmail string, id string) *UsersSettingsSendAsSmimeInfoDeleteCall {
 	c := &UsersSettingsSendAsSmimeInfoDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -11593,23 +9952,21 @@ func (r *UsersSettingsSendAsSmimeInfoService) Delete(userId string, sendAsEmail 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsSmimeInfoDeleteCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsSmimeInfoDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsSmimeInfoDeleteCall) Context(ctx context.Context) *UsersSettingsSendAsSmimeInfoDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsSmimeInfoDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11618,12 +9975,7 @@ func (c *UsersSettingsSendAsSmimeInfoDeleteCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsSmimeInfoDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -11651,50 +10003,10 @@ func (c *UsersSettingsSendAsSmimeInfoDeleteCall) Do(opts ...googleapi.CallOption
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Deletes the specified S/MIME config for the specified send-as alias.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gmail.users.settings.sendAs.smimeInfo.delete",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The immutable ID for the SmimeInfo.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "sendAsEmail": {
-	//       "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}",
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic",
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.smimeInfo.get":
 
 type UsersSettingsSendAsSmimeInfoGetCall struct {
 	s            *Service
@@ -11707,14 +10019,13 @@ type UsersSettingsSendAsSmimeInfoGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the specified S/MIME config for the specified send-as
-// alias.
+// Get: Gets the specified S/MIME config for the specified send-as alias.
 //
 //   - id: The immutable ID for the SmimeInfo.
-//   - sendAsEmail: The email address that appears in the "From:" header
-//     for mail sent using this alias.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - sendAsEmail: The email address that appears in the "From:" header for mail
+//     sent using this alias.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersSettingsSendAsSmimeInfoService) Get(userId string, sendAsEmail string, id string) *UsersSettingsSendAsSmimeInfoGetCall {
 	c := &UsersSettingsSendAsSmimeInfoGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -11724,33 +10035,29 @@ func (r *UsersSettingsSendAsSmimeInfoService) Get(userId string, sendAsEmail str
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsSmimeInfoGetCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsSmimeInfoGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsSendAsSmimeInfoGetCall) IfNoneMatch(entityTag string) *UsersSettingsSendAsSmimeInfoGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsSmimeInfoGetCall) Context(ctx context.Context) *UsersSettingsSendAsSmimeInfoGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsSmimeInfoGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11759,12 +10066,7 @@ func (c *UsersSettingsSendAsSmimeInfoGetCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsSmimeInfoGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -11787,12 +10089,10 @@ func (c *UsersSettingsSendAsSmimeInfoGetCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "gmail.users.settings.sendAs.smimeInfo.get" call.
-// Exactly one of *SmimeInfo or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SmimeInfo.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SmimeInfo.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsSendAsSmimeInfoGetCall) Do(opts ...googleapi.CallOption) (*SmimeInfo, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11800,17 +10100,17 @@ func (c *UsersSettingsSendAsSmimeInfoGetCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SmimeInfo{
 		ServerResponse: googleapi.ServerResponse{
@@ -11823,53 +10123,7 @@ func (c *UsersSettingsSendAsSmimeInfoGetCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the specified S/MIME config for the specified send-as alias.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.sendAs.smimeInfo.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The immutable ID for the SmimeInfo.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "sendAsEmail": {
-	//       "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}",
-	//   "response": {
-	//     "$ref": "SmimeInfo"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic",
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.smimeInfo.insert":
 
 type UsersSettingsSendAsSmimeInfoInsertCall struct {
 	s           *Service
@@ -11881,13 +10135,13 @@ type UsersSettingsSendAsSmimeInfoInsertCall struct {
 	header_     http.Header
 }
 
-// Insert: Insert (upload) the given S/MIME config for the specified
-// send-as alias. Note that pkcs12 format is required for the key.
+// Insert: Insert (upload) the given S/MIME config for the specified send-as
+// alias. Note that pkcs12 format is required for the key.
 //
-//   - sendAsEmail: The email address that appears in the "From:" header
-//     for mail sent using this alias.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - sendAsEmail: The email address that appears in the "From:" header for mail
+//     sent using this alias.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersSettingsSendAsSmimeInfoService) Insert(userId string, sendAsEmail string, smimeinfo *SmimeInfo) *UsersSettingsSendAsSmimeInfoInsertCall {
 	c := &UsersSettingsSendAsSmimeInfoInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -11897,23 +10151,21 @@ func (r *UsersSettingsSendAsSmimeInfoService) Insert(userId string, sendAsEmail 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsSmimeInfoInsertCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsSmimeInfoInsertCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsSmimeInfoInsertCall) Context(ctx context.Context) *UsersSettingsSendAsSmimeInfoInsertCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsSmimeInfoInsertCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11922,18 +10174,12 @@ func (c *UsersSettingsSendAsSmimeInfoInsertCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsSmimeInfoInsertCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.smimeinfo)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo")
@@ -11951,12 +10197,10 @@ func (c *UsersSettingsSendAsSmimeInfoInsertCall) doRequest(alt string) (*http.Re
 }
 
 // Do executes the "gmail.users.settings.sendAs.smimeInfo.insert" call.
-// Exactly one of *SmimeInfo or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SmimeInfo.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SmimeInfo.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersSettingsSendAsSmimeInfoInsertCall) Do(opts ...googleapi.CallOption) (*SmimeInfo, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11964,17 +10208,17 @@ func (c *UsersSettingsSendAsSmimeInfoInsertCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SmimeInfo{
 		ServerResponse: googleapi.ServerResponse{
@@ -11987,46 +10231,7 @@ func (c *UsersSettingsSendAsSmimeInfoInsertCall) Do(opts ...googleapi.CallOption
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Insert (upload) the given S/MIME config for the specified send-as alias. Note that pkcs12 format is required for the key.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.settings.sendAs.smimeInfo.insert",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail"
-	//   ],
-	//   "parameters": {
-	//     "sendAsEmail": {
-	//       "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo",
-	//   "request": {
-	//     "$ref": "SmimeInfo"
-	//   },
-	//   "response": {
-	//     "$ref": "SmimeInfo"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic",
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.smimeInfo.list":
 
 type UsersSettingsSendAsSmimeInfoListCall struct {
 	s            *Service
@@ -12040,10 +10245,10 @@ type UsersSettingsSendAsSmimeInfoListCall struct {
 
 // List: Lists S/MIME configs for the specified send-as alias.
 //
-//   - sendAsEmail: The email address that appears in the "From:" header
-//     for mail sent using this alias.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - sendAsEmail: The email address that appears in the "From:" header for mail
+//     sent using this alias.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersSettingsSendAsSmimeInfoService) List(userId string, sendAsEmail string) *UsersSettingsSendAsSmimeInfoListCall {
 	c := &UsersSettingsSendAsSmimeInfoListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -12052,33 +10257,29 @@ func (r *UsersSettingsSendAsSmimeInfoService) List(userId string, sendAsEmail st
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsSmimeInfoListCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsSmimeInfoListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersSettingsSendAsSmimeInfoListCall) IfNoneMatch(entityTag string) *UsersSettingsSendAsSmimeInfoListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsSmimeInfoListCall) Context(ctx context.Context) *UsersSettingsSendAsSmimeInfoListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsSmimeInfoListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12087,12 +10288,7 @@ func (c *UsersSettingsSendAsSmimeInfoListCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsSmimeInfoListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -12114,12 +10310,11 @@ func (c *UsersSettingsSendAsSmimeInfoListCall) doRequest(alt string) (*http.Resp
 }
 
 // Do executes the "gmail.users.settings.sendAs.smimeInfo.list" call.
-// Exactly one of *ListSmimeInfoResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListSmimeInfoResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListSmimeInfoResponse.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersSettingsSendAsSmimeInfoListCall) Do(opts ...googleapi.CallOption) (*ListSmimeInfoResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12127,17 +10322,17 @@ func (c *UsersSettingsSendAsSmimeInfoListCall) Do(opts ...googleapi.CallOption) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListSmimeInfoResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -12150,46 +10345,7 @@ func (c *UsersSettingsSendAsSmimeInfoListCall) Do(opts ...googleapi.CallOption) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists S/MIME configs for the specified send-as alias.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.settings.sendAs.smimeInfo.list",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail"
-	//   ],
-	//   "parameters": {
-	//     "sendAsEmail": {
-	//       "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo",
-	//   "response": {
-	//     "$ref": "ListSmimeInfoResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly",
-	//     "https://www.googleapis.com/auth/gmail.settings.basic",
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.settings.sendAs.smimeInfo.setDefault":
 
 type UsersSettingsSendAsSmimeInfoSetDefaultCall struct {
 	s           *Service
@@ -12201,14 +10357,13 @@ type UsersSettingsSendAsSmimeInfoSetDefaultCall struct {
 	header_     http.Header
 }
 
-// SetDefault: Sets the default S/MIME config for the specified send-as
-// alias.
+// SetDefault: Sets the default S/MIME config for the specified send-as alias.
 //
 //   - id: The immutable ID for the SmimeInfo.
-//   - sendAsEmail: The email address that appears in the "From:" header
-//     for mail sent using this alias.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - sendAsEmail: The email address that appears in the "From:" header for mail
+//     sent using this alias.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersSettingsSendAsSmimeInfoService) SetDefault(userId string, sendAsEmail string, id string) *UsersSettingsSendAsSmimeInfoSetDefaultCall {
 	c := &UsersSettingsSendAsSmimeInfoSetDefaultCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -12218,23 +10373,21 @@ func (r *UsersSettingsSendAsSmimeInfoService) SetDefault(userId string, sendAsEm
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersSettingsSendAsSmimeInfoSetDefaultCall) Fields(s ...googleapi.Field) *UsersSettingsSendAsSmimeInfoSetDefaultCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersSettingsSendAsSmimeInfoSetDefaultCall) Context(ctx context.Context) *UsersSettingsSendAsSmimeInfoSetDefaultCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersSettingsSendAsSmimeInfoSetDefaultCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12243,12 +10396,7 @@ func (c *UsersSettingsSendAsSmimeInfoSetDefaultCall) Header() http.Header {
 }
 
 func (c *UsersSettingsSendAsSmimeInfoSetDefaultCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -12276,50 +10424,10 @@ func (c *UsersSettingsSendAsSmimeInfoSetDefaultCall) Do(opts ...googleapi.CallOp
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Sets the default S/MIME config for the specified send-as alias.",
-	//   "flatPath": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}/setDefault",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.settings.sendAs.smimeInfo.setDefault",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "sendAsEmail",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The immutable ID for the SmimeInfo.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "sendAsEmail": {
-	//       "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}/setDefault",
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/gmail.settings.basic",
-	//     "https://www.googleapis.com/auth/gmail.settings.sharing"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.threads.delete":
 
 type UsersThreadsDeleteCall struct {
 	s          *Service
@@ -12331,12 +10439,12 @@ type UsersThreadsDeleteCall struct {
 }
 
 // Delete: Immediately and permanently deletes the specified thread. Any
-// messages that belong to the thread are also deleted. This operation
-// cannot be undone. Prefer `threads.trash` instead.
+// messages that belong to the thread are also deleted. This operation cannot
+// be undone. Prefer `threads.trash` instead.
 //
 //   - id: ID of the Thread to delete.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersThreadsService) Delete(userId string, id string) *UsersThreadsDeleteCall {
 	c := &UsersThreadsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -12345,23 +10453,21 @@ func (r *UsersThreadsService) Delete(userId string, id string) *UsersThreadsDele
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersThreadsDeleteCall) Fields(s ...googleapi.Field) *UsersThreadsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersThreadsDeleteCall) Context(ctx context.Context) *UsersThreadsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersThreadsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12370,12 +10476,7 @@ func (c *UsersThreadsDeleteCall) Header() http.Header {
 }
 
 func (c *UsersThreadsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -12402,42 +10503,10 @@ func (c *UsersThreadsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
-	// {
-	//   "description": "Immediately and permanently deletes the specified thread. Any messages that belong to the thread are also deleted. This operation cannot be undone. Prefer `threads.trash` instead.",
-	//   "flatPath": "gmail/v1/users/{userId}/threads/{id}",
-	//   "httpMethod": "DELETE",
-	//   "id": "gmail.users.threads.delete",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "ID of the Thread to delete.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/threads/{id}",
-	//   "scopes": [
-	//     "https://mail.google.com/"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.threads.get":
 
 type UsersThreadsGetCall struct {
 	s            *Service
@@ -12452,8 +10521,8 @@ type UsersThreadsGetCall struct {
 // Get: Gets the specified thread.
 //
 //   - id: The ID of the thread to retrieve.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersThreadsService) Get(userId string, id string) *UsersThreadsGetCall {
 	c := &UsersThreadsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -12466,59 +10535,57 @@ func (r *UsersThreadsService) Get(userId string, id string) *UsersThreadsGetCall
 //
 // Possible values:
 //
-//	"full" (default) - Returns the full email message data with body
+//	"full" (default) - Returns the full email message data with body content
 //
-// content parsed in the `payload` field; the `raw` field is not used.
-// Format cannot be used when accessing the api using the gmail.metadata
-// scope.
+// parsed in the `payload` field; the `raw` field is not used. Format cannot be
+// used when accessing the api using the gmail.metadata scope.
 //
-//	"metadata" - Returns only email message IDs, labels, and email
+//	"metadata" - Returns only email message IDs, labels, and email headers.
+//	"minimal" - Returns only email message IDs and labels; does not return the
 //
-// headers.
-//
-//	"minimal" - Returns only email message IDs and labels; does not
-//
-// return the email headers, body, or payload.
+// email headers, body, or payload.
 func (c *UsersThreadsGetCall) Format(format string) *UsersThreadsGetCall {
 	c.urlParams_.Set("format", format)
 	return c
 }
 
-// MetadataHeaders sets the optional parameter "metadataHeaders": When
-// given and format is METADATA, only include headers specified.
+// MetadataHeaders sets the optional parameter "metadataHeaders": When given
+// and format is METADATA, only include headers specified.
 func (c *UsersThreadsGetCall) MetadataHeaders(metadataHeaders ...string) *UsersThreadsGetCall {
 	c.urlParams_.SetMulti("metadataHeaders", append([]string{}, metadataHeaders...))
 	return c
 }
 
+// TemporaryEeccBypass sets the optional parameter "temporaryEeccBypass":
+func (c *UsersThreadsGetCall) TemporaryEeccBypass(temporaryEeccBypass bool) *UsersThreadsGetCall {
+	c.urlParams_.Set("temporaryEeccBypass", fmt.Sprint(temporaryEeccBypass))
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersThreadsGetCall) Fields(s ...googleapi.Field) *UsersThreadsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersThreadsGetCall) IfNoneMatch(entityTag string) *UsersThreadsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersThreadsGetCall) Context(ctx context.Context) *UsersThreadsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersThreadsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12527,12 +10594,7 @@ func (c *UsersThreadsGetCall) Header() http.Header {
 }
 
 func (c *UsersThreadsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -12554,12 +10616,10 @@ func (c *UsersThreadsGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.threads.get" call.
-// Exactly one of *Thread or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Thread.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Thread.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersThreadsGetCall) Do(opts ...googleapi.CallOption) (*Thread, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12567,17 +10627,17 @@ func (c *UsersThreadsGetCall) Do(opts ...googleapi.CallOption) (*Thread, error) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Thread{
 		ServerResponse: googleapi.ServerResponse{
@@ -12590,70 +10650,7 @@ func (c *UsersThreadsGetCall) Do(opts ...googleapi.CallOption) (*Thread, error) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the specified thread.",
-	//   "flatPath": "gmail/v1/users/{userId}/threads/{id}",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.threads.get",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "format": {
-	//       "default": "full",
-	//       "description": "The format to return the messages in.",
-	//       "enum": [
-	//         "full",
-	//         "metadata",
-	//         "minimal"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Returns the full email message data with body content parsed in the `payload` field; the `raw` field is not used. Format cannot be used when accessing the api using the gmail.metadata scope.",
-	//         "Returns only email message IDs, labels, and email headers.",
-	//         "Returns only email message IDs and labels; does not return the email headers, body, or payload."
-	//       ],
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "id": {
-	//       "description": "The ID of the thread to retrieve.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "metadataHeaders": {
-	//       "description": "When given and format is METADATA, only include headers specified.",
-	//       "location": "query",
-	//       "repeated": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/threads/{id}",
-	//   "response": {
-	//     "$ref": "Thread"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.message.action",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.message.metadata",
-	//     "https://www.googleapis.com/auth/gmail.addons.current.message.readonly",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.threads.list":
 
 type UsersThreadsListCall struct {
 	s            *Service
@@ -12666,81 +10663,82 @@ type UsersThreadsListCall struct {
 
 // List: Lists the threads in the user's mailbox.
 //
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersThreadsService) List(userId string) *UsersThreadsListCall {
 	c := &UsersThreadsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
 	return c
 }
 
-// IncludeSpamTrash sets the optional parameter "includeSpamTrash":
-// Include threads from `SPAM` and `TRASH` in the results.
+// IncludeSpamTrash sets the optional parameter "includeSpamTrash": Include
+// threads from `SPAM` and `TRASH` in the results.
 func (c *UsersThreadsListCall) IncludeSpamTrash(includeSpamTrash bool) *UsersThreadsListCall {
 	c.urlParams_.Set("includeSpamTrash", fmt.Sprint(includeSpamTrash))
 	return c
 }
 
-// LabelIds sets the optional parameter "labelIds": Only return threads
-// with labels that match all of the specified label IDs.
+// LabelIds sets the optional parameter "labelIds": Only return threads with
+// labels that match all of the specified label IDs.
 func (c *UsersThreadsListCall) LabelIds(labelIds ...string) *UsersThreadsListCall {
 	c.urlParams_.SetMulti("labelIds", append([]string{}, labelIds...))
 	return c
 }
 
-// MaxResults sets the optional parameter "maxResults": Maximum number
-// of threads to return. This field defaults to 100. The maximum allowed
-// value for this field is 500.
+// MaxResults sets the optional parameter "maxResults": Maximum number of
+// threads to return. This field defaults to 100. The maximum allowed value for
+// this field is 500.
 func (c *UsersThreadsListCall) MaxResults(maxResults int64) *UsersThreadsListCall {
 	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Page token to
-// retrieve a specific page of results in the list.
+// PageToken sets the optional parameter "pageToken": Page token to retrieve a
+// specific page of results in the list.
 func (c *UsersThreadsListCall) PageToken(pageToken string) *UsersThreadsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Q sets the optional parameter "q": Only return threads matching the
-// specified query. Supports the same query format as the Gmail search
-// box. For example, "from:someuser@example.com rfc822msgid:
-// is:unread". Parameter cannot be used when accessing the api using
-// the gmail.metadata scope.
+// specified query. Supports the same query format as the Gmail search box. For
+// example, "from:someuser@example.com rfc822msgid: is:unread". Parameter
+// cannot be used when accessing the api using the gmail.metadata scope.
 func (c *UsersThreadsListCall) Q(q string) *UsersThreadsListCall {
 	c.urlParams_.Set("q", q)
 	return c
 }
 
+// TemporaryEeccBypass sets the optional parameter "temporaryEeccBypass":
+func (c *UsersThreadsListCall) TemporaryEeccBypass(temporaryEeccBypass bool) *UsersThreadsListCall {
+	c.urlParams_.Set("temporaryEeccBypass", fmt.Sprint(temporaryEeccBypass))
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersThreadsListCall) Fields(s ...googleapi.Field) *UsersThreadsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UsersThreadsListCall) IfNoneMatch(entityTag string) *UsersThreadsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersThreadsListCall) Context(ctx context.Context) *UsersThreadsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersThreadsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12749,12 +10747,7 @@ func (c *UsersThreadsListCall) Header() http.Header {
 }
 
 func (c *UsersThreadsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -12775,12 +10768,11 @@ func (c *UsersThreadsListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.threads.list" call.
-// Exactly one of *ListThreadsResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListThreadsResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListThreadsResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *UsersThreadsListCall) Do(opts ...googleapi.CallOption) (*ListThreadsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12788,17 +10780,17 @@ func (c *UsersThreadsListCall) Do(opts ...googleapi.CallOption) (*ListThreadsRes
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListThreadsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -12811,64 +10803,6 @@ func (c *UsersThreadsListCall) Do(opts ...googleapi.CallOption) (*ListThreadsRes
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists the threads in the user's mailbox.",
-	//   "flatPath": "gmail/v1/users/{userId}/threads",
-	//   "httpMethod": "GET",
-	//   "id": "gmail.users.threads.list",
-	//   "parameterOrder": [
-	//     "userId"
-	//   ],
-	//   "parameters": {
-	//     "includeSpamTrash": {
-	//       "default": "false",
-	//       "description": "Include threads from `SPAM` and `TRASH` in the results.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "labelIds": {
-	//       "description": "Only return threads with labels that match all of the specified label IDs.",
-	//       "location": "query",
-	//       "repeated": true,
-	//       "type": "string"
-	//     },
-	//     "maxResults": {
-	//       "default": "100",
-	//       "description": "Maximum number of threads to return. This field defaults to 100. The maximum allowed value for this field is 500.",
-	//       "format": "uint32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Page token to retrieve a specific page of results in the list.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "q": {
-	//       "description": "Only return threads matching the specified query. Supports the same query format as the Gmail search box. For example, `\"from:someuser@example.com rfc822msgid: is:unread\"`. Parameter cannot be used when accessing the api using the gmail.metadata scope.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/threads",
-	//   "response": {
-	//     "$ref": "ListThreadsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.metadata",
-	//     "https://www.googleapis.com/auth/gmail.modify",
-	//     "https://www.googleapis.com/auth/gmail.readonly"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -12876,7 +10810,7 @@ func (c *UsersThreadsListCall) Do(opts ...googleapi.CallOption) (*ListThreadsRes
 // The provided context supersedes any context provided to the Context method.
 func (c *UsersThreadsListCall) Pages(ctx context.Context, f func(*ListThreadsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -12892,8 +10826,6 @@ func (c *UsersThreadsListCall) Pages(ctx context.Context, f func(*ListThreadsRes
 	}
 }
 
-// method id "gmail.users.threads.modify":
-
 type UsersThreadsModifyCall struct {
 	s                   *Service
 	userId              string
@@ -12904,12 +10836,12 @@ type UsersThreadsModifyCall struct {
 	header_             http.Header
 }
 
-// Modify: Modifies the labels applied to the thread. This applies to
-// all messages in the thread.
+// Modify: Modifies the labels applied to the thread. This applies to all
+// messages in the thread.
 //
 //   - id: The ID of the thread to modify.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersThreadsService) Modify(userId string, id string, modifythreadrequest *ModifyThreadRequest) *UsersThreadsModifyCall {
 	c := &UsersThreadsModifyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -12919,23 +10851,21 @@ func (r *UsersThreadsService) Modify(userId string, id string, modifythreadreque
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersThreadsModifyCall) Fields(s ...googleapi.Field) *UsersThreadsModifyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersThreadsModifyCall) Context(ctx context.Context) *UsersThreadsModifyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersThreadsModifyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12944,18 +10874,12 @@ func (c *UsersThreadsModifyCall) Header() http.Header {
 }
 
 func (c *UsersThreadsModifyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.modifythreadrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "gmail/v1/users/{userId}/threads/{id}/modify")
@@ -12973,12 +10897,10 @@ func (c *UsersThreadsModifyCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.threads.modify" call.
-// Exactly one of *Thread or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Thread.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Thread.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersThreadsModifyCall) Do(opts ...googleapi.CallOption) (*Thread, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12986,17 +10908,17 @@ func (c *UsersThreadsModifyCall) Do(opts ...googleapi.CallOption) (*Thread, erro
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Thread{
 		ServerResponse: googleapi.ServerResponse{
@@ -13009,46 +10931,7 @@ func (c *UsersThreadsModifyCall) Do(opts ...googleapi.CallOption) (*Thread, erro
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Modifies the labels applied to the thread. This applies to all messages in the thread.",
-	//   "flatPath": "gmail/v1/users/{userId}/threads/{id}/modify",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.threads.modify",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the thread to modify.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/threads/{id}/modify",
-	//   "request": {
-	//     "$ref": "ModifyThreadRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Thread"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.threads.trash":
 
 type UsersThreadsTrashCall struct {
 	s          *Service
@@ -13059,12 +10942,12 @@ type UsersThreadsTrashCall struct {
 	header_    http.Header
 }
 
-// Trash: Moves the specified thread to the trash. Any messages that
-// belong to the thread are also moved to the trash.
+// Trash: Moves the specified thread to the trash. Any messages that belong to
+// the thread are also moved to the trash.
 //
 //   - id: The ID of the thread to Trash.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersThreadsService) Trash(userId string, id string) *UsersThreadsTrashCall {
 	c := &UsersThreadsTrashCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -13073,23 +10956,21 @@ func (r *UsersThreadsService) Trash(userId string, id string) *UsersThreadsTrash
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersThreadsTrashCall) Fields(s ...googleapi.Field) *UsersThreadsTrashCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersThreadsTrashCall) Context(ctx context.Context) *UsersThreadsTrashCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersThreadsTrashCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13098,12 +10979,7 @@ func (c *UsersThreadsTrashCall) Header() http.Header {
 }
 
 func (c *UsersThreadsTrashCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -13122,12 +10998,10 @@ func (c *UsersThreadsTrashCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "gmail.users.threads.trash" call.
-// Exactly one of *Thread or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Thread.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Thread.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersThreadsTrashCall) Do(opts ...googleapi.CallOption) (*Thread, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13135,17 +11009,17 @@ func (c *UsersThreadsTrashCall) Do(opts ...googleapi.CallOption) (*Thread, error
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Thread{
 		ServerResponse: googleapi.ServerResponse{
@@ -13158,43 +11032,7 @@ func (c *UsersThreadsTrashCall) Do(opts ...googleapi.CallOption) (*Thread, error
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Moves the specified thread to the trash. Any messages that belong to the thread are also moved to the trash.",
-	//   "flatPath": "gmail/v1/users/{userId}/threads/{id}/trash",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.threads.trash",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the thread to Trash.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/threads/{id}/trash",
-	//   "response": {
-	//     "$ref": "Thread"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }
-
-// method id "gmail.users.threads.untrash":
 
 type UsersThreadsUntrashCall struct {
 	s          *Service
@@ -13205,12 +11043,12 @@ type UsersThreadsUntrashCall struct {
 	header_    http.Header
 }
 
-// Untrash: Removes the specified thread from the trash. Any messages
-// that belong to the thread are also removed from the trash.
+// Untrash: Removes the specified thread from the trash. Any messages that
+// belong to the thread are also removed from the trash.
 //
 //   - id: The ID of the thread to remove from Trash.
-//   - userId: The user's email address. The special value `me` can be
-//     used to indicate the authenticated user.
+//   - userId: The user's email address. The special value `me` can be used to
+//     indicate the authenticated user.
 func (r *UsersThreadsService) Untrash(userId string, id string) *UsersThreadsUntrashCall {
 	c := &UsersThreadsUntrashCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -13219,23 +11057,21 @@ func (r *UsersThreadsService) Untrash(userId string, id string) *UsersThreadsUnt
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UsersThreadsUntrashCall) Fields(s ...googleapi.Field) *UsersThreadsUntrashCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UsersThreadsUntrashCall) Context(ctx context.Context) *UsersThreadsUntrashCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UsersThreadsUntrashCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13244,12 +11080,7 @@ func (c *UsersThreadsUntrashCall) Header() http.Header {
 }
 
 func (c *UsersThreadsUntrashCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -13268,12 +11099,10 @@ func (c *UsersThreadsUntrashCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "gmail.users.threads.untrash" call.
-// Exactly one of *Thread or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Thread.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Thread.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UsersThreadsUntrashCall) Do(opts ...googleapi.CallOption) (*Thread, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13281,17 +11110,17 @@ func (c *UsersThreadsUntrashCall) Do(opts ...googleapi.CallOption) (*Thread, err
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Thread{
 		ServerResponse: googleapi.ServerResponse{
@@ -13304,38 +11133,4 @@ func (c *UsersThreadsUntrashCall) Do(opts ...googleapi.CallOption) (*Thread, err
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Removes the specified thread from the trash. Any messages that belong to the thread are also removed from the trash.",
-	//   "flatPath": "gmail/v1/users/{userId}/threads/{id}/untrash",
-	//   "httpMethod": "POST",
-	//   "id": "gmail.users.threads.untrash",
-	//   "parameterOrder": [
-	//     "userId",
-	//     "id"
-	//   ],
-	//   "parameters": {
-	//     "id": {
-	//       "description": "The ID of the thread to remove from Trash.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "userId": {
-	//       "default": "me",
-	//       "description": "The user's email address. The special value `me` can be used to indicate the authenticated user.",
-	//       "location": "path",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "gmail/v1/users/{userId}/threads/{id}/untrash",
-	//   "response": {
-	//     "$ref": "Thread"
-	//   },
-	//   "scopes": [
-	//     "https://mail.google.com/",
-	//     "https://www.googleapis.com/auth/gmail.modify"
-	//   ]
-	// }
-
 }

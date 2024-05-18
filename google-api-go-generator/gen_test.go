@@ -11,11 +11,12 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"google.golang.org/api/google-api-go-generator/internal/disco"
 	"google.golang.org/api/internal"
 )
@@ -44,6 +45,7 @@ func TestAPIs(t *testing.T) {
 		"param-rename",
 		"quotednum",
 		"repeated",
+		"repeated_any_query_error",
 		"required-query",
 		"resource-named-service", // appengine/v1/appengine-api.json
 		"unfortunatedefaults",
@@ -52,6 +54,36 @@ func TestAPIs(t *testing.T) {
 	}
 	for _, name := range names {
 		t.Run(name, func(t *testing.T) {
+			defer func() {
+				r := recover()
+				wantPanic := strings.HasSuffix(name, "_error")
+				if r != nil && !wantPanic {
+					t.Fatal("unexpected panic", r)
+				}
+				if r == nil && !wantPanic {
+					return
+				}
+				if r == nil && wantPanic {
+					t.Fatal("wanted test to panic, but it didn't")
+				}
+
+				// compare panic message received vs. desired
+				got, ok := r.(string)
+				if !ok {
+					gotE, okE := r.(error)
+					if !okE {
+						t.Fatalf("panic with non-string/error input: %v", r)
+					}
+					got = gotE.Error()
+				}
+				want, err := readOrUpdate(name, got)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if diff := cmp.Diff(got, string(want)); diff != "" {
+					t.Errorf("got(-),want(+):\n %s", diff)
+				}
+			}()
 			api, err := apiFromFile(filepath.Join("testdata", name+".json"))
 			if err != nil {
 				t.Fatalf("Error loading API testdata/%s.json: %v", name, err)
@@ -60,20 +92,15 @@ func TestAPIs(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Error generating code for %s: %v", name, err)
 			}
-			goldenFile := filepath.Join("testdata", name+".want")
-			if *updateGolden {
-				clean := strings.Replace(string(clean), fmt.Sprintf("gdcl/%s", internal.Version), "gdcl/00000000", -1)
-				if err := ioutil.WriteFile(goldenFile, []byte(clean), 0644); err != nil {
-					t.Fatal(err)
-				}
-			}
-			want, err := ioutil.ReadFile(goldenFile)
+
+			want, err := readOrUpdate(name, string(clean))
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			wantStr := strings.Replace(string(want), "gdcl/00000000", fmt.Sprintf("gdcl/%s", internal.Version), -1)
 			if !bytes.Equal([]byte(wantStr), clean) {
-				tf, _ := ioutil.TempFile("", "api-"+name+"-got-json.")
+				tf, _ := os.CreateTemp("", "api-"+name+"-got-json.")
 				if _, err := tf.Write(clean); err != nil {
 					t.Fatal(err)
 				}
@@ -81,10 +108,25 @@ func TestAPIs(t *testing.T) {
 					t.Fatal(err)
 				}
 				// NOTE: update golden files with `go test -update_golden`
-				t.Errorf("Output for API %s differs: diff -u %s %s", name, goldenFile, tf.Name())
+				t.Errorf("Output for API %s differs: diff -u %s %s", name, goldenFileName(name), tf.Name())
 			}
 		})
 	}
+}
+
+func readOrUpdate(name, clean string) ([]byte, error) {
+	goldenFile := goldenFileName(name)
+	if *updateGolden {
+		clean := strings.Replace(string(clean), fmt.Sprintf("gdcl/%s", internal.Version), "gdcl/00000000", -1)
+		if err := os.WriteFile(goldenFile, []byte(clean), 0644); err != nil {
+			return nil, err
+		}
+	}
+	return os.ReadFile(goldenFile)
+}
+
+func goldenFileName(name string) string {
+	return filepath.Join("testdata", name+".want")
 }
 
 func TestScope(t *testing.T) {
@@ -219,13 +261,13 @@ func TestSupportsPaging(t *testing.T) {
 
 func TestIsNewerRevision(t *testing.T) {
 	olderBytesPath, newerBytesPath := filepath.Join("testdata", "rev20200415.json"), filepath.Join("testdata", "rev20200416.json")
-	olderBytes, err := ioutil.ReadFile(olderBytesPath)
+	olderBytes, err := os.ReadFile(olderBytesPath)
 	if err != nil {
-		t.Fatalf("ioutil.ReadFile(%q) = %v; want nil", olderBytesPath, err)
+		t.Fatalf("os.ReadFile(%q) = %v; want nil", olderBytesPath, err)
 	}
-	newerBytes, err := ioutil.ReadFile(newerBytesPath)
+	newerBytes, err := os.ReadFile(newerBytesPath)
 	if err != nil {
-		t.Fatalf("ioutil.ReadFile(%q) = %v; want nil", newerBytesPath, err)
+		t.Fatalf("os.ReadFile(%q) = %v; want nil", newerBytesPath, err)
 	}
 
 	// newBytes > oldBytes
@@ -283,5 +325,37 @@ func TestAsComment_LongLink(t *testing.T) {
 	got := asComment("", input)
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestApiBaseURLTemplate(t *testing.T) {
+	tests := []struct {
+		name, want string
+	}{
+		{
+			name: "any.json",
+			want: "https://logging.UNIVERSE_DOMAIN/",
+		},
+		{
+			name: "blogger-3.json",
+			want: "https://www.UNIVERSE_DOMAIN/blogger/v3/",
+		},
+		{
+			name: "required-query.json",
+			want: "https://www.UNIVERSE_DOMAIN/_ah/api/tshealth/v1/",
+		},
+	}
+	for _, tt := range tests {
+		api, err := apiFromFile(filepath.Join("testdata", tt.name))
+		if err != nil {
+			t.Fatalf("Error loading API testdata/%s: %v", tt.name, err)
+		}
+		got, err := api.apiBaseURLTemplate()
+		if err != nil {
+			t.Fatalf("%s: apiBaseURLTemplate(): %v", tt.name, err)
+		}
+		if got != tt.want {
+			t.Errorf("%s: apiBaseURLTemplate() = %q; want %q", tt.name, got, tt.want)
+		}
 	}
 }

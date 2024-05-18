@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package displayvideo provides access to the Display & Video 360 API.
 //
 // For product documentation, see: https://developers.google.com/display-video/
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,28 +28,31 @@
 //	ctx := context.Background()
 //	displayvideoService, err := displayvideo.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
+// By default, all available scopes (see "Constants") are used to authenticate.
+// To restrict scopes, use [google.golang.org/api/option.WithScopes]:
 //
 //	displayvideoService, err := displayvideo.NewService(ctx, option.WithScopes(displayvideo.DoubleclickbidmanagerScope))
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	displayvideoService, err := displayvideo.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	displayvideoService, err := displayvideo.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package displayvideo // import "google.golang.org/api/displayvideo/v1"
 
 import (
@@ -75,12 +89,15 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "displayvideo:v1"
 const apiName = "displayvideo"
 const apiVersion = "v1"
 const basePath = "https://displayvideo.googleapis.com/"
+const basePathTemplate = "https://displayvideo.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://displayvideo.mtls.googleapis.com/"
+const defaultUniverseDomain = "googleapis.com"
 
 // OAuth2 scopes used by this API.
 const (
@@ -111,7 +128,9 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.WithDefaultUniverseDomain(defaultUniverseDomain))
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -980,9 +999,13 @@ type AdvertiserCreativeConfig struct {
 	IasClientId int64 `json:"iasClientId,omitempty,string"`
 
 	// ObaComplianceDisabled: Whether or not to use DV360's Online
-	// Behavioral Advertising (OBA) compliance. Warning: Changing OBA
-	// settings may cause the audit status of your creatives to be reset by
-	// some ad exchanges, making them ineligible to serve until they are
+	// Behavioral Advertising (OBA) compliance. Starting on February 9,
+	// 2024, this field will be affected by an update to the Display & Video
+	// 360 API Terms of Service. See our announcement
+	// (//ads-developers.googleblog.com/2024/01/update-to-display-video-360-a
+	// pi-terms.html) for more detail. Warning: Changing OBA settings may
+	// cause the audit status of your creatives to be reset by some ad
+	// exchanges, making them ineligible to serve until they are
 	// re-approved.
 	ObaComplianceDisabled bool `json:"obaComplianceDisabled,omitempty"`
 
@@ -1184,12 +1207,12 @@ func (s *AdvertiserTargetingConfig) MarshalJSON() ([]byte, error) {
 // AssignedTargetingOption when targeting_type is
 // `TARGETING_TYPE_AGE_RANGE`.
 type AgeRangeAssignedTargetingOptionDetails struct {
-	// AgeRange: The age range of an audience. We only support targeting a
-	// continuous age range of an audience. Thus, the age range represented
-	// in this field can be 1) targeted solely, or, 2) part of a larger
-	// continuous age range. The reach of a continuous age range targeting
-	// can be expanded by also targeting an audience of an unknown age.
-	// Output only in v1. Required in v2.
+	// AgeRange: Required. The age range of an audience. We only support
+	// targeting a continuous age range of an audience. Thus, the age range
+	// represented in this field can be 1) targeted solely, or, 2) part of a
+	// larger continuous age range. The reach of a continuous age range
+	// targeting can be expanded by also targeting an audience of an unknown
+	// age.
 	//
 	// Possible values:
 	//   "AGE_RANGE_UNSPECIFIED" - Default value when age range is not
@@ -1411,7 +1434,10 @@ type Asset struct {
 
 	// MediaId: Media ID of the uploaded asset. This is a unique identifier
 	// for the asset. This ID can be passed to other API calls, e.g.
-	// CreateCreative to associate the asset with a creative.
+	// CreateCreative to associate the asset with a creative. The Media ID
+	// space updated on **April 5, 2023**. Update media IDs cached before
+	// **April 5, 2023** by retrieving the new media ID from associated
+	// creative resources or re-uploading the asset.
 	MediaId int64 `json:"mediaId,omitempty,string"`
 
 	// ForceSendFields is a list of field names (e.g. "Content") to
@@ -1455,29 +1481,21 @@ type AssetAssociation struct {
 	// must be UTF-8 encoded with a length of no more than 25 characters.
 	// This role is only supported in following creative_type: *
 	// `CREATIVE_TYPE_NATIVE` * `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
 	// `CREATIVE_TYPE_NATIVE_VIDEO`
 	//   "ASSET_ROLE_LONG_HEADLINE" - Long headline of a native creative.
 	// The content must be UTF-8 encoded with a length of no more than 50
 	// characters. This role is only supported in following creative_type: *
 	// `CREATIVE_TYPE_NATIVE` * `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
 	// `CREATIVE_TYPE_NATIVE_VIDEO`
 	//   "ASSET_ROLE_BODY" - Body text of a native creative. The content
 	// must be UTF-8 encoded with a length of no more than 90 characters.
 	// This role is only supported in following creative_type: *
 	// `CREATIVE_TYPE_NATIVE` * `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
 	// `CREATIVE_TYPE_NATIVE_VIDEO`
 	//   "ASSET_ROLE_LONG_BODY" - Long body text of a native creative. The
 	// content must be UTF-8 encoded with a length of no more than 150
 	// characters. This role is only supported in following creative_type: *
 	// `CREATIVE_TYPE_NATIVE` * `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
 	// `CREATIVE_TYPE_NATIVE_VIDEO`
 	//   "ASSET_ROLE_CAPTION_URL" - A short, friendly version of the landing
 	// page URL to show in the creative. This URL gives people an idea of
@@ -1488,59 +1506,40 @@ type AssetAssociation struct {
 	// The protocol (http://) is optional, but the URL can't contain spaces
 	// or special characters. This role is only supported in following
 	// creative_type: * `CREATIVE_TYPE_NATIVE` *
-	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_VIDEO`
+	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` * `CREATIVE_TYPE_NATIVE_VIDEO`
 	//   "ASSET_ROLE_CALL_TO_ACTION" - The text to use on the call-to-action
 	// button of a native creative. The content must be UTF-8 encoded with a
 	// length of no more than 15 characters. This role is only supported in
 	// following creative_type: * `CREATIVE_TYPE_NATIVE` *
-	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_VIDEO`
+	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` * `CREATIVE_TYPE_NATIVE_VIDEO`
 	//   "ASSET_ROLE_ADVERTISER_NAME" - The text that identifies the
 	// advertiser or brand name. The content must be UTF-8 encoded with a
 	// length of no more than 25 characters. This role is only supported in
 	// following creative_type: * `CREATIVE_TYPE_NATIVE` *
-	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_VIDEO`
+	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` * `CREATIVE_TYPE_NATIVE_VIDEO`
 	//   "ASSET_ROLE_PRICE" - The purchase price of your app in the Google
 	// play store or iOS app store (for example, $5.99). Note that this
 	// value is not automatically synced with the actual value listed in the
 	// store. It will always be the one provided when save the creative. The
 	// content must be UTF-8 encoded with a length of no more than 15
-	// characters. This role is only supported in following creative_type: *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE`
+	// characters. Assets of this role are read-only.
 	//   "ASSET_ROLE_ANDROID_APP_ID" - The ID of an Android app in the
 	// Google play store. You can find this ID in the App’s Google Play
 	// Store URL after ‘id’. For example, in
 	// https://play.google.com/store/apps/details?id=com.company.appname the
-	// identifier is com.company.appname. This role is only supported in
-	// following creative_type: * `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE`
+	// identifier is com.company.appname. Assets of this role are read-only.
 	//   "ASSET_ROLE_IOS_APP_ID" - The ID of an iOS app in the Apple app
 	// store. This ID number can be found in the Apple App Store URL as the
 	// string of numbers directly after "id". For example, in
 	// https://apps.apple.com/us/app/gmail-email-by-google/id422689480 the
-	// ID is 422689480. This role is only supported in following
-	// creative_type: * `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE`
+	// ID is 422689480. Assets of this role are read-only.
 	//   "ASSET_ROLE_RATING" - The rating of an app in the Google play store
 	// or iOS app store. Note that this value is not automatically synced
 	// with the actual rating in the store. It will always be the one
-	// provided when save the creative. This role is only supported in
-	// following creative_type: * `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE`
+	// provided when save the creative. Assets of this role are read-only.
 	//   "ASSET_ROLE_ICON" - The icon of a creative. This role is only
 	// supported and required in following creative_type: *
-	// `CREATIVE_TYPE_NATIVE` * `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE`
+	// `CREATIVE_TYPE_NATIVE` * `CREATIVE_TYPE_NATIVE_SITE_SQUARE`
 	//   "ASSET_ROLE_COVER_IMAGE" - The cover image of a native video
 	// creative. This role is only supported and required in following
 	// creative_type: * `CREATIVE_TYPE_VIDEO`
@@ -1615,8 +1614,7 @@ func (s *AssignedInventorySource) MarshalJSON() ([]byte, error) {
 }
 
 // AssignedLocation: An assignment between a location list and a
-// relevant targeting option. Currently, geo region targeting options
-// are the only supported option for assignment.
+// relevant targeting option.
 type AssignedLocation struct {
 	// AssignedLocationId: Output only. The unique ID of the assigned
 	// location. The ID is only unique within a location list. It may be
@@ -1627,7 +1625,7 @@ type AssignedLocation struct {
 	Name string `json:"name,omitempty"`
 
 	// TargetingOptionId: Required. The ID of the targeting option assigned
-	// to the location list. Must be of type TARGETING_TYPE_GEO_REGION.
+	// to the location list.
 	TargetingOptionId string `json:"targetingOptionId,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -1962,7 +1960,9 @@ type AssignedTargetingOption struct {
 	//   "TARGETING_TYPE_LANGUAGE" - Target ads to a specific language (for
 	// example, English or Japanese).
 	//   "TARGETING_TYPE_AUTHORIZED_SELLER_STATUS" - Target ads to ads.txt
-	// authorized sellers.
+	// authorized sellers. If no targeting option of this type is assigned,
+	// the resource uses the "Authorized Direct Sellers and Resellers"
+	// option by default.
 	//   "TARGETING_TYPE_GEO_REGION" - Target ads to a specific regional
 	// location (for example, a city or state).
 	//   "TARGETING_TYPE_INVENTORY_SOURCE_GROUP" - Purchase impressions from
@@ -2206,8 +2206,7 @@ func (s *AudienceGroupAssignedTargetingOptionDetails) MarshalJSON() ([]byte, err
 // is not supported. Remove all audio content type targeting options to
 // achieve this effect.
 type AudioContentTypeAssignedTargetingOptionDetails struct {
-	// AudioContentType: The audio content type. Output only in v1. Required
-	// in v2.
+	// AudioContentType: Required. The audio content type.
 	//
 	// Possible values:
 	//   "AUDIO_CONTENT_TYPE_UNSPECIFIED" - Audio content type is not
@@ -2408,7 +2407,10 @@ func (s *AuditAdvertiserResponse) MarshalJSON() ([]byte, error) {
 // AuthorizedSellerStatusAssignedTargetingOptionDetails: Represents an
 // assigned authorized seller status. This will be populated in the
 // details field of an AssignedTargetingOption when targeting_type is
-// `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS`.
+// `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS`. If a resource does not
+// have an `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` assigned targeting
+// option, it is using the "Authorized Direct Sellers and Resellers"
+// option.
 type AuthorizedSellerStatusAssignedTargetingOptionDetails struct {
 	// AuthorizedSellerStatus: Output only. The authorized seller status to
 	// target.
@@ -2416,16 +2418,18 @@ type AuthorizedSellerStatusAssignedTargetingOptionDetails struct {
 	// Possible values:
 	//   "AUTHORIZED_SELLER_STATUS_UNSPECIFIED" - Default value when
 	// authorized seller status is not specified in this version. This enum
-	// is a placeholder for default value and does not represent a real
-	// authorized seller status option.
+	// is a placeholder for the default value, or "Authorized Direct Sellers
+	// and Resellers" in the UI.
 	//   "AUTHORIZED_SELLER_STATUS_AUTHORIZED_DIRECT_SELLERS_ONLY" - Only
 	// authorized sellers that directly own the inventory being monetized,
-	// as indicated by a DIRECT declaration in the ads.txt file.
+	// as indicated by a DIRECT declaration in the ads.txt file. This value
+	// is equivalent to "Authorized Direct Sellers" in the UI.
 	//
 	// "AUTHORIZED_SELLER_STATUS_AUTHORIZED_AND_NON_PARTICIPATING_PUBLISHERS"
 	//  - All authorized sellers, including publishers that have not posted
 	// an ads.txt file. Display & Video 360 automatically disallows
-	// unauthorized sellers.
+	// unauthorized sellers. This value is equivalent to "Authorized and
+	// Non-Participating Publishers" in the UI.
 	AuthorizedSellerStatus string `json:"authorizedSellerStatus,omitempty"`
 
 	// TargetingOptionId: Required. The targeting_option_id of a
@@ -2467,16 +2471,18 @@ type AuthorizedSellerStatusTargetingOptionDetails struct {
 	// Possible values:
 	//   "AUTHORIZED_SELLER_STATUS_UNSPECIFIED" - Default value when
 	// authorized seller status is not specified in this version. This enum
-	// is a placeholder for default value and does not represent a real
-	// authorized seller status option.
+	// is a placeholder for the default value, or "Authorized Direct Sellers
+	// and Resellers" in the UI.
 	//   "AUTHORIZED_SELLER_STATUS_AUTHORIZED_DIRECT_SELLERS_ONLY" - Only
 	// authorized sellers that directly own the inventory being monetized,
-	// as indicated by a DIRECT declaration in the ads.txt file.
+	// as indicated by a DIRECT declaration in the ads.txt file. This value
+	// is equivalent to "Authorized Direct Sellers" in the UI.
 	//
 	// "AUTHORIZED_SELLER_STATUS_AUTHORIZED_AND_NON_PARTICIPATING_PUBLISHERS"
 	//  - All authorized sellers, including publishers that have not posted
 	// an ads.txt file. Display & Video 360 automatically disallows
-	// unauthorized sellers.
+	// unauthorized sellers. This value is equivalent to "Authorized and
+	// Non-Participating Publishers" in the UI.
 	AuthorizedSellerStatus string `json:"authorizedSellerStatus,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
@@ -2838,11 +2844,11 @@ func (s *BulkEditAssignedInventorySourcesResponse) MarshalJSON() ([]byte, error)
 // AssignedLocationService.BulkEditAssignedLocations.
 type BulkEditAssignedLocationsRequest struct {
 	// CreatedAssignedLocations: The assigned locations to create in bulk,
-	// specified as a list of AssignedLocations.
+	// specified as a list of AssignedLocation resources.
 	CreatedAssignedLocations []*AssignedLocation `json:"createdAssignedLocations,omitempty"`
 
 	// DeletedAssignedLocations: The IDs of the assigned locations to delete
-	// in bulk, specified as a list of assigned_location_ids.
+	// in bulk, specified as a list of assignedLocationId values.
 	DeletedAssignedLocations googleapi.Int64s `json:"deletedAssignedLocations,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
@@ -2870,8 +2876,6 @@ func (s *BulkEditAssignedLocationsRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// BulkEditAssignedLocationsResponse: Response message for
-// AssignedLocationService.BulkEditAssignedLocations.
 type BulkEditAssignedLocationsResponse struct {
 	// AssignedLocations: The list of assigned locations that have been
 	// successfully created. This list will be absent if empty.
@@ -3304,8 +3308,6 @@ func (s *BulkListAdvertiserAssignedTargetingOptionsResponse) MarshalJSON() ([]by
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// BulkListCampaignAssignedTargetingOptionsResponse: Response message
-// for BulkListCampaignAssignedTargetingOptions.
 type BulkListCampaignAssignedTargetingOptionsResponse struct {
 	// AssignedTargetingOptions: The list of assigned targeting options.
 	// This list will be absent if empty.
@@ -3347,8 +3349,6 @@ func (s *BulkListCampaignAssignedTargetingOptionsResponse) MarshalJSON() ([]byte
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// BulkListInsertionOrderAssignedTargetingOptionsResponse: Response
-// message for BulkListInsertionOrderAssignedTargetingOptions.
 type BulkListInsertionOrderAssignedTargetingOptionsResponse struct {
 	// AssignedTargetingOptions: The list of assigned targeting options.
 	// This list will be absent if empty.
@@ -4133,6 +4133,10 @@ type CmHybridConfig struct {
 	// configuration linked with the DV360 advertiser.
 	CmAccountId int64 `json:"cmAccountId,omitempty,string"`
 
+	// CmAdvertiserIds: Output only. The set of CM360 Advertiser IDs sharing
+	// the CM360 Floodlight configuration.
+	CmAdvertiserIds googleapi.Int64s `json:"cmAdvertiserIds,omitempty"`
+
 	// CmFloodlightConfigId: Required. Immutable. ID of the CM360 Floodlight
 	// configuration linked with the DV360 advertiser.
 	CmFloodlightConfigId int64 `json:"cmFloodlightConfigId,omitempty,string"`
@@ -4322,6 +4326,50 @@ func (s *CombinedAudienceTargetingSetting) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// Consent: User consent status.
+type Consent struct {
+	// AdPersonalization: Represents consent for ad personalization.
+	//
+	// Possible values:
+	//   "CONSENT_STATUS_UNSPECIFIED" - Type value is not specified or is
+	// unknown in this version.
+	//   "CONSENT_STATUS_GRANTED" - Consent is granted.
+	//   "CONSENT_STATUS_DENIED" - Consent is denied.
+	AdPersonalization string `json:"adPersonalization,omitempty"`
+
+	// AdUserData: Represents consent for ad user data.
+	//
+	// Possible values:
+	//   "CONSENT_STATUS_UNSPECIFIED" - Type value is not specified or is
+	// unknown in this version.
+	//   "CONSENT_STATUS_GRANTED" - Consent is granted.
+	//   "CONSENT_STATUS_DENIED" - Consent is denied.
+	AdUserData string `json:"adUserData,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AdPersonalization")
+	// to unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AdPersonalization") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Consent) MarshalJSON() ([]byte, error) {
+	type NoMethod Consent
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // ContactInfo: Contact information defining a Customer Match audience
 // member.
 type ContactInfo struct {
@@ -4383,12 +4431,18 @@ func (s *ContactInfo) MarshalJSON() ([]byte, error) {
 // ContactInfoList: Wrapper message for a list of contact information
 // defining Customer Match audience members.
 type ContactInfoList struct {
+	// Consent: Input only. The consent setting for the users in
+	// contact_infos. Leaving this field unset indicates that consent is not
+	// specified. If ad_user_data or ad_personalization fields are set to
+	// `CONSENT_STATUS_DENIED`, the request will return an error.
+	Consent *Consent `json:"consent,omitempty"`
+
 	// ContactInfos: A list of ContactInfo objects defining Customer Match
 	// audience members. The size of members after splitting the
 	// contact_infos mustn't be greater than 500,000.
 	ContactInfos []*ContactInfo `json:"contactInfos,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "ContactInfos") to
+	// ForceSendFields is a list of field names (e.g. "Consent") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
 	// non-pointer, non-interface field appearing in ForceSendFields will be
@@ -4396,10 +4450,10 @@ type ContactInfoList struct {
 	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "ContactInfos") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
+	// NullFields is a list of field names (e.g. "Consent") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
 	// null. It is an error if a field in this list has a non-empty value.
 	// This may be used to include null fields in Patch requests.
 	NullFields []string `json:"-"`
@@ -4598,8 +4652,8 @@ type ContentInstreamPositionAssignedTargetingOptionDetails struct {
 	// audio content.
 	AdType string `json:"adType,omitempty"`
 
-	// ContentInstreamPosition: The content instream position for video or
-	// audio ads. Output only in v1. Required in v2.
+	// ContentInstreamPosition: Required. The content instream position for
+	// video or audio ads.
 	//
 	// Possible values:
 	//   "CONTENT_INSTREAM_POSITION_UNSPECIFIED" - Content instream position
@@ -4712,8 +4766,7 @@ type ContentOutstreamPositionAssignedTargetingOptionDetails struct {
 	// audio content.
 	AdType string `json:"adType,omitempty"`
 
-	// ContentOutstreamPosition: The content outstream position. Output only
-	// in v1. Required in v2.
+	// ContentOutstreamPosition: Required. The content outstream position.
 	//
 	// Possible values:
 	//   "CONTENT_OUTSTREAM_POSITION_UNSPECIFIED" - Content outstream
@@ -5116,7 +5169,9 @@ type CreateAssignedTargetingOptionsRequest struct {
 	//   "TARGETING_TYPE_LANGUAGE" - Target ads to a specific language (for
 	// example, English or Japanese).
 	//   "TARGETING_TYPE_AUTHORIZED_SELLER_STATUS" - Target ads to ads.txt
-	// authorized sellers.
+	// authorized sellers. If no targeting option of this type is assigned,
+	// the resource uses the "Authorized Direct Sellers and Resellers"
+	// option by default.
 	//   "TARGETING_TYPE_GEO_REGION" - Target ads to a specific regional
 	// location (for example, a city or state).
 	//   "TARGETING_TYPE_INVENTORY_SOURCE_GROUP" - Purchase impressions from
@@ -5209,6 +5264,11 @@ type CreateSdfDownloadTaskRequest struct {
 	//   "SDF_VERSION_5_3" - SDF version 5.3
 	//   "SDF_VERSION_5_4" - SDF version 5.4
 	//   "SDF_VERSION_5_5" - SDF version 5.5
+	//   "SDF_VERSION_6" - SDF version 6
+	//   "SDF_VERSION_7" - SDF version 7. Read the [v7 migration
+	// guide](/display-video/api/structured-data-file/v7-migration-guide)
+	// before migrating to this version. Currently in beta. Only available
+	// for use by a subset of users.
 	Version string `json:"version,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AdvertiserId") to
@@ -5239,10 +5299,7 @@ type Creative struct {
 	// AdditionalDimensions: Additional dimensions. Applicable when
 	// creative_type is one of: * `CREATIVE_TYPE_STANDARD` *
 	// `CREATIVE_TYPE_EXPANDABLE` * `CREATIVE_TYPE_NATIVE` *
-	// `CREATIVE_TYPE_TEMPLATED_APP_INSTALL` *
 	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` * `CREATIVE_TYPE_LIGHTBOX` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
 	// `CREATIVE_TYPE_PUBLISHER_HOSTED` If this field is specified,
 	// width_pixels and height_pixels are both required and must be greater
 	// than or equal to 0.
@@ -5256,10 +5313,7 @@ type Creative struct {
 	// creative tag.
 	AppendedTag string `json:"appendedTag,omitempty"`
 
-	// Assets: Required. Assets associated to this creative. Assets can be
-	// associated to the creative in one of following roles: *
-	// `ASSET_ROLE_UNSPECIFIED` * `ASSET_ROLE_MAIN` * `ASSET_ROLE_BACKUP` *
-	// `ASSET_ROLE_POLITE_LOAD`
+	// Assets: Required. Assets associated to this creative.
 	Assets []*AssetAssociation `json:"assets,omitempty"`
 
 	// CmPlacementId: Output only. The unique ID of the Campaign Manager 360
@@ -5271,10 +5325,7 @@ type Creative struct {
 	// the creative. Optional for the following creative_type when created
 	// by an advertiser that uses both Campaign Manager 360 and third-party
 	// ad serving: * `CREATIVE_TYPE_NATIVE` *
-	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` Output only for other
-	// cases.
+	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` Output only for other cases.
 	CmTrackingAd *CmTrackingAd `json:"cmTrackingAd,omitempty"`
 
 	// CompanionCreativeIds: The IDs of companion creatives for a video
@@ -5349,11 +5400,11 @@ type Creative struct {
 	// creative. Create and update methods are **not** supported for this
 	// creative type.
 	//   "CREATIVE_TYPE_NATIVE_APP_INSTALL" - Native app install creative.
-	// Create and update methods are supported for this creative type if the
-	// hosting_source is `HOSTING_SOURCE_HOSTED`
+	// Create and update methods are **not** supported for this creative
+	// type.
 	//   "CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE" - Square native app
-	// install creative. Create and update methods are supported for this
-	// creative type if the hosting_source is `HOSTING_SOURCE_HOSTED`
+	// install creative. Create and update methods are **not** supported for
+	// this creative type.
 	//   "CREATIVE_TYPE_AUDIO" - Audio creative. Create and update methods
 	// are supported for this creative type if the hosting_source is
 	// `HOSTING_SOURCE_HOSTED`
@@ -5371,9 +5422,7 @@ type Creative struct {
 	// Dimensions: Required. Primary dimensions of the creative. Applicable
 	// to all creative types. The value of width_pixels and height_pixels
 	// defaults to `0` when creative_type is one of: * `CREATIVE_TYPE_VIDEO`
-	// * `CREATIVE_TYPE_TEMPLATED_APP_INSTALL_INTERSTITIAL` *
-	// `CREATIVE_TYPE_AUDIO` * `CREATIVE_TYPE_NATIVE_VIDEO` *
-	// `CREATIVE_TYPE_TEMPLATED_APP_INSTALL_VIDEO`
+	// * `CREATIVE_TYPE_AUDIO` * `CREATIVE_TYPE_NATIVE_VIDEO`
 	Dimensions *Dimensions `json:"dimensions,omitempty"`
 
 	// DisplayName: Required. The display name of the creative. Must be
@@ -5465,8 +5514,6 @@ type Creative struct {
 	// Campaign Manager 360. Create and update methods are supported for
 	// this hosting type if the creative_type is one of the following: *
 	// `CREATIVE_TYPE_AUDIO` * `CREATIVE_TYPE_NATIVE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
 	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` * `CREATIVE_TYPE_NATIVE_VIDEO` *
 	// `CREATIVE_TYPE_STANDARD` * `CREATIVE_TYPE_VIDEO`
 	//   "HOSTING_SOURCE_RICH_MEDIA" - A rich media creative created in
@@ -5495,12 +5542,9 @@ type Creative struct {
 
 	// JsTrackerUrl: JavaScript measurement URL from supported third-party
 	// verification providers (ComScore, DoubleVerify, IAS, Moat). HTML
-	// script tags are not supported. This field is only supported in
+	// script tags are not supported. This field is only writeable in
 	// following creative_type: * `CREATIVE_TYPE_NATIVE` *
-	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_VIDEO`
+	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` * `CREATIVE_TYPE_NATIVE_VIDEO`
 	JsTrackerUrl string `json:"jsTrackerUrl,omitempty"`
 
 	// LineItemIds: Output only. The IDs of the line items this creative is
@@ -5617,12 +5661,9 @@ type Creative struct {
 	// technology vendors. The URLs must start with https (except on
 	// inventory that doesn't require SSL compliance). If using macros in
 	// your URL, use only macros supported by Display & Video 360. Standard
-	// URLs only, no IMG or SCRIPT tags. This field is only supported in
+	// URLs only, no IMG or SCRIPT tags. This field is only writeable in
 	// following creative_type: * `CREATIVE_TYPE_NATIVE` *
-	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL` *
-	// `CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE` *
-	// `CREATIVE_TYPE_NATIVE_VIDEO`
+	// `CREATIVE_TYPE_NATIVE_SITE_SQUARE` * `CREATIVE_TYPE_NATIVE_VIDEO`
 	TrackerUrls []string `json:"trackerUrls,omitempty"`
 
 	// Transcodes: Output only. Audio/Video transcodes. Display & Video 360
@@ -5732,11 +5773,11 @@ type CreativeConfig struct {
 	// creative. Create and update methods are **not** supported for this
 	// creative type.
 	//   "CREATIVE_TYPE_NATIVE_APP_INSTALL" - Native app install creative.
-	// Create and update methods are supported for this creative type if the
-	// hosting_source is `HOSTING_SOURCE_HOSTED`
+	// Create and update methods are **not** supported for this creative
+	// type.
 	//   "CREATIVE_TYPE_NATIVE_APP_INSTALL_SQUARE" - Square native app
-	// install creative. Create and update methods are supported for this
-	// creative type if the hosting_source is `HOSTING_SOURCE_HOSTED`
+	// install creative. Create and update methods are **not** supported for
+	// this creative type.
 	//   "CREATIVE_TYPE_AUDIO" - Audio creative. Create and update methods
 	// are supported for this creative type if the hosting_source is
 	// `HOSTING_SOURCE_HOSTED`
@@ -5966,8 +6007,7 @@ type CustomBiddingScript struct {
 	CustomBiddingScriptId int64 `json:"customBiddingScriptId,omitempty,string"`
 
 	// Errors: Output only. Error details of a rejected custom bidding
-	// script. This field will only be populated when Script.state is
-	// REJECTED.
+	// script. This field will only be populated when state is REJECTED.
 	Errors []*ScriptError `json:"errors,omitempty"`
 
 	// Name: Output only. The resource name of the custom bidding script.
@@ -6380,7 +6420,9 @@ type DeleteAssignedTargetingOptionsRequest struct {
 	//   "TARGETING_TYPE_LANGUAGE" - Target ads to a specific language (for
 	// example, English or Japanese).
 	//   "TARGETING_TYPE_AUTHORIZED_SELLER_STATUS" - Target ads to ads.txt
-	// authorized sellers.
+	// authorized sellers. If no targeting option of this type is assigned,
+	// the resource uses the "Authorized Direct Sellers and Resellers"
+	// option by default.
 	//   "TARGETING_TYPE_GEO_REGION" - Target ads to a specific regional
 	// location (for example, a city or state).
 	//   "TARGETING_TYPE_INVENTORY_SOURCE_GROUP" - Purchase impressions from
@@ -6509,17 +6551,16 @@ func (s *DeviceMakeModelTargetingOptionDetails) MarshalJSON() ([]byte, error) {
 // AssignedTargetingOption when targeting_type is
 // `TARGETING_TYPE_DEVICE_TYPE`.
 type DeviceTypeAssignedTargetingOptionDetails struct {
-	// DeviceType: The display name of the device type. Output only in v1.
-	// Required in v2.
+	// DeviceType: Required. The display name of the device type.
 	//
 	// Possible values:
 	//   "DEVICE_TYPE_UNSPECIFIED" - Default value when device type is not
 	// specified in this version. This enum is a placeholder for default
 	// value and does not represent a real device type option.
-	//   "DEVICE_TYPE_COMPUTER" - The device type is computer.
-	//   "DEVICE_TYPE_CONNECTED_TV" - The device type is connected TV.
-	//   "DEVICE_TYPE_SMART_PHONE" - The device type is smart phone..
-	//   "DEVICE_TYPE_TABLET" - The device type is tablet.
+	//   "DEVICE_TYPE_COMPUTER" - Computer.
+	//   "DEVICE_TYPE_CONNECTED_TV" - Connected TV.
+	//   "DEVICE_TYPE_SMART_PHONE" - Smart phone.
+	//   "DEVICE_TYPE_TABLET" - Tablet.
 	DeviceType string `json:"deviceType,omitempty"`
 
 	// TargetingOptionId: Required. ID of the device type.
@@ -6558,10 +6599,10 @@ type DeviceTypeTargetingOptionDetails struct {
 	//   "DEVICE_TYPE_UNSPECIFIED" - Default value when device type is not
 	// specified in this version. This enum is a placeholder for default
 	// value and does not represent a real device type option.
-	//   "DEVICE_TYPE_COMPUTER" - The device type is computer.
-	//   "DEVICE_TYPE_CONNECTED_TV" - The device type is connected TV.
-	//   "DEVICE_TYPE_SMART_PHONE" - The device type is smart phone..
-	//   "DEVICE_TYPE_TABLET" - The device type is tablet.
+	//   "DEVICE_TYPE_COMPUTER" - Computer.
+	//   "DEVICE_TYPE_CONNECTED_TV" - Connected TV.
+	//   "DEVICE_TYPE_SMART_PHONE" - Smart phone.
+	//   "DEVICE_TYPE_TABLET" - Tablet.
 	DeviceType string `json:"deviceType,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "DeviceType") to
@@ -7353,8 +7394,7 @@ type Empty struct {
 // of an AssignedTargetingOption when targeting_type is
 // `TARGETING_TYPE_ENVIRONMENT`.
 type EnvironmentAssignedTargetingOptionDetails struct {
-	// Environment: The serving environment. Output only in v1. Required in
-	// v2.
+	// Environment: Required. The serving environment.
 	//
 	// Possible values:
 	//   "ENVIRONMENT_UNSPECIFIED" - Default value when environment is not
@@ -7588,6 +7628,12 @@ type ExchangeConfigEnabledExchange struct {
 	//   "EXCHANGE_TAPJOY" - Tapjoy.
 	//   "EXCHANGE_VISTAR" - Vistar.
 	//   "EXCHANGE_DAX" - DAX.
+	//   "EXCHANGE_JCD" - JCD.
+	//   "EXCHANGE_PLACE_EXCHANGE" - Place Exchange.
+	//   "EXCHANGE_APPLOVIN" - AppLovin.
+	//   "EXCHANGE_CONNATIX" - Connatix.
+	//   "EXCHANGE_RESET_DIGITAL" - Reset Digital.
+	//   "EXCHANGE_HIVESTACK" - Hivestack.
 	Exchange string `json:"exchange,omitempty"`
 
 	// GoogleAdManagerAgencyId: Output only. Agency ID of Google Ad Manager.
@@ -7702,6 +7748,12 @@ type ExchangeReviewStatus struct {
 	//   "EXCHANGE_TAPJOY" - Tapjoy.
 	//   "EXCHANGE_VISTAR" - Vistar.
 	//   "EXCHANGE_DAX" - DAX.
+	//   "EXCHANGE_JCD" - JCD.
+	//   "EXCHANGE_PLACE_EXCHANGE" - Place Exchange.
+	//   "EXCHANGE_APPLOVIN" - AppLovin.
+	//   "EXCHANGE_CONNATIX" - Connatix.
+	//   "EXCHANGE_RESET_DIGITAL" - Reset Digital.
+	//   "EXCHANGE_HIVESTACK" - Hivestack.
 	Exchange string `json:"exchange,omitempty"`
 
 	// Status: Status of the exchange review.
@@ -7815,6 +7867,12 @@ type ExchangeTargetingOptionDetails struct {
 	//   "EXCHANGE_TAPJOY" - Tapjoy.
 	//   "EXCHANGE_VISTAR" - Vistar.
 	//   "EXCHANGE_DAX" - DAX.
+	//   "EXCHANGE_JCD" - JCD.
+	//   "EXCHANGE_PLACE_EXCHANGE" - Place Exchange.
+	//   "EXCHANGE_APPLOVIN" - AppLovin.
+	//   "EXCHANGE_CONNATIX" - Connatix.
+	//   "EXCHANGE_RESET_DIGITAL" - Reset Digital.
+	//   "EXCHANGE_HIVESTACK" - Hivestack.
 	Exchange string `json:"exchange,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Exchange") to
@@ -8346,8 +8404,7 @@ func (s *FrequencyCap) MarshalJSON() ([]byte, error) {
 // AssignedTargetingOption when targeting_type is
 // `TARGETING_TYPE_GENDER`.
 type GenderAssignedTargetingOptionDetails struct {
-	// Gender: The gender of the audience. Output only in v1. Required in
-	// v2.
+	// Gender: Required. The gender of the audience.
 	//
 	// Possible values:
 	//   "GENDER_UNSPECIFIED" - Default value when gender is not specified
@@ -8459,6 +8516,12 @@ type GenerateDefaultLineItemRequest struct {
 	//   "LINE_ITEM_TYPE_VIDEO_OVER_THE_TOP" - Over-the-top ads present in
 	// OTT insertion orders. This type is only applicable to line items with
 	// an insertion order of insertion_order_type `OVER_THE_TOP`.
+	//   "LINE_ITEM_TYPE_DISPLAY_OUT_OF_HOME" - Display ads served on
+	// digital-out-of-home inventory. Line items of this type and their
+	// targeting cannot be created or updated using the API.
+	//   "LINE_ITEM_TYPE_VIDEO_OUT_OF_HOME" - Video ads served on
+	// digital-out-of-home inventory. Line items of this type and their
+	// targeting cannot be created or updated using the API.
 	LineItemType string `json:"lineItemType,omitempty"`
 
 	// MobileApp: The mobile app promoted by the line item. This is
@@ -8930,6 +8993,12 @@ type GuaranteedOrder struct {
 	//   "EXCHANGE_TAPJOY" - Tapjoy.
 	//   "EXCHANGE_VISTAR" - Vistar.
 	//   "EXCHANGE_DAX" - DAX.
+	//   "EXCHANGE_JCD" - JCD.
+	//   "EXCHANGE_PLACE_EXCHANGE" - Place Exchange.
+	//   "EXCHANGE_APPLOVIN" - AppLovin.
+	//   "EXCHANGE_CONNATIX" - Connatix.
+	//   "EXCHANGE_RESET_DIGITAL" - Reset Digital.
+	//   "EXCHANGE_HIVESTACK" - Hivestack.
 	Exchange string `json:"exchange,omitempty"`
 
 	// GuaranteedOrderId: Output only. The unique identifier of the
@@ -9079,8 +9148,7 @@ func (s *GuaranteedOrderStatus) MarshalJSON() ([]byte, error) {
 // details field of an AssignedTargetingOption when targeting_type is
 // `TARGETING_TYPE_HOUSEHOLD_INCOME`.
 type HouseholdIncomeAssignedTargetingOptionDetails struct {
-	// HouseholdIncome: The household income of the audience. Output only in
-	// v1. Required in v2.
+	// HouseholdIncome: Required. The household income of the audience.
 	//
 	// Possible values:
 	//   "HOUSEHOLD_INCOME_UNSPECIFIED" - Default value when household
@@ -9248,7 +9316,8 @@ type InsertionOrder struct {
 	BidStrategy *BiddingStrategy `json:"bidStrategy,omitempty"`
 
 	// BillableOutcome: Immutable. The billable outcome of the insertion
-	// order.
+	// order. Outcome based buying is deprecated.
+	// `BILLABLE_OUTCOME_PAY_PER_IMPRESSION` is the only valid value.
 	//
 	// Possible values:
 	//   "BILLABLE_OUTCOME_UNSPECIFIED" - Unspecified billable outcome.
@@ -9389,14 +9458,14 @@ type InsertionOrderBudget struct {
 	// automation option is not specified or is unknown in this version.
 	//   "INSERTION_ORDER_AUTOMATION_TYPE_BUDGET" - Automatic budget
 	// allocation. Allow the system to automatically shift budget to owning
-	// line items to optimize performance defined by performance_goal. No
-	// automation on bid settings.
+	// line items to optimize performance defined by kpi. No automation on
+	// bid settings.
 	//   "INSERTION_ORDER_AUTOMATION_TYPE_NONE" - No automation of bid or
 	// budget on insertion order level. Bid and budget must be manually
 	// configured at the line item level.
 	//   "INSERTION_ORDER_AUTOMATION_TYPE_BID_BUDGET" - Allow the system to
 	// automatically adjust bids and shift budget to owning line items to
-	// optimize performance defined by performance_goal.
+	// optimize performance defined by kpi.
 	AutomationType string `json:"automationType,omitempty"`
 
 	// BudgetSegments: Required. The list of budget segments. Use a budget
@@ -9462,8 +9531,7 @@ type InsertionOrderBudgetSegment struct {
 
 	// Description: The budget segment description. It can be used to enter
 	// Purchase Order information for each budget segment and have that
-	// information printed on the invoices. Must be UTF-8 encoded with a
-	// length of no more than 80 characters.
+	// information printed on the invoices. Must be UTF-8 encoded.
 	Description string `json:"description,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "BudgetAmountMicros")
@@ -9802,6 +9870,12 @@ type InventorySource struct {
 	//   "EXCHANGE_TAPJOY" - Tapjoy.
 	//   "EXCHANGE_VISTAR" - Vistar.
 	//   "EXCHANGE_DAX" - DAX.
+	//   "EXCHANGE_JCD" - JCD.
+	//   "EXCHANGE_PLACE_EXCHANGE" - Place Exchange.
+	//   "EXCHANGE_APPLOVIN" - AppLovin.
+	//   "EXCHANGE_CONNATIX" - Connatix.
+	//   "EXCHANGE_RESET_DIGITAL" - Reset Digital.
+	//   "EXCHANGE_HIVESTACK" - Hivestack.
 	Exchange string `json:"exchange,omitempty"`
 
 	// GuaranteedOrderId: Immutable. The ID of the guaranteed order that
@@ -9885,10 +9959,6 @@ type InventorySource struct {
 
 	// Status: The status settings of the inventory source.
 	Status *InventorySourceStatus `json:"status,omitempty"`
-
-	// SubSitePropertyId: Immutable. The unique ID of the sub-site property
-	// assigned to this inventory source.
-	SubSitePropertyId int64 `json:"subSitePropertyId,omitempty,string"`
 
 	// TimeRange: The time range when this inventory source starts and stops
 	// serving.
@@ -10655,6 +10725,12 @@ type LineItem struct {
 	//   "LINE_ITEM_TYPE_VIDEO_OVER_THE_TOP" - Over-the-top ads present in
 	// OTT insertion orders. This type is only applicable to line items with
 	// an insertion order of insertion_order_type `OVER_THE_TOP`.
+	//   "LINE_ITEM_TYPE_DISPLAY_OUT_OF_HOME" - Display ads served on
+	// digital-out-of-home inventory. Line items of this type and their
+	// targeting cannot be created or updated using the API.
+	//   "LINE_ITEM_TYPE_VIDEO_OUT_OF_HOME" - Video ads served on
+	// digital-out-of-home inventory. Line items of this type and their
+	// targeting cannot be created or updated using the API.
 	LineItemType string `json:"lineItemType,omitempty"`
 
 	// MobileApp: The mobile app promoted by the line item. This is
@@ -10691,10 +10767,11 @@ type LineItem struct {
 	// guaranteed inventory source.
 	ReservationType string `json:"reservationType,omitempty"`
 
-	// TargetingExpansion: The targeting expansion
-	// (https://support.google.com/displayvideo/answer/10191558) settings of
-	// the line item. This config is only applicable when eligible audience
-	// list targeting is assigned to the line item.
+	// TargetingExpansion: The optimized targeting
+	// (//support.google.com/displayvideo/answer/12060859) settings of the
+	// line item. This config is only applicable for display, video, or
+	// audio line items that use automated bidding and positively target
+	// eligible audience lists.
 	TargetingExpansion *TargetingExpansionConfig `json:"targetingExpansion,omitempty"`
 
 	// UpdateTime: Output only. The timestamp when the line item was last
@@ -10748,6 +10825,12 @@ type LineItem struct {
 	// any creative for the targeted deals.
 	//   "TARGETING_DEPRECATED_GEO_TARGET" - This line item targets a geo
 	// target that is deprecated.
+	//   "DEPRECATED_FIRST_PARTY_AUDIENCE_EXCLUSION" - This line item uses
+	// the exclude_first_party_audience setting, which is deprecated and
+	// scheduled to sunset after **March 25, 2023**. Update your API
+	// integration to directly exclude any first-party audiences using
+	// audience targeting before **March 25, 2023** to account for the
+	// sunset of the exclude_first_party_audience field.
 	WarningMessages []string `json:"warningMessages,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -10867,7 +10950,11 @@ type LineItemFlight struct {
 	//   "LINE_ITEM_FLIGHT_DATE_TYPE_CUSTOM" - The line item uses its own
 	// custom flight dates.
 	//   "LINE_ITEM_FLIGHT_DATE_TYPE_TRIGGER" - The line item uses a
-	// trigger.
+	// trigger. **Warning:** Line Items using manual triggers no longer
+	// serve in Display & Video 360. This value will sunset on August 1,
+	// 2023. Read our [feature deprecation
+	// announcement](/display-video/api/deprecations#features.manual_triggers
+	// ) for more information.
 	FlightDateType string `json:"flightDateType,omitempty"`
 
 	// TriggerId: The ID of the manual trigger associated with the line
@@ -10876,7 +10963,11 @@ type LineItemFlight struct {
 	// When set, the line item's flight dates are inherited from its parent
 	// insertion order. * Active line items will spend when the selected
 	// trigger is activated within the parent insertion order's flight
-	// dates.
+	// dates. **Warning:** Line Items using manual triggers no longer serve
+	// in Display & Video 360. This field will sunset on August 1, 2023.
+	// Read our feature deprecation announcement
+	// (/display-video/api/deprecations#features.manual_triggers) for more
+	// information.
 	TriggerId int64 `json:"triggerId,omitempty,string"`
 
 	// ForceSendFields is a list of field names (e.g. "DateRange") to
@@ -11488,8 +11579,6 @@ func (s *ListGuaranteedOrdersResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ListInsertionOrderAssignedTargetingOptionsResponse: Response message
-// for ListInsertionOrderAssignedTargetingOptions.
 type ListInsertionOrderAssignedTargetingOptionsResponse struct {
 	// AssignedTargetingOptions: The list of assigned targeting options.
 	// This list will be absent if empty.
@@ -12234,6 +12323,11 @@ func (s *LookupInvoiceCurrencyResponse) MarshalJSON() ([]byte, error) {
 }
 
 // ManualTrigger: A single manual trigger in Display & Video 360.
+// **Warning:** Line Items using manual triggers no longer serve in
+// Display & Video 360. This resource will sunset on August 1, 2023.
+// Read our feature deprecation announcement
+// (/display-video/api/deprecations#features.manual_triggers) for more
+// information.
 type ManualTrigger struct {
 	// ActivationDurationMinutes: Required. The maximum duration of each
 	// activation in minutes. Must be between 1 and 360 inclusive. After
@@ -12447,12 +12541,18 @@ func (s *MobileApp) MarshalJSON() ([]byte, error) {
 // MobileDeviceIdList: Wrapper message for a list of mobile device IDs
 // defining Customer Match audience members.
 type MobileDeviceIdList struct {
+	// Consent: Input only. The consent setting for the users in
+	// mobile_device_ids. Leaving this field unset indicates that consent is
+	// not specified. If ad_user_data or ad_personalization fields are set
+	// to `CONSENT_STATUS_DENIED`, the request will return an error.
+	Consent *Consent `json:"consent,omitempty"`
+
 	// MobileDeviceIds: A list of mobile device IDs defining Customer Match
 	// audience members. The size of mobile_device_ids mustn't be greater
 	// than 500,000.
 	MobileDeviceIds []string `json:"mobileDeviceIds,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "MobileDeviceIds") to
+	// ForceSendFields is a list of field names (e.g. "Consent") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
 	// non-pointer, non-interface field appearing in ForceSendFields will be
@@ -12460,13 +12560,12 @@ type MobileDeviceIdList struct {
 	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "MobileDeviceIds") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "Consent") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
 	NullFields []string `json:"-"`
 }
 
@@ -12523,8 +12622,7 @@ func (s *Money) MarshalJSON() ([]byte, error) {
 // Explicitly targeting all options is not supported. Remove all native
 // content position targeting options to achieve this effect.
 type NativeContentPositionAssignedTargetingOptionDetails struct {
-	// ContentPosition: The content position. Output only in v1. Required in
-	// v2.
+	// ContentPosition: Required. The content position.
 	//
 	// Possible values:
 	//   "NATIVE_CONTENT_POSITION_UNSPECIFIED" - Native content position is
@@ -12822,8 +12920,7 @@ func (s *ObaIcon) MarshalJSON() ([]byte, error) {
 // details field of an AssignedTargetingOption when targeting_type is
 // `TARGETING_TYPE_OMID`.
 type OmidAssignedTargetingOptionDetails struct {
-	// Omid: The type of Open Measurement enabled inventory. Output only in
-	// v1. Required in v2.
+	// Omid: Required. The type of Open Measurement enabled inventory.
 	//
 	// Possible values:
 	//   "OMID_UNSPECIFIED" - Default value when omid targeting is not
@@ -13097,8 +13194,8 @@ type Operation struct {
 	// `operations/{unique_id}`.
 	Name string `json:"name,omitempty"`
 
-	// Response: The normal response of the operation in case of success. If
-	// the original method returns no data on success, such as `Delete`, the
+	// Response: The normal, successful response of the operation. If the
+	// original method returns no data on success, such as `Delete`, the
 	// response is `google.protobuf.Empty`. If the original method is
 	// standard `Get`/`Create`/`Update`, the response should be the
 	// resource. For other methods, the response should have the type
@@ -13156,8 +13253,8 @@ type Pacing struct {
 
 	// PacingPeriod: Required. The time period in which the pacing budget
 	// will be spent. When automatic budget allocation is enabled at the
-	// insertion order via auto_budget_allocation, this field is output only
-	// and defaults to `PACING_PERIOD_FLIGHT`.
+	// insertion order via automationType, this field is output only and
+	// defaults to `PACING_PERIOD_FLIGHT`.
 	//
 	// Possible values:
 	//   "PACING_PERIOD_UNSPECIFIED" - Period value is not specified or is
@@ -13286,8 +13383,7 @@ func (s *ParentEntityFilter) MarshalJSON() ([]byte, error) {
 // details field of an AssignedTargetingOption when targeting_type is
 // `TARGETING_TYPE_PARENTAL_STATUS`.
 type ParentalStatusAssignedTargetingOptionDetails struct {
-	// ParentalStatus: The parental status of the audience. Output only in
-	// v1. Required in v2.
+	// ParentalStatus: Required. The parental status of the audience.
 	//
 	// Possible values:
 	//   "PARENTAL_STATUS_UNSPECIFIED" - Default value when parental status
@@ -13487,58 +13583,67 @@ type PartnerCost struct {
 	//   "PARTNER_COST_TYPE_UNSPECIFIED" - Type value is not specified or is
 	// unknown in this version.
 	//   "PARTNER_COST_TYPE_ADLOOX" - The cost is charged for using Adloox.
+	// Billed by the partner.
 	//   "PARTNER_COST_TYPE_ADLOOX_PREBID" - The cost is charged for using
-	// Adloox Pre-Bid.
+	// Adloox Pre-Bid. Billed through DV360.
 	//   "PARTNER_COST_TYPE_ADSAFE" - The cost is charged for using AdSafe.
+	// Billed by the partner.
 	//   "PARTNER_COST_TYPE_ADXPOSE" - The cost is charged for using
-	// AdExpose.
+	// AdExpose. Billed by the partner.
 	//   "PARTNER_COST_TYPE_AGGREGATE_KNOWLEDGE" - The cost is charged for
-	// using Aggregate Knowledge.
+	// using Aggregate Knowledge. Billed by the partner.
 	//   "PARTNER_COST_TYPE_AGENCY_TRADING_DESK" - The cost is charged for
-	// using an Agency Trading Desk.
+	// using an Agency Trading Desk. Billed by the partner.
 	//   "PARTNER_COST_TYPE_DV360_FEE" - The cost is charged for using
-	// DV360.
+	// DV360. Billed through DV360.
 	//   "PARTNER_COST_TYPE_COMSCORE_VCE" - The cost is charged for using
-	// comScore vCE.
+	// comScore vCE. Billed through DV360.
 	//   "PARTNER_COST_TYPE_DATA_MANAGEMENT_PLATFORM" - The cost is charged
-	// for using a Data Management Platform.
-	//   "PARTNER_COST_TYPE_DEFAULT" - The default cost type.
+	// for using a Data Management Platform. Billed by the partner.
+	//   "PARTNER_COST_TYPE_DEFAULT" - The default cost type. Billed by the
+	// partner.
 	//   "PARTNER_COST_TYPE_DOUBLE_VERIFY" - The cost is charged for using
-	// DoubleVerify.
+	// DoubleVerify. Billed by the partner.
 	//   "PARTNER_COST_TYPE_DOUBLE_VERIFY_PREBID" - The cost is charged for
-	// using DoubleVerify Pre-Bid.
+	// using DoubleVerify Pre-Bid. Billed through DV360.
 	//   "PARTNER_COST_TYPE_EVIDON" - The cost is charged for using Evidon.
+	// Billed by the partner.
 	//   "PARTNER_COST_TYPE_INTEGRAL_AD_SCIENCE_VIDEO" - The cost is charged
-	// for using Integral Ad Science Video.
+	// for using Integral Ad Science Video. Billed by the partner.
 	//   "PARTNER_COST_TYPE_INTEGRAL_AD_SCIENCE_PREBID" - The cost is
-	// charged for using Integral Ad Science Pre-Bid.
+	// charged for using Integral Ad Science Pre-Bid. Billed through DV360.
 	//   "PARTNER_COST_TYPE_MEDIA_COST_DATA" - The cost is charged for using
-	// media cost data.
+	// media cost data. Billed by the partner.
 	//   "PARTNER_COST_TYPE_MOAT_VIDEO" - The cost is charged for using MOAT
-	// Video.
+	// Video. Billed by the partner.
 	//   "PARTNER_COST_TYPE_NIELSEN_DAR" - The cost is charged for using
-	// Nielsen Digital Ad Ratings.
+	// Nielsen Digital Ad Ratings. Billed through DV360.
 	//   "PARTNER_COST_TYPE_SHOP_LOCAL" - The cost is charged for using
-	// ShopLocal.
+	// ShopLocal. Billed by the partner.
 	//   "PARTNER_COST_TYPE_TERACENT" - The cost is charged for using
-	// Teracent.
+	// Teracent. Billed by the partner.
 	//   "PARTNER_COST_TYPE_THIRD_PARTY_AD_SERVER" - The cost is charged for
-	// using a third-party ad server.
+	// using a third-party ad server. Billed by the partner.
 	//   "PARTNER_COST_TYPE_TRUST_METRICS" - The cost is charged for using
-	// TrustMetrics.
+	// TrustMetrics. Billed by the partner.
 	//   "PARTNER_COST_TYPE_VIZU" - The cost is charged for using Vizu.
+	// Billed by the partner.
 	//   "PARTNER_COST_TYPE_ADLINGO_FEE" - The cost is charged for using
-	// AdLingo.
+	// AdLingo. Billed through DV360.
 	//   "PARTNER_COST_TYPE_CUSTOM_FEE_1" - The cost is charged as custom
-	// fee 1.
+	// fee 1. Billed by the partner.
 	//   "PARTNER_COST_TYPE_CUSTOM_FEE_2" - The cost is charged as custom
-	// fee 2.
+	// fee 2. Billed by the partner.
 	//   "PARTNER_COST_TYPE_CUSTOM_FEE_3" - The cost is charged as custom
-	// fee 3.
+	// fee 3. Billed by the partner.
 	//   "PARTNER_COST_TYPE_CUSTOM_FEE_4" - The cost is charged as custom
-	// fee 4.
+	// fee 4. Billed by the partner.
 	//   "PARTNER_COST_TYPE_CUSTOM_FEE_5" - The cost is charged as custom
-	// fee 5.
+	// fee 5. Billed by the partner.
+	//   "PARTNER_COST_TYPE_SCIBIDS_FEE" - The cost is charged for using
+	// Scibids. Billed through DV360. This type is currently only available
+	// to certain customers. Other customers attempting to use this type
+	// will receive an error.
 	CostType string `json:"costType,omitempty"`
 
 	// FeeAmount: The CPM fee amount in micros of advertiser's currency.
@@ -13726,7 +13831,7 @@ func (s *PartnerRevenueModel) MarshalJSON() ([]byte, error) {
 }
 
 // PerformanceGoal: Settings that control the performance goal of a
-// campaign or insertion order.
+// campaign.
 type PerformanceGoal struct {
 	// PerformanceGoalAmountMicros: The goal amount, in micros of the
 	// advertiser's currency. Applicable when performance_goal_type is one
@@ -13940,14 +14045,17 @@ type PoiAssignedTargetingOptionDetails struct {
 
 	// TargetingOptionId: Required. The targeting_option_id of a
 	// TargetingOption of type `TARGETING_TYPE_POI`. Accepted POI targeting
-	// option IDs can be retrieved using SearchTargetingOptions. If
-	// targeting a specific latitude/longitude coordinate removed from an
-	// address or POI name, you can generate the necessary targeting option
-	// ID by rounding the desired coordinate values to the 6th decimal
-	// place, removing the decimals, and concatenating the string values
-	// separated by a semicolon. For example, you can target the
-	// latitude/longitude pair of 40.7414691, -74.003387 using the targeting
-	// option ID "40741469;-74003387".
+	// option IDs can be retrieved using
+	// `targetingTypes.targetingOptions.search`. If targeting a specific
+	// latitude/longitude coordinate removed from an address or POI name,
+	// you can generate the necessary targeting option ID by rounding the
+	// desired coordinate values to the 6th decimal place, removing the
+	// decimals, and concatenating the string values separated by a
+	// semicolon. For example, you can target the latitude/longitude pair of
+	// 40.7414691, -74.003387 using the targeting option ID
+	// "40741469;-74003387". **Upon** **creation, this field value will be
+	// updated to append a semicolon and** **alphanumerical hash value if
+	// only latitude/longitude coordinates are** **provided.**
 	TargetingOptionId string `json:"targetingOptionId,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "DisplayName") to
@@ -14615,6 +14723,11 @@ type SdfConfig struct {
 	//   "SDF_VERSION_5_3" - SDF version 5.3
 	//   "SDF_VERSION_5_4" - SDF version 5.4
 	//   "SDF_VERSION_5_5" - SDF version 5.5
+	//   "SDF_VERSION_6" - SDF version 6
+	//   "SDF_VERSION_7" - SDF version 7. Read the [v7 migration
+	// guide](/display-video/api/structured-data-file/v7-migration-guide)
+	// before migrating to this version. Currently in beta. Only available
+	// for use by a subset of users.
 	Version string `json:"version,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AdminEmail") to
@@ -14697,6 +14810,11 @@ type SdfDownloadTaskMetadata struct {
 	//   "SDF_VERSION_5_3" - SDF version 5.3
 	//   "SDF_VERSION_5_4" - SDF version 5.4
 	//   "SDF_VERSION_5_5" - SDF version 5.5
+	//   "SDF_VERSION_6" - SDF version 6
+	//   "SDF_VERSION_7" - SDF version 7. Read the [v7 migration
+	// guide](/display-video/api/structured-data-file/v7-migration-guide)
+	// before migrating to this version. Currently in beta. Only available
+	// for use by a subset of users.
 	Version string `json:"version,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "CreateTime") to
@@ -14738,7 +14856,7 @@ type SearchTargetingOptionsRequest struct {
 	// Can only be used when targeting_type is `TARGETING_TYPE_GEO_REGION`.
 	GeoRegionSearchTerms *GeoRegionSearchTerms `json:"geoRegionSearchTerms,omitempty"`
 
-	// PageSize: Requested page size. Must be between `1` and `100`. If
+	// PageSize: Requested page size. Must be between `1` and `200`. If
 	// unspecified will default to `100`. Returns error code
 	// `INVALID_ARGUMENT` if an invalid value is specified.
 	PageSize int64 `json:"pageSize,omitempty"`
@@ -15137,32 +15255,41 @@ func (s *SubExchangeTargetingOptionDetails) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// TargetingExpansionConfig: Settings that control the targeting
-// expansion of the line item. Targeting expansion allows the line item
-// to reach a larger audience based on the original audience list and
-// the targeting expansion level.
+// TargetingExpansionConfig: Settings that control the optimized
+// targeting (//support.google.com/displayvideo/answer/12060859)
+// settings of the line item.
 type TargetingExpansionConfig struct {
-	// ExcludeFirstPartyAudience: Required. Whether to exclude first party
-	// audiences from targeting. Similar audiences of the excluded first
-	// party lists will not be excluded. Only applicable when a first-party
-	// audience is positively targeted (directly or included in a combined
-	// audience), otherwise this selection will be ignored.
+	// ExcludeFirstPartyAudience: Whether to exclude first-party audiences
+	// from use in targeting expansion. This field was deprecated with the
+	// launch of optimized targeting
+	// (//support.google.com/displayvideo/answer/12060859). This field will
+	// be set to `false`. If this field is set to `true` when deprecated,
+	// all positive first-party audience targeting assigned to this line
+	// item will be replaced with negative targeting of the same first-party
+	// audiences to ensure the continued exclusion of those audiences.
 	ExcludeFirstPartyAudience bool `json:"excludeFirstPartyAudience,omitempty"`
 
-	// TargetingExpansionLevel: Required. Magnitude of expansion for
-	// applicable targeting under this line item.
+	// TargetingExpansionLevel: Required. Whether optimized targeting is
+	// turned on. This field supports the following values: *
+	// `NO_EXPANSION`: optimized targeting is turned off *
+	// `LEAST_EXPANSION`: optimized targeting is turned on If this field is
+	// set to any other value, it will automatically be set to
+	// `LEAST_EXPANSION`. `NO_EXPANSION` will be the default value for the
+	// field and will be automatically assigned if you do not set the field.
 	//
 	// Possible values:
-	//   "TARGETING_EXPANSION_LEVEL_UNSPECIFIED" - Targeting expansion level
-	// is not specified or is unknown in this version.
-	//   "NO_EXPANSION" - Targeting expansion off.
-	//   "LEAST_EXPANSION" - Conservative targeting expansion, lowest reach.
-	//   "SOME_EXPANSION" - Moderately conservative targeting expansion,
-	// lower reach.
-	//   "BALANCED_EXPANSION" - Moderate targeting expansion, medium reach.
-	//   "MORE_EXPANSION" - Moderately aggressive targeting expansion,
-	// higher reach.
-	//   "MOST_EXPANSION" - Aggressive targeting expansion, highest reach.
+	//   "TARGETING_EXPANSION_LEVEL_UNSPECIFIED" - The optimized targeting
+	// setting is not specified or is unknown in this version.
+	//   "NO_EXPANSION" - Optimized targeting is off.
+	//   "LEAST_EXPANSION" - Optimized targeting is on.
+	//   "SOME_EXPANSION" - If used, will automatically be set to
+	// `LEAST_EXPANSION`.
+	//   "BALANCED_EXPANSION" - If used, will automatically be set to
+	// `LEAST_EXPANSION`.
+	//   "MORE_EXPANSION" - If used, will automatically be set to
+	// `LEAST_EXPANSION`.
+	//   "MOST_EXPANSION" - If used, will automatically be set to
+	// `LEAST_EXPANSION`.
 	TargetingExpansionLevel string `json:"targetingExpansionLevel,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
@@ -15366,7 +15493,9 @@ type TargetingOption struct {
 	//   "TARGETING_TYPE_LANGUAGE" - Target ads to a specific language (for
 	// example, English or Japanese).
 	//   "TARGETING_TYPE_AUTHORIZED_SELLER_STATUS" - Target ads to ads.txt
-	// authorized sellers.
+	// authorized sellers. If no targeting option of this type is assigned,
+	// the resource uses the "Authorized Direct Sellers and Resellers"
+	// option by default.
 	//   "TARGETING_TYPE_GEO_REGION" - Target ads to a specific regional
 	// location (for example, a city or state).
 	//   "TARGETING_TYPE_INVENTORY_SOURCE_GROUP" - Purchase impressions from
@@ -15846,6 +15975,10 @@ type User struct {
 	// user.
 	Email string `json:"email,omitempty"`
 
+	// LastLoginTime: Output only. The timestamp when the user last logged
+	// in DV360 UI.
+	LastLoginTime string `json:"lastLoginTime,omitempty"`
+
 	// Name: Output only. The resource name of the user.
 	Name string `json:"name,omitempty"`
 
@@ -15978,8 +16111,7 @@ type VideoPlayerSizeAssignedTargetingOptionDetails struct {
 	// targeting_type is `TARGETING_TYPE_VIDEO_PLAYER_SIZE`.
 	TargetingOptionId string `json:"targetingOptionId,omitempty"`
 
-	// VideoPlayerSize: The video player size. Output only in v1. Required
-	// in v2.
+	// VideoPlayerSize: Required. The video player size.
 	//
 	// Possible values:
 	//   "VIDEO_PLAYER_SIZE_UNSPECIFIED" - Video player size is not
@@ -16079,8 +16211,7 @@ type ViewabilityAssignedTargetingOptionDetails struct {
 	// for targeting the `VIEWABILITY_10_PERCENT_OR_MORE` option).
 	TargetingOptionId string `json:"targetingOptionId,omitempty"`
 
-	// Viewability: The predicted viewability percentage. Output only in v1.
-	// Required in v2.
+	// Viewability: Required. The predicted viewability percentage.
 	//
 	// Possible values:
 	//   "VIEWABILITY_UNSPECIFIED" - Default value when viewability is not
@@ -16293,17 +16424,17 @@ func (c *AdvertisersAuditCall) Do(opts ...googleapi.CallOption) (*AuditAdvertise
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AuditAdvertiserResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -16446,17 +16577,17 @@ func (c *AdvertisersBulkEditAdvertiserAssignedTargetingOptionsCall) Do(opts ...g
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkEditAdvertiserAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -16523,14 +16654,16 @@ func (r *AdvertisersService) BulkListAdvertiserAssignedTargetingOptions(advertis
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// assigned targeting option properties. Supported syntax: * Filter
+// assigned targeting option fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
-// can be combined by the logical operator `OR`.. * A restriction has
-// the form of `{field} {operator} {value}`. * The operator must be
-// `EQUALS (=)`. * Supported fields: - `targetingType` Examples: *
-// targetingType with value TARGETING_TYPE_CHANNEL
+// can be combined by the `OR` logical operator. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=) operator`. Supported fields: * `targetingType` Examples:
+// * targetingType with value TARGETING_TYPE_CHANNEL
 // `targetingType="TARGETING_TYPE_CHANNEL" The length of this field
-// should be no more than 500 characters.
+// should be no more than 500 characters. Reference our filter `LIST`
+// requests (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersBulkListAdvertiserAssignedTargetingOptionsCall) Filter(filter string) *AdvertisersBulkListAdvertiserAssignedTargetingOptionsCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -16642,17 +16775,17 @@ func (c *AdvertisersBulkListAdvertiserAssignedTargetingOptionsCall) Do(opts ...g
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkListAdvertiserAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -16683,7 +16816,7 @@ func (c *AdvertisersBulkListAdvertiserAssignedTargetingOptionsCall) Do(opts ...g
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by assigned targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`.. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `targetingType` Examples: * targetingType with value TARGETING_TYPE_CHANNEL `targetingType=\"TARGETING_TYPE_CHANNEL\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the `OR` logical operator. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=) operator`. Supported fields: * `targetingType` Examples: * targetingType with value TARGETING_TYPE_CHANNEL `targetingType=\"TARGETING_TYPE_CHANNEL\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -16819,17 +16952,17 @@ func (c *AdvertisersCreateCall) Do(opts ...googleapi.CallOption) (*Advertiser, e
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Advertiser{
 		ServerResponse: googleapi.ServerResponse{
@@ -16946,17 +17079,17 @@ func (c *AdvertisersDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -17093,17 +17226,17 @@ func (c *AdvertisersGetCall) Do(opts ...googleapi.CallOption) (*Advertiser, erro
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Advertiser{
 		ServerResponse: googleapi.ServerResponse{
@@ -17164,22 +17297,23 @@ func (r *AdvertisersService) List() *AdvertisersListCall {
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// advertiser properties. Supported syntax: * Filter expressions are
-// made up of one or more restrictions. * Restrictions can be combined
-// by `AND` or `OR` logical operators. A sequence of restrictions
-// implicitly uses `AND`. * A restriction has the form of `{field}
-// {operator} {value}`. * The operator used on `updateTime` must be
-// `GREATER THAN OR EQUAL TO (>=)` or `LESS THAN OR EQUAL TO (<=)`. *
-// The operator must be `EQUALS (=)`. * Supported fields: -
-// `advertiserId` - `displayName` - `entityStatus` - `updateTime` (input
-// in ISO 8601 format, or YYYY-MM-DDTHH:MM:SSZ) Examples: * All active
-// advertisers under a partner: `entityStatus="ENTITY_STATUS_ACTIVE" *
-// All advertisers with an update time less than or equal to
-// `2020-11-04T18:54:47Z (format of ISO 8601)`:
-// `updateTime<="2020-11-04T18:54:47Z" * All advertisers with an update
-// time greater than or equal to `2020-11-04T18:54:47Z (format of ISO
-// 8601)`: `updateTime>="2020-11-04T18:54:47Z" The length of this field
-// should be no more than 500 characters.
+// advertiser fields. Supported syntax: * Filter expressions are made up
+// of one or more restrictions. * Restrictions can be combined by `AND`
+// or `OR` logical operators. * A restriction has the form of `{field}
+// {operator} {value}`. * The `updateTime` field must use the `GREATER
+// THAN OR EQUAL TO (>=)` or `LESS THAN OR EQUAL TO (<=)` operators. *
+// All other fields must use the `EQUALS (=)` operator. Supported
+// fields: * `advertiserId` * `displayName` * `entityStatus` *
+// `updateTime` (input in ISO 8601 format, or `YYYY-MM-DDTHH:MM:SSZ`)
+// Examples: * All active advertisers under a partner:
+// `entityStatus="ENTITY_STATUS_ACTIVE" * All advertisers with an
+// update time less than or equal to 2020-11-04T18:54:47Z (format of ISO
+// 8601): `updateTime<="2020-11-04T18:54:47Z" * All advertisers with an
+// update time greater than or equal to 2020-11-04T18:54:47Z (format of
+// ISO 8601): `updateTime>="2020-11-04T18:54:47Z" The length of this
+// field should be no more than 500 characters. Reference our filter
+// `LIST` requests (/display-video/api/guides/how-tos/filters) guide for
+// more information.
 func (c *AdvertisersListCall) Filter(filter string) *AdvertisersListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -17196,7 +17330,7 @@ func (c *AdvertisersListCall) OrderBy(orderBy string) *AdvertisersListCall {
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 func (c *AdvertisersListCall) PageSize(pageSize int64) *AdvertisersListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -17292,17 +17426,17 @@ func (c *AdvertisersListCall) Do(opts ...googleapi.CallOption) (*ListAdvertisers
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListAdvertisersResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -17323,7 +17457,7 @@ func (c *AdvertisersListCall) Do(opts ...googleapi.CallOption) (*ListAdvertisers
 	//   "parameterOrder": [],
 	//   "parameters": {
 	//     "filter": {
-	//       "description": "Allows filtering by advertiser properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator used on `updateTime` must be `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)`. * The operator must be `EQUALS (=)`. * Supported fields: - `advertiserId` - `displayName` - `entityStatus` - `updateTime` (input in ISO 8601 format, or YYYY-MM-DDTHH:MM:SSZ) Examples: * All active advertisers under a partner: `entityStatus=\"ENTITY_STATUS_ACTIVE\"` * All advertisers with an update time less than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`: `updateTime\u003c=\"2020-11-04T18:54:47Z\"` * All advertisers with an update time greater than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`: `updateTime\u003e=\"2020-11-04T18:54:47Z\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by advertiser fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. * A restriction has the form of `{field} {operator} {value}`. * The `updateTime` field must use the `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)` operators. * All other fields must use the `EQUALS (=)` operator. Supported fields: * `advertiserId` * `displayName` * `entityStatus` * `updateTime` (input in ISO 8601 format, or `YYYY-MM-DDTHH:MM:SSZ`) Examples: * All active advertisers under a partner: `entityStatus=\"ENTITY_STATUS_ACTIVE\"` * All advertisers with an update time less than or equal to 2020-11-04T18:54:47Z (format of ISO 8601): `updateTime\u003c=\"2020-11-04T18:54:47Z\"` * All advertisers with an update time greater than or equal to 2020-11-04T18:54:47Z (format of ISO 8601): `updateTime\u003e=\"2020-11-04T18:54:47Z\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -17333,7 +17467,7 @@ func (c *AdvertisersListCall) Do(opts ...googleapi.CallOption) (*ListAdvertisers
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -17479,17 +17613,17 @@ func (c *AdvertisersPatchCall) Do(opts ...googleapi.CallOption) (*Advertiser, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Advertiser{
 		ServerResponse: googleapi.ServerResponse{
@@ -17687,17 +17821,17 @@ func (c *AdvertisersAssetsUploadCall) Do(opts ...googleapi.CallOption) (*CreateA
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -17713,7 +17847,7 @@ func (c *AdvertisersAssetsUploadCall) Do(opts ...googleapi.CallOption) (*CreateA
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &CreateAssetResponse{
@@ -17797,18 +17931,21 @@ func (r *AdvertisersCampaignsService) BulkListCampaignAssignedTargetingOptions(a
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// assigned targeting option properties. Supported syntax: * Filter
+// assigned targeting option fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
-// can be combined by the logical operator `OR` on the same field. * A
-// restriction has the form of `{field} {operator} {value}`. * The
-// operator must be `EQUALS (=)`. * Supported fields: - `targetingType`
-// - `inheritance` Examples: * AssignedTargetingOptions of targeting
-// type TARGETING_TYPE_LANGUAGE or TARGETING_TYPE_GENDER
+// can be combined by the `OR` logical operator. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: * `targetingType` *
+// `inheritance` Examples: * `AssignedTargetingOption` resources of
+// targeting type `TARGETING_TYPE_LANGUAGE` or `TARGETING_TYPE_GENDER`:
 // `targetingType="TARGETING_TYPE_LANGUAGE" OR
-// targetingType="TARGETING_TYPE_GENDER" * AssignedTargetingOptions
-// with inheritance status of NOT_INHERITED or INHERITED_FROM_PARTNER
-// `inheritance="NOT_INHERITED" OR inheritance="INHERITED_FROM_PARTNER"
-// The length of this field should be no more than 500 characters.
+// targetingType="TARGETING_TYPE_GENDER" * `AssignedTargetingOption`
+// resources with inheritance status of `NOT_INHERITED` or
+// `INHERITED_FROM_PARTNER`: `inheritance="NOT_INHERITED" OR
+// inheritance="INHERITED_FROM_PARTNER" The length of this field should
+// be no more than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersCampaignsBulkListCampaignAssignedTargetingOptionsCall) Filter(filter string) *AdvertisersCampaignsBulkListCampaignAssignedTargetingOptionsCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -17921,17 +18058,17 @@ func (c *AdvertisersCampaignsBulkListCampaignAssignedTargetingOptionsCall) Do(op
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkListCampaignAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -17971,7 +18108,7 @@ func (c *AdvertisersCampaignsBulkListCampaignAssignedTargetingOptionsCall) Do(op
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by assigned targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR` on the same field. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `targetingType` - `inheritance` Examples: * AssignedTargetingOptions of targeting type TARGETING_TYPE_LANGUAGE or TARGETING_TYPE_GENDER `targetingType=\"TARGETING_TYPE_LANGUAGE\" OR targetingType=\"TARGETING_TYPE_GENDER\"` * AssignedTargetingOptions with inheritance status of NOT_INHERITED or INHERITED_FROM_PARTNER `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the `OR` logical operator. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `targetingType` * `inheritance` Examples: * `AssignedTargetingOption` resources of targeting type `TARGETING_TYPE_LANGUAGE` or `TARGETING_TYPE_GENDER`: `targetingType=\"TARGETING_TYPE_LANGUAGE\" OR targetingType=\"TARGETING_TYPE_GENDER\"` * `AssignedTargetingOption` resources with inheritance status of `NOT_INHERITED` or `INHERITED_FROM_PARTNER`: `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -18114,17 +18251,17 @@ func (c *AdvertisersCampaignsCreateCall) Do(opts ...googleapi.CallOption) (*Camp
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Campaign{
 		ServerResponse: googleapi.ServerResponse{
@@ -18257,17 +18394,17 @@ func (c *AdvertisersCampaignsDeleteCall) Do(opts ...googleapi.CallOption) (*Empt
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -18418,17 +18555,17 @@ func (c *AdvertisersCampaignsGetCall) Do(opts ...googleapi.CallOption) (*Campaig
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Campaign{
 		ServerResponse: googleapi.ServerResponse{
@@ -18504,23 +18641,25 @@ func (r *AdvertisersCampaignsService) List(advertiserId int64) *AdvertisersCampa
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// campaign properties. Supported syntax: * Filter expressions are made
-// up of one or more restrictions. * Restrictions can be combined by
-// `AND` or `OR` logical operators. A sequence of restrictions
-// implicitly uses `AND`. * A restriction has the form of `{field}
-// {operator} {value}`. * The operator used on `updateTime` must be
-// `GREATER THAN OR EQUAL TO (>=)` or `LESS THAN OR EQUAL TO (<=)`. *
-// The operator must be `EQUALS (=)`. * Supported fields: - `campaignId`
-// - `displayName` - `entityStatus` - `updateTime` (input in ISO 8601
-// format, or YYYY-MM-DDTHH:MM:SSZ) Examples: * All
+// campaign fields. Supported syntax: * Filter expressions are made up
+// of one or more restrictions. * Restrictions can be combined by `AND`
+// or `OR` logical operators. A sequence of restrictions implicitly uses
+// `AND`. * A restriction has the form of `{field} {operator} {value}`.
+// * The `updateTime` field must use the `GREATER THAN OR EQUAL TO (>=)`
+// or `LESS THAN OR EQUAL TO (<=)` operators. * All other fields must
+// use the `EQUALS (=)` operator. Supported fields: * `campaignId` *
+// `displayName` * `entityStatus` * `updateTime` (input in ISO 8601
+// format, or `YYYY-MM-DDTHH:MM:SSZ`) Examples: * All
 // `ENTITY_STATUS_ACTIVE` or `ENTITY_STATUS_PAUSED` campaigns under an
 // advertiser: `(entityStatus="ENTITY_STATUS_ACTIVE" OR
 // entityStatus="ENTITY_STATUS_PAUSED")` * All campaigns with an update
-// time less than or equal to `2020-11-04T18:54:47Z (format of ISO
-// 8601)`: `updateTime<="2020-11-04T18:54:47Z" * All campaigns with an
-// update time greater than or equal to `2020-11-04T18:54:47Z (format of
-// ISO 8601)`: `updateTime>="2020-11-04T18:54:47Z" The length of this
-// field should be no more than 500 characters.
+// time less than or equal to 2020-11-04T18:54:47Z (format of ISO 8601):
+// `updateTime<="2020-11-04T18:54:47Z" * All campaigns with an update
+// time greater than or equal to 2020-11-04T18:54:47Z (format of ISO
+// 8601): `updateTime>="2020-11-04T18:54:47Z" The length of this field
+// should be no more than 500 characters. Reference our filter `LIST`
+// requests (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersCampaignsListCall) Filter(filter string) *AdvertisersCampaignsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -18537,7 +18676,7 @@ func (c *AdvertisersCampaignsListCall) OrderBy(orderBy string) *AdvertisersCampa
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 func (c *AdvertisersCampaignsListCall) PageSize(pageSize int64) *AdvertisersCampaignsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -18628,17 +18767,17 @@ func (c *AdvertisersCampaignsListCall) Do(opts ...googleapi.CallOption) (*ListCa
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListCampaignsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -18669,7 +18808,7 @@ func (c *AdvertisersCampaignsListCall) Do(opts ...googleapi.CallOption) (*ListCa
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by campaign properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator used on `updateTime` must be `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)`. * The operator must be `EQUALS (=)`. * Supported fields: - `campaignId` - `displayName` - `entityStatus` - `updateTime` (input in ISO 8601 format, or YYYY-MM-DDTHH:MM:SSZ) Examples: * All `ENTITY_STATUS_ACTIVE` or `ENTITY_STATUS_PAUSED` campaigns under an advertiser: `(entityStatus=\"ENTITY_STATUS_ACTIVE\" OR entityStatus=\"ENTITY_STATUS_PAUSED\")` * All campaigns with an update time less than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`: `updateTime\u003c=\"2020-11-04T18:54:47Z\"` * All campaigns with an update time greater than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`: `updateTime\u003e=\"2020-11-04T18:54:47Z\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by campaign fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The `updateTime` field must use the `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)` operators. * All other fields must use the `EQUALS (=)` operator. Supported fields: * `campaignId` * `displayName` * `entityStatus` * `updateTime` (input in ISO 8601 format, or `YYYY-MM-DDTHH:MM:SSZ`) Examples: * All `ENTITY_STATUS_ACTIVE` or `ENTITY_STATUS_PAUSED` campaigns under an advertiser: `(entityStatus=\"ENTITY_STATUS_ACTIVE\" OR entityStatus=\"ENTITY_STATUS_PAUSED\")` * All campaigns with an update time less than or equal to 2020-11-04T18:54:47Z (format of ISO 8601): `updateTime\u003c=\"2020-11-04T18:54:47Z\"` * All campaigns with an update time greater than or equal to 2020-11-04T18:54:47Z (format of ISO 8601): `updateTime\u003e=\"2020-11-04T18:54:47Z\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -18679,7 +18818,7 @@ func (c *AdvertisersCampaignsListCall) Do(opts ...googleapi.CallOption) (*ListCa
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -18825,17 +18964,17 @@ func (c *AdvertisersCampaignsPatchCall) Do(opts ...googleapi.CallOption) (*Campa
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Campaign{
 		ServerResponse: googleapi.ServerResponse{
@@ -19022,17 +19161,17 @@ func (c *AdvertisersCampaignsTargetingTypesAssignedTargetingOptionsGetCall) Do(o
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedTargetingOption{
 		ServerResponse: googleapi.ServerResponse{
@@ -19164,7 +19303,7 @@ func (c *AdvertisersCampaignsTargetingTypesAssignedTargetingOptionsGetCall) Do(o
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -19240,17 +19379,21 @@ func (r *AdvertisersCampaignsTargetingTypesAssignedTargetingOptionsService) List
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// assigned targeting option properties. Supported syntax: * Filter
+// assigned targeting option fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
-// can be combined by the logical operator `OR`. * A restriction has the
-// form of `{field} {operator} {value}`. * The operator must be `EQUALS
-// (=)`. * Supported fields: - `assignedTargetingOptionId` -
-// `inheritance` Examples: * AssignedTargetingOptions with ID 1 or 2
+// can be combined by the `OR` logical operator. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: *
+// `assignedTargetingOptionId` * `inheritance` Examples: *
+// `AssignedTargetingOption` resources with ID 1 or 2
 // `assignedTargetingOptionId="1" OR assignedTargetingOptionId="2" *
-// AssignedTargetingOptions with inheritance status of NOT_INHERITED or
-// INHERITED_FROM_PARTNER `inheritance="NOT_INHERITED" OR
-// inheritance="INHERITED_FROM_PARTNER" The length of this field should
-// be no more than 500 characters.
+// `AssignedTargetingOption` resources with inheritance status of
+// `NOT_INHERITED` or `INHERITED_FROM_PARTNER`
+// `inheritance="NOT_INHERITED" OR inheritance="INHERITED_FROM_PARTNER"
+// The length of this field should be no more than 500 characters.
+// Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersCampaignsTargetingTypesAssignedTargetingOptionsListCall) Filter(filter string) *AdvertisersCampaignsTargetingTypesAssignedTargetingOptionsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -19364,17 +19507,17 @@ func (c *AdvertisersCampaignsTargetingTypesAssignedTargetingOptionsListCall) Do(
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListCampaignAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -19415,7 +19558,7 @@ func (c *AdvertisersCampaignsTargetingTypesAssignedTargetingOptionsListCall) Do(
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by assigned targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `assignedTargetingOptionId` - `inheritance` Examples: * AssignedTargetingOptions with ID 1 or 2 `assignedTargetingOptionId=\"1\" OR assignedTargetingOptionId=\"2\"` * AssignedTargetingOptions with inheritance status of NOT_INHERITED or INHERITED_FROM_PARTNER `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the `OR` logical operator. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `assignedTargetingOptionId` * `inheritance` Examples: * `AssignedTargetingOption` resources with ID 1 or 2 `assignedTargetingOptionId=\"1\" OR assignedTargetingOptionId=\"2\"` * `AssignedTargetingOption` resources with inheritance status of `NOT_INHERITED` or `INHERITED_FROM_PARTNER` `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -19519,7 +19662,7 @@ func (c *AdvertisersCampaignsTargetingTypesAssignedTargetingOptionsListCall) Do(
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -19668,17 +19811,17 @@ func (c *AdvertisersChannelsCreateCall) Do(opts ...googleapi.CallOption) (*Chann
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -19836,17 +19979,17 @@ func (c *AdvertisersChannelsGetCall) Do(opts ...googleapi.CallOption) (*Channel,
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -19925,12 +20068,14 @@ func (r *AdvertisersChannelsService) List(advertiserId int64) *AdvertisersChanne
 
 // Filter sets the optional parameter "filter": Allows filtering by
 // channel fields. Supported syntax: * Filter expressions for channel
-// currently can only contain at most one * restriction. * A restriction
-// has the form of `{field} {operator} {value}`. * The operator must be
-// `CONTAINS (:)`. * Supported fields: - `displayName` Examples: * All
+// can only contain at most one restriction. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the `HAS
+// (:)` operator. Supported fields: * `displayName` Examples: * All
 // channels for which the display name contains "google": `displayName :
 // "google". The length of this field should be no more than 500
-// characters.
+// characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersChannelsListCall) Filter(filter string) *AdvertisersChannelsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -19947,7 +20092,7 @@ func (c *AdvertisersChannelsListCall) OrderBy(orderBy string) *AdvertisersChanne
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *AdvertisersChannelsListCall) PageSize(pageSize int64) *AdvertisersChannelsListCall {
@@ -20047,17 +20192,17 @@ func (c *AdvertisersChannelsListCall) Do(opts ...googleapi.CallOption) (*ListCha
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListChannelsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -20088,7 +20233,7 @@ func (c *AdvertisersChannelsListCall) Do(opts ...googleapi.CallOption) (*ListCha
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by channel fields. Supported syntax: * Filter expressions for channel currently can only contain at most one * restriction. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`. * Supported fields: - `displayName` Examples: * All channels for which the display name contains \"google\": `displayName : \"google\"`. The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by channel fields. Supported syntax: * Filter expressions for channel can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `HAS (:)` operator. Supported fields: * `displayName` Examples: * All channels for which the display name contains \"google\": `displayName : \"google\"`. The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -20098,7 +20243,7 @@ func (c *AdvertisersChannelsListCall) Do(opts ...googleapi.CallOption) (*ListCha
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -20255,17 +20400,17 @@ func (c *AdvertisersChannelsPatchCall) Do(opts ...googleapi.CallOption) (*Channe
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -20425,17 +20570,17 @@ func (c *AdvertisersChannelsSitesBulkEditCall) Do(opts ...googleapi.CallOption) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkEditSitesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -20589,17 +20734,17 @@ func (c *AdvertisersChannelsSitesCreateCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Site{
 		ServerResponse: googleapi.ServerResponse{
@@ -20755,17 +20900,17 @@ func (c *AdvertisersChannelsSitesDeleteCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -20855,11 +21000,15 @@ func (r *AdvertisersChannelsSitesService) List(advertiserId int64, channelId int
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by site
-// fields. Supported syntax: * Filter expressions for site currently can
-// only contain at most one * restriction. * A restriction has the form
-// of `{field} {operator} {value}`. * The operator must be `CONTAINS
-// (:)`. * Supported fields: - `urlOrAppId` Examples: * All sites for
+// fields. Supported syntax: * Filter expressions for site retrieval can
+// only contain at most one restriction. * A restriction has the form of
+// `{field} {operator} {value}`. * All fields must use the `HAS (:)`
+// operator. Supported fields: * `urlOrAppId` Examples: * All sites for
 // which the URL or app ID contains "google": `urlOrAppId : "google"
+// The length of this field should be no more than 500 characters.
+// Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersChannelsSitesListCall) Filter(filter string) *AdvertisersChannelsSitesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -20977,17 +21126,17 @@ func (c *AdvertisersChannelsSitesListCall) Do(opts ...googleapi.CallOption) (*Li
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListSitesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -21027,7 +21176,7 @@ func (c *AdvertisersChannelsSitesListCall) Do(opts ...googleapi.CallOption) (*Li
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by site fields. Supported syntax: * Filter expressions for site currently can only contain at most one * restriction. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`. * Supported fields: - `urlOrAppId` Examples: * All sites for which the URL or app ID contains \"google\": `urlOrAppId : \"google\"`",
+	//       "description": "Allows filtering by site fields. Supported syntax: * Filter expressions for site retrieval can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `HAS (:)` operator. Supported fields: * `urlOrAppId` Examples: * All sites for which the URL or app ID contains \"google\": `urlOrAppId : \"google\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -21182,17 +21331,17 @@ func (c *AdvertisersChannelsSitesReplaceCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ReplaceSitesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -21257,7 +21406,9 @@ type AdvertisersCreativesCreateCall struct {
 }
 
 // Create: Creates a new creative. Returns the newly created creative if
-// successful.
+// successful. A "Standard" user role
+// (//support.google.com/displayvideo/answer/2723011) or greater for the
+// parent advertiser or partner is required to make this request.
 //
 //   - advertiserId: Output only. The unique ID of the advertiser the
 //     creative belongs to.
@@ -21335,17 +21486,17 @@ func (c *AdvertisersCreativesCreateCall) Do(opts ...googleapi.CallOption) (*Crea
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Creative{
 		ServerResponse: googleapi.ServerResponse{
@@ -21359,7 +21510,7 @@ func (c *AdvertisersCreativesCreateCall) Do(opts ...googleapi.CallOption) (*Crea
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new creative. Returns the newly created creative if successful.",
+	//   "description": "Creates a new creative. Returns the newly created creative if successful. A [\"Standard\" user role](//support.google.com/displayvideo/answer/2723011) or greater for the parent advertiser or partner is required to make this request.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/creatives",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.advertisers.creatives.create",
@@ -21404,7 +21555,9 @@ type AdvertisersCreativesDeleteCall struct {
 // Delete: Deletes a creative. Returns error code `NOT_FOUND` if the
 // creative does not exist. The creative should be archived first, i.e.
 // set entity_status to `ENTITY_STATUS_ARCHIVED`, before it can be
-// deleted.
+// deleted. A "Standard" user role
+// (//support.google.com/displayvideo/answer/2723011) or greater for the
+// parent advertiser or partner is required to make this request.
 //
 // - advertiserId: The ID of the advertiser this creative belongs to.
 // - creativeId: The ID of the creative to be deleted.
@@ -21478,17 +21631,17 @@ func (c *AdvertisersCreativesDeleteCall) Do(opts ...googleapi.CallOption) (*Empt
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -21502,7 +21655,7 @@ func (c *AdvertisersCreativesDeleteCall) Do(opts ...googleapi.CallOption) (*Empt
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes a creative. Returns error code `NOT_FOUND` if the creative does not exist. The creative should be archived first, i.e. set entity_status to `ENTITY_STATUS_ARCHIVED`, before it can be deleted.",
+	//   "description": "Deletes a creative. Returns error code `NOT_FOUND` if the creative does not exist. The creative should be archived first, i.e. set entity_status to `ENTITY_STATUS_ARCHIVED`, before it can be deleted. A [\"Standard\" user role](//support.google.com/displayvideo/answer/2723011) or greater for the parent advertiser or partner is required to make this request.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/creatives/{creativesId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "displayvideo.advertisers.creatives.delete",
@@ -21638,17 +21791,17 @@ func (c *AdvertisersCreativesGetCall) Do(opts ...googleapi.CallOption) (*Creativ
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Creative{
 		ServerResponse: googleapi.ServerResponse{
@@ -21723,38 +21876,33 @@ func (r *AdvertisersCreativesService) List(advertiserId int64) *AdvertisersCreat
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// creative properties. Supported syntax: * Filter expressions are made
-// up of one or more restrictions. * Restriction for the same field must
-// be combined by `OR`. * Restriction for different fields must be
-// combined by `AND`. * Between `(` and `)` there can only be
-// restrictions combined by `OR` for the same field. * A restriction has
-// the form of `{field} {operator} {value}`. * The operator must be
-// `EQUALS (=)` for the following fields: - `entityStatus` -
-// `creativeType`. - `dimensions` - `minDuration` - `maxDuration` -
-// `approvalStatus` - `exchangeReviewStatus` - `dynamic` - `creativeId`
-// * The operator must be `HAS (:)` for the following fields: -
-// `lineItemIds` * The operator must be `GREATER THAN OR EQUAL TO (>=)`
-// or `LESS THAN OR EQUAL TO (<=)` for the following fields: -
-// `updateTime` (input in ISO 8601 format, or YYYY-MM-DDTHH:MM:SSZ) *
-// For `entityStatus`, `minDuration`, `maxDuration`, `updateTime`, and
-// `dynamic`, there may be at most one restriction. * For `dimensions`,
-// the value is in the form of "{width}x{height}". * For
-// `exchangeReviewStatus`, the value is in the form of
-// `{exchange}-{reviewStatus}`. * For `minDuration` and `maxDuration`,
-// the value is in the form of "{duration}s". Only seconds are
-// supported with millisecond granularity. * For `updateTime`, a
-// creative resource's field value reflects the last time that a
-// creative has been updated, which includes updates made by the system
-// (e.g. creative review updates). * There may be multiple `lineItemIds`
-// restrictions in order to search against multiple possible line item
-// IDs. * There may be multiple `creativeId` restrictions in order to
-// search against multiple possible creative IDs. Examples: * All native
-// creatives: `creativeType="CREATIVE_TYPE_NATIVE" * All active
-// creatives with 300x400 or 50x100 dimensions:
-// `entityStatus="ENTITY_STATUS_ACTIVE" AND (dimensions="300x400" OR
-// dimensions="50x100")` * All dynamic creatives that are approved by
-// AdX or AppNexus, with a minimum duration of 5 seconds and 200ms.
-// `dynamic="true" AND minDuration="5.2s" AND
+// creative fields. Supported syntax: * Filter expressions are made up
+// of one or more restrictions. * Restrictions can be combined by `AND`
+// or `OR` logical operators. A sequence of restrictions implicitly uses
+// `AND`. * A restriction has the form of `{field} {operator} {value}`.
+// * The `lineItemIds` field must use the `HAS (:)` operator. * The
+// `updateTime` field must use the `GREATER THAN OR EQUAL TO (>=)` or
+// `LESS THAN OR EQUAL TO (<=)` operators. * All other fields must use
+// the `EQUALS (=)` operator. * For `entityStatus`, `minDuration`,
+// `maxDuration`, `updateTime`, and `dynamic` fields, there may be at
+// most one restriction. Supported Fields: * `approvalStatus` *
+// `creativeId` * `creativeType` * `dimensions` (input in the form of
+// `{width}x{height}`) * `dynamic` * `entityStatus` *
+// `exchangeReviewStatus` (input in the form of
+// `{exchange}-{reviewStatus}`) * `lineItemIds` * `maxDuration` (input
+// in the form of `{duration}s`. Only seconds are supported) *
+// `minDuration` (input in the form of `{duration}s`. Only seconds are
+// supported) * `updateTime` (input in ISO 8601 format, or
+// `YYYY-MM-DDTHH:MM:SSZ`) Notes: * For `updateTime`, a creative
+// resource's field value reflects the last time that a creative has
+// been updated, which includes updates made by the system (e.g.
+// creative review updates). Examples: * All native creatives:
+// `creativeType="CREATIVE_TYPE_NATIVE" * All active creatives with
+// 300x400 or 50x100 dimensions: `entityStatus="ENTITY_STATUS_ACTIVE"
+// AND (dimensions="300x400" OR dimensions="50x100")` * All dynamic
+// creatives that are approved by AdX or AppNexus, with a minimum
+// duration of 5 seconds and 200ms: `dynamic="true" AND
+// minDuration="5.2s" AND
 // (exchangeReviewStatus="EXCHANGE_GOOGLE_AD_MANAGER-REVIEW_STATUS_APPROV
 // ED" OR
 // exchangeReviewStatus="EXCHANGE_APPNEXUS-REVIEW_STATUS_APPROVED")` *
@@ -21762,9 +21910,11 @@ func (r *AdvertisersCreativesService) List(advertiserId int64) *AdvertisersCreat
 // `creativeType="CREATIVE_TYPE_VIDEO" AND (lineItemIds:1 OR
 // lineItemIds:2)` * Find creatives by multiple creative IDs:
 // `creativeId=1 OR creativeId=2` * All creatives with an update time
-// greater than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`:
+// greater than or equal to 2020-11-04T18:54:47Z (format of ISO 8601):
 // `updateTime>="2020-11-04T18:54:47Z" The length of this field should
-// be no more than 500 characters.
+// be no more than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersCreativesListCall) Filter(filter string) *AdvertisersCreativesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -21782,7 +21932,7 @@ func (c *AdvertisersCreativesListCall) OrderBy(orderBy string) *AdvertisersCreat
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *AdvertisersCreativesListCall) PageSize(pageSize int64) *AdvertisersCreativesListCall {
@@ -21875,17 +22025,17 @@ func (c *AdvertisersCreativesListCall) Do(opts ...googleapi.CallOption) (*ListCr
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListCreativesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -21916,7 +22066,7 @@ func (c *AdvertisersCreativesListCall) Do(opts ...googleapi.CallOption) (*ListCr
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by creative properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restriction for the same field must be combined by `OR`. * Restriction for different fields must be combined by `AND`. * Between `(` and `)` there can only be restrictions combined by `OR` for the same field. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)` for the following fields: - `entityStatus` - `creativeType`. - `dimensions` - `minDuration` - `maxDuration` - `approvalStatus` - `exchangeReviewStatus` - `dynamic` - `creativeId` * The operator must be `HAS (:)` for the following fields: - `lineItemIds` * The operator must be `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)` for the following fields: - `updateTime` (input in ISO 8601 format, or YYYY-MM-DDTHH:MM:SSZ) * For `entityStatus`, `minDuration`, `maxDuration`, `updateTime`, and `dynamic`, there may be at most one restriction. * For `dimensions`, the value is in the form of `\"{width}x{height}\"`. * For `exchangeReviewStatus`, the value is in the form of `{exchange}-{reviewStatus}`. * For `minDuration` and `maxDuration`, the value is in the form of `\"{duration}s\"`. Only seconds are supported with millisecond granularity. * For `updateTime`, a creative resource's field value reflects the last time that a creative has been updated, which includes updates made by the system (e.g. creative review updates). * There may be multiple `lineItemIds` restrictions in order to search against multiple possible line item IDs. * There may be multiple `creativeId` restrictions in order to search against multiple possible creative IDs. Examples: * All native creatives: `creativeType=\"CREATIVE_TYPE_NATIVE\"` * All active creatives with 300x400 or 50x100 dimensions: `entityStatus=\"ENTITY_STATUS_ACTIVE\" AND (dimensions=\"300x400\" OR dimensions=\"50x100\")` * All dynamic creatives that are approved by AdX or AppNexus, with a minimum duration of 5 seconds and 200ms. `dynamic=\"true\" AND minDuration=\"5.2s\" AND (exchangeReviewStatus=\"EXCHANGE_GOOGLE_AD_MANAGER-REVIEW_STATUS_APPROVED\" OR exchangeReviewStatus=\"EXCHANGE_APPNEXUS-REVIEW_STATUS_APPROVED\")` * All video creatives that are associated with line item ID 1 or 2: `creativeType=\"CREATIVE_TYPE_VIDEO\" AND (lineItemIds:1 OR lineItemIds:2)` * Find creatives by multiple creative IDs: `creativeId=1 OR creativeId=2` * All creatives with an update time greater than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`: `updateTime\u003e=\"2020-11-04T18:54:47Z\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by creative fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The `lineItemIds` field must use the `HAS (:)` operator. * The `updateTime` field must use the `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)` operators. * All other fields must use the `EQUALS (=)` operator. * For `entityStatus`, `minDuration`, `maxDuration`, `updateTime`, and `dynamic` fields, there may be at most one restriction. Supported Fields: * `approvalStatus` * `creativeId` * `creativeType` * `dimensions` (input in the form of `{width}x{height}`) * `dynamic` * `entityStatus` * `exchangeReviewStatus` (input in the form of `{exchange}-{reviewStatus}`) * `lineItemIds` * `maxDuration` (input in the form of `{duration}s`. Only seconds are supported) * `minDuration` (input in the form of `{duration}s`. Only seconds are supported) * `updateTime` (input in ISO 8601 format, or `YYYY-MM-DDTHH:MM:SSZ`) Notes: * For `updateTime`, a creative resource's field value reflects the last time that a creative has been updated, which includes updates made by the system (e.g. creative review updates). Examples: * All native creatives: `creativeType=\"CREATIVE_TYPE_NATIVE\"` * All active creatives with 300x400 or 50x100 dimensions: `entityStatus=\"ENTITY_STATUS_ACTIVE\" AND (dimensions=\"300x400\" OR dimensions=\"50x100\")` * All dynamic creatives that are approved by AdX or AppNexus, with a minimum duration of 5 seconds and 200ms: `dynamic=\"true\" AND minDuration=\"5.2s\" AND (exchangeReviewStatus=\"EXCHANGE_GOOGLE_AD_MANAGER-REVIEW_STATUS_APPROVED\" OR exchangeReviewStatus=\"EXCHANGE_APPNEXUS-REVIEW_STATUS_APPROVED\")` * All video creatives that are associated with line item ID 1 or 2: `creativeType=\"CREATIVE_TYPE_VIDEO\" AND (lineItemIds:1 OR lineItemIds:2)` * Find creatives by multiple creative IDs: `creativeId=1 OR creativeId=2` * All creatives with an update time greater than or equal to 2020-11-04T18:54:47Z (format of ISO 8601): `updateTime\u003e=\"2020-11-04T18:54:47Z\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -21926,7 +22076,7 @@ func (c *AdvertisersCreativesListCall) Do(opts ...googleapi.CallOption) (*ListCr
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -21982,7 +22132,9 @@ type AdvertisersCreativesPatchCall struct {
 }
 
 // Patch: Updates an existing creative. Returns the updated creative if
-// successful.
+// successful. A "Standard" user role
+// (//support.google.com/displayvideo/answer/2723011) or greater for the
+// parent advertiser or partner is required to make this request.
 //
 //   - advertiserId: Output only. The unique ID of the advertiser the
 //     creative belongs to.
@@ -22071,17 +22223,17 @@ func (c *AdvertisersCreativesPatchCall) Do(opts ...googleapi.CallOption) (*Creat
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Creative{
 		ServerResponse: googleapi.ServerResponse{
@@ -22095,7 +22247,7 @@ func (c *AdvertisersCreativesPatchCall) Do(opts ...googleapi.CallOption) (*Creat
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates an existing creative. Returns the updated creative if successful.",
+	//   "description": "Updates an existing creative. Returns the updated creative if successful. A [\"Standard\" user role](//support.google.com/displayvideo/answer/2723011) or greater for the parent advertiser or partner is required to make this request.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/creatives/{creativesId}",
 	//   "httpMethod": "PATCH",
 	//   "id": "displayvideo.advertisers.creatives.patch",
@@ -22168,18 +22320,22 @@ func (r *AdvertisersInsertionOrdersService) BulkListInsertionOrderAssignedTarget
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// assigned targeting option properties. Supported syntax: * Filter
+// assigned targeting option fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
-// can be combined by the logical operator `OR` on the same field. * A
-// restriction has the form of `{field} {operator} {value}`. * The
-// operator must be `EQUALS (=)`. * Supported fields: - `targetingType`
-// - `inheritance` Examples: * AssignedTargetingOptions of targeting
-// type TARGETING_TYPE_PROXIMITY_LOCATION_LIST or TARGETING_TYPE_CHANNEL
+// can be combined by the logical operator `OR`. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: * `targetingType` *
+// `inheritance` Examples: * `AssignedTargetingOption` resources of
+// targeting type `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` or
+// `TARGETING_TYPE_CHANNEL`:
 // `targetingType="TARGETING_TYPE_PROXIMITY_LOCATION_LIST" OR
-// targetingType="TARGETING_TYPE_CHANNEL" * AssignedTargetingOptions
-// with inheritance status of NOT_INHERITED or INHERITED_FROM_PARTNER
-// `inheritance="NOT_INHERITED" OR inheritance="INHERITED_FROM_PARTNER"
-// The length of this field should be no more than 500 characters.
+// targetingType="TARGETING_TYPE_CHANNEL" * `AssignedTargetingOption`
+// resources with inheritance status of `NOT_INHERITED` or
+// `INHERITED_FROM_PARTNER`: `inheritance="NOT_INHERITED" OR
+// inheritance="INHERITED_FROM_PARTNER" The length of this field should
+// be no more than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersInsertionOrdersBulkListInsertionOrderAssignedTargetingOptionsCall) Filter(filter string) *AdvertisersInsertionOrdersBulkListInsertionOrderAssignedTargetingOptionsCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -22293,17 +22449,17 @@ func (c *AdvertisersInsertionOrdersBulkListInsertionOrderAssignedTargetingOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkListInsertionOrderAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -22335,7 +22491,7 @@ func (c *AdvertisersInsertionOrdersBulkListInsertionOrderAssignedTargetingOption
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by assigned targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR` on the same field. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `targetingType` - `inheritance` Examples: * AssignedTargetingOptions of targeting type TARGETING_TYPE_PROXIMITY_LOCATION_LIST or TARGETING_TYPE_CHANNEL `targetingType=\"TARGETING_TYPE_PROXIMITY_LOCATION_LIST\" OR targetingType=\"TARGETING_TYPE_CHANNEL\"` * AssignedTargetingOptions with inheritance status of NOT_INHERITED or INHERITED_FROM_PARTNER `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `targetingType` * `inheritance` Examples: * `AssignedTargetingOption` resources of targeting type `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` or `TARGETING_TYPE_CHANNEL`: `targetingType=\"TARGETING_TYPE_PROXIMITY_LOCATION_LIST\" OR targetingType=\"TARGETING_TYPE_CHANNEL\"` * `AssignedTargetingOption` resources with inheritance status of `NOT_INHERITED` or `INHERITED_FROM_PARTNER`: `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -22486,17 +22642,17 @@ func (c *AdvertisersInsertionOrdersCreateCall) Do(opts ...googleapi.CallOption) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InsertionOrder{
 		ServerResponse: googleapi.ServerResponse{
@@ -22630,17 +22786,17 @@ func (c *AdvertisersInsertionOrdersDeleteCall) Do(opts ...googleapi.CallOption) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -22792,17 +22948,17 @@ func (c *AdvertisersInsertionOrdersGetCall) Do(opts ...googleapi.CallOption) (*I
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InsertionOrder{
 		ServerResponse: googleapi.ServerResponse{
@@ -22878,31 +23034,27 @@ func (r *AdvertisersInsertionOrdersService) List(advertiserId int64) *Advertiser
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// insertion order properties. Supported syntax: * Filter expressions
-// are made up of one or more restrictions. * Restrictions can be
-// combined by `AND` or `OR` logical operators. A sequence of
-// restrictions implicitly uses `AND`. * A restriction has the form of
-// `{field} {operator} {value}`. * The operator used on
-// `budget.budget_segments.date_range.end_date` must be LESS THAN (<). *
-// The operator used on `updateTime` must be `GREATER THAN OR EQUAL TO
-// (>=)` or `LESS THAN OR EQUAL TO (<=)`. * The operators used on all
-// other fields must be `EQUALS (=)`. * Supported fields: - `campaignId`
-// - `displayName` - `entityStatus` -
-// `budget.budget_segments.date_range.end_date` (input as YYYY-MM-DD) -
-// `updateTime` (input in ISO 8601 format, or YYYY-MM-DDTHH:MM:SSZ)
+// insertion order fields. Supported syntax: * Filter expressions are
+// made up of one or more restrictions. * Restrictions can be combined
+// by `AND` or `OR` logical operators. A sequence of restrictions
+// implicitly uses `AND`. * A restriction has the form of `{field}
+// {operator} {value}`. * The `updateTime` field must use the `GREATER
+// THAN OR EQUAL TO (>=)` or `LESS THAN OR EQUAL TO (<=)` operators. *
+// All other fields must use the `EQUALS (=)` operator. Supported
+// fields: * `campaignId` * `displayName` * `entityStatus` *
+// `updateTime` (input in ISO 8601 format, or `YYYY-MM-DDTHH:MM:SSZ`)
 // Examples: * All insertion orders under a campaign:
 // `campaignId="1234" * All `ENTITY_STATUS_ACTIVE` or
 // `ENTITY_STATUS_PAUSED` insertion orders under an advertiser:
 // `(entityStatus="ENTITY_STATUS_ACTIVE" OR
-// entityStatus="ENTITY_STATUS_PAUSED")` * All insertion orders whose
-// budget segments' dates end before March 28, 2019:
-// `budget.budget_segments.date_range.end_date<"2019-03-28" * All
-// insertion orders with an update time less than or equal to
-// `2020-11-04T18:54:47Z (format of ISO 8601)`:
-// `updateTime<="2020-11-04T18:54:47Z" * All insertion orders with an
-// update time greater than or equal to `2020-11-04T18:54:47Z (format of
-// ISO 8601)`: `updateTime>="2020-11-04T18:54:47Z" The length of this
-// field should be no more than 500 characters.
+// entityStatus="ENTITY_STATUS_PAUSED")` * All insertion orders with an
+// update time less than or equal to 2020-11-04T18:54:47Z (format of ISO
+// 8601): `updateTime<="2020-11-04T18:54:47Z" * All insertion orders
+// with an update time greater than or equal to 2020-11-04T18:54:47Z
+// (format of ISO 8601): `updateTime>="2020-11-04T18:54:47Z" The length
+// of this field should be no more than 500 characters. Reference our
+// filter `LIST` requests (/display-video/api/guides/how-tos/filters)
+// guide for more information.
 func (c *AdvertisersInsertionOrdersListCall) Filter(filter string) *AdvertisersInsertionOrdersListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -23012,17 +23164,17 @@ func (c *AdvertisersInsertionOrdersListCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListInsertionOrdersResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -23053,7 +23205,7 @@ func (c *AdvertisersInsertionOrdersListCall) Do(opts ...googleapi.CallOption) (*
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by insertion order properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator used on `budget.budget_segments.date_range.end_date` must be LESS THAN (\u003c). * The operator used on `updateTime` must be `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)`. * The operators used on all other fields must be `EQUALS (=)`. * Supported fields: - `campaignId` - `displayName` - `entityStatus` - `budget.budget_segments.date_range.end_date` (input as YYYY-MM-DD) - `updateTime` (input in ISO 8601 format, or YYYY-MM-DDTHH:MM:SSZ) Examples: * All insertion orders under a campaign: `campaignId=\"1234\"` * All `ENTITY_STATUS_ACTIVE` or `ENTITY_STATUS_PAUSED` insertion orders under an advertiser: `(entityStatus=\"ENTITY_STATUS_ACTIVE\" OR entityStatus=\"ENTITY_STATUS_PAUSED\")` * All insertion orders whose budget segments' dates end before March 28, 2019: `budget.budget_segments.date_range.end_date\u003c\"2019-03-28\"` * All insertion orders with an update time less than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`: `updateTime\u003c=\"2020-11-04T18:54:47Z\"` * All insertion orders with an update time greater than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`: `updateTime\u003e=\"2020-11-04T18:54:47Z\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by insertion order fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The `updateTime` field must use the `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)` operators. * All other fields must use the `EQUALS (=)` operator. Supported fields: * `campaignId` * `displayName` * `entityStatus` * `updateTime` (input in ISO 8601 format, or `YYYY-MM-DDTHH:MM:SSZ`) Examples: * All insertion orders under a campaign: `campaignId=\"1234\"` * All `ENTITY_STATUS_ACTIVE` or `ENTITY_STATUS_PAUSED` insertion orders under an advertiser: `(entityStatus=\"ENTITY_STATUS_ACTIVE\" OR entityStatus=\"ENTITY_STATUS_PAUSED\")` * All insertion orders with an update time less than or equal to 2020-11-04T18:54:47Z (format of ISO 8601): `updateTime\u003c=\"2020-11-04T18:54:47Z\"` * All insertion orders with an update time greater than or equal to 2020-11-04T18:54:47Z (format of ISO 8601): `updateTime\u003e=\"2020-11-04T18:54:47Z\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -23208,17 +23360,17 @@ func (c *AdvertisersInsertionOrdersPatchCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InsertionOrder{
 		ServerResponse: googleapi.ServerResponse{
@@ -23302,7 +23454,39 @@ type AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsGetCall str
 //   - insertionOrderId: The ID of the insertion order the assigned
 //     targeting option belongs to.
 //   - targetingType: Identifies the type of this assigned targeting
-//     option.
+//     option. Supported targeting types include: *
+//     `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` *
+//     `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` *
+//     `TARGETING_TYPE_AUDIO_CONTENT_TYPE` *
+//     `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` *
+//     `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` *
+//     `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` *
+//     `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` *
+//     `TARGETING_TYPE_CONTENT_GENRE` *
+//     `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_STREAM_TYPE` *
+//     `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL`
+//   - `TARGETING_TYPE_DEVICE_TYPE` *
+//     `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` *
+//     `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` *
+//     `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` *
+//     `TARGETING_TYPE_HOUSEHOLD_INCOME` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD`
+//   - `TARGETING_TYPE_LANGUAGE` *
+//     `TARGETING_TYPE_NATIVE_CONTENT_POSITION` *
+//     `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` *
+//     `TARGETING_TYPE_ON_SCREEN_POSITION` *
+//     `TARGETING_TYPE_OPERATING_SYSTEM` *
+//     `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` *
+//     `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` *
+//     `TARGETING_TYPE_REGIONAL_LOCATION_LIST` *
+//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` *
+//     `TARGETING_TYPE_SUB_EXCHANGE` *
+//     `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` *
+//     `TARGETING_TYPE_USER_REWARDED_CONTENT` *
+//     `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY`.
 func (r *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsService) Get(advertiserId int64, insertionOrderId int64, targetingType string, assignedTargetingOptionId string) *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsGetCall {
 	c := &AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.advertiserId = advertiserId
@@ -23390,17 +23574,17 @@ func (c *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsGetCall
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedTargetingOption{
 		ServerResponse: googleapi.ServerResponse{
@@ -23449,7 +23633,7 @@ func (c *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsGetCall
 	//       "type": "string"
 	//     },
 	//     "targetingType": {
-	//       "description": "Required. Identifies the type of this assigned targeting option.",
+	//       "description": "Required. Identifies the type of this assigned targeting option. Supported targeting types include: * `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` * `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` * `TARGETING_TYPE_AUDIO_CONTENT_TYPE` * `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` * `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` * `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` * `TARGETING_TYPE_CONTENT_GENRE` * `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_STREAM_TYPE` * `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL` * `TARGETING_TYPE_DEVICE_TYPE` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` * `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` * `TARGETING_TYPE_HOUSEHOLD_INCOME` * `TARGETING_TYPE_INVENTORY_SOURCE` * `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD` * `TARGETING_TYPE_LANGUAGE` * `TARGETING_TYPE_NATIVE_CONTENT_POSITION` * `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_ON_SCREEN_POSITION` * `TARGETING_TYPE_OPERATING_SYSTEM` * `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` * `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` * `TARGETING_TYPE_REGIONAL_LOCATION_LIST` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` * `TARGETING_TYPE_SUB_EXCHANGE` * `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` * `TARGETING_TYPE_USER_REWARDED_CONTENT` * `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY`",
 	//       "enum": [
 	//         "TARGETING_TYPE_UNSPECIFIED",
 	//         "TARGETING_TYPE_CHANNEL",
@@ -23532,7 +23716,7 @@ func (c *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsGetCall
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -23583,7 +23767,39 @@ type AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsListCall st
 //   - insertionOrderId: The ID of the insertion order to list assigned
 //     targeting options for.
 //   - targetingType: Identifies the type of assigned targeting options to
-//     list.
+//     list. Supported targeting types include: *
+//     `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` *
+//     `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` *
+//     `TARGETING_TYPE_AUDIO_CONTENT_TYPE` *
+//     `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` *
+//     `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` *
+//     `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` *
+//     `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` *
+//     `TARGETING_TYPE_CONTENT_GENRE` *
+//     `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_STREAM_TYPE` *
+//     `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL`
+//   - `TARGETING_TYPE_DEVICE_TYPE` *
+//     `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` *
+//     `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` *
+//     `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` *
+//     `TARGETING_TYPE_HOUSEHOLD_INCOME` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD`
+//   - `TARGETING_TYPE_LANGUAGE` *
+//     `TARGETING_TYPE_NATIVE_CONTENT_POSITION` *
+//     `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` *
+//     `TARGETING_TYPE_ON_SCREEN_POSITION` *
+//     `TARGETING_TYPE_OPERATING_SYSTEM` *
+//     `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` *
+//     `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` *
+//     `TARGETING_TYPE_REGIONAL_LOCATION_LIST` *
+//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` *
+//     `TARGETING_TYPE_SUB_EXCHANGE` *
+//     `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` *
+//     `TARGETING_TYPE_USER_REWARDED_CONTENT` *
+//     `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY`.
 func (r *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsService) List(advertiserId int64, insertionOrderId int64, targetingType string) *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsListCall {
 	c := &AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.advertiserId = advertiserId
@@ -23593,17 +23809,21 @@ func (r *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsService
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// assigned targeting option properties. Supported syntax: * Filter
+// assigned targeting option fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
 // can be combined by the logical operator `OR`. * A restriction has the
-// form of `{field} {operator} {value}`. * The operator must be `EQUALS
-// (=)`. * Supported fields: - `assignedTargetingOptionId` -
-// `inheritance` Examples: * AssignedTargetingOptions with ID 1 or 2
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: *
+// `assignedTargetingOptionId` * `inheritance` Examples: *
+// `AssignedTargetingOption` resources with ID 1 or 2:
 // `assignedTargetingOptionId="1" OR assignedTargetingOptionId="2" *
-// AssignedTargetingOptions with inheritance status of NOT_INHERITED or
-// INHERITED_FROM_PARTNER `inheritance="NOT_INHERITED" OR
-// inheritance="INHERITED_FROM_PARTNER" The length of this field should
-// be no more than 500 characters.
+// `AssignedTargetingOption` resources with inheritance status of
+// `NOT_INHERITED` or `INHERITED_FROM_PARTNER`:
+// `inheritance="NOT_INHERITED" OR inheritance="INHERITED_FROM_PARTNER"
+// The length of this field should be no more than 500 characters.
+// Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsListCall) Filter(filter string) *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -23717,17 +23937,17 @@ func (c *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsListCal
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListInsertionOrderAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -23760,7 +23980,7 @@ func (c *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsListCal
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by assigned targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `assignedTargetingOptionId` - `inheritance` Examples: * AssignedTargetingOptions with ID 1 or 2 `assignedTargetingOptionId=\"1\" OR assignedTargetingOptionId=\"2\"` * AssignedTargetingOptions with inheritance status of NOT_INHERITED or INHERITED_FROM_PARTNER `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `assignedTargetingOptionId` * `inheritance` Examples: * `AssignedTargetingOption` resources with ID 1 or 2: `assignedTargetingOptionId=\"1\" OR assignedTargetingOptionId=\"2\"` * `AssignedTargetingOption` resources with inheritance status of `NOT_INHERITED` or `INHERITED_FROM_PARTNER`: `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -23789,7 +24009,7 @@ func (c *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsListCal
 	//       "type": "string"
 	//     },
 	//     "targetingType": {
-	//       "description": "Required. Identifies the type of assigned targeting options to list.",
+	//       "description": "Required. Identifies the type of assigned targeting options to list. Supported targeting types include: * `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` * `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` * `TARGETING_TYPE_AUDIO_CONTENT_TYPE` * `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` * `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` * `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` * `TARGETING_TYPE_CONTENT_GENRE` * `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_STREAM_TYPE` * `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL` * `TARGETING_TYPE_DEVICE_TYPE` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` * `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` * `TARGETING_TYPE_HOUSEHOLD_INCOME` * `TARGETING_TYPE_INVENTORY_SOURCE` * `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD` * `TARGETING_TYPE_LANGUAGE` * `TARGETING_TYPE_NATIVE_CONTENT_POSITION` * `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_ON_SCREEN_POSITION` * `TARGETING_TYPE_OPERATING_SYSTEM` * `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` * `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` * `TARGETING_TYPE_REGIONAL_LOCATION_LIST` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` * `TARGETING_TYPE_SUB_EXCHANGE` * `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` * `TARGETING_TYPE_USER_REWARDED_CONTENT` * `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY`",
 	//       "enum": [
 	//         "TARGETING_TYPE_UNSPECIFIED",
 	//         "TARGETING_TYPE_CHANNEL",
@@ -23872,7 +24092,7 @@ func (c *AdvertisersInsertionOrdersTargetingTypesAssignedTargetingOptionsListCal
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -23970,7 +24190,7 @@ func (c *AdvertisersInvoicesListCall) LoiSapinInvoiceType(loiSapinInvoiceType st
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *AdvertisersInvoicesListCall) PageSize(pageSize int64) *AdvertisersInvoicesListCall {
@@ -24063,17 +24283,17 @@ func (c *AdvertisersInvoicesListCall) Do(opts ...googleapi.CallOption) (*ListInv
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListInvoicesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -24124,7 +24344,7 @@ func (c *AdvertisersInvoicesListCall) Do(opts ...googleapi.CallOption) (*ListInv
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -24273,17 +24493,17 @@ func (c *AdvertisersInvoicesLookupInvoiceCurrencyCall) Do(opts ...googleapi.Call
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LookupInvoiceCurrencyResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -24350,10 +24570,10 @@ type AdvertisersLineItemsBulkEditLineItemAssignedTargetingOptionsCall struct {
 // then create the assigned targeting options provided in
 // BulkEditLineItemAssignedTargetingOptionsRequest.create_requests.
 // Requests to this endpoint cannot be made concurrently with the
-// following requests updating the same line item: *
-// BulkEditLineItemAssignedTargetingOptions * UpdateLineItem *
-// CreateLineItemAssignedTargetingOption *
-// DeleteLineItemAssignedTargetingOption
+// following requests updating the same line item: * lineItems.patch *
+// assignedTargetingOptions.create * assignedTargetingOptions.delete
+// YouTube & Partners line items cannot be created or updated using the
+// API.
 //
 //   - advertiserId: The ID of the advertiser the line item belongs to.
 //   - lineItemId: The ID of the line item the assigned targeting option
@@ -24436,17 +24656,17 @@ func (c *AdvertisersLineItemsBulkEditLineItemAssignedTargetingOptionsCall) Do(op
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkEditLineItemAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -24460,7 +24680,7 @@ func (c *AdvertisersLineItemsBulkEditLineItemAssignedTargetingOptionsCall) Do(op
 	}
 	return ret, nil
 	// {
-	//   "description": "Bulk edits targeting options under a single line item. The operation will delete the assigned targeting options provided in BulkEditLineItemAssignedTargetingOptionsRequest.delete_requests and then create the assigned targeting options provided in BulkEditLineItemAssignedTargetingOptionsRequest.create_requests. Requests to this endpoint cannot be made concurrently with the following requests updating the same line item: * BulkEditLineItemAssignedTargetingOptions * UpdateLineItem * CreateLineItemAssignedTargetingOption * DeleteLineItemAssignedTargetingOption",
+	//   "description": "Bulk edits targeting options under a single line item. The operation will delete the assigned targeting options provided in BulkEditLineItemAssignedTargetingOptionsRequest.delete_requests and then create the assigned targeting options provided in BulkEditLineItemAssignedTargetingOptionsRequest.create_requests. Requests to this endpoint cannot be made concurrently with the following requests updating the same line item: * lineItems.patch * assignedTargetingOptions.create * assignedTargetingOptions.delete YouTube \u0026 Partners line items cannot be created or updated using the API.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/lineItems/{lineItemsId}:bulkEditLineItemAssignedTargetingOptions",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.advertisers.lineItems.bulkEditLineItemAssignedTargetingOptions",
@@ -24526,18 +24746,22 @@ func (r *AdvertisersLineItemsService) BulkListLineItemAssignedTargetingOptions(a
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// assigned targeting option properties. Supported syntax: * Filter
+// assigned targeting option fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
-// can be combined by the logical operator `OR` on the same field. * A
-// restriction has the form of `{field} {operator} {value}`. * The
-// operator must be `EQUALS (=)`. * Supported fields: - `targetingType`
-// - `inheritance` Examples: * AssignedTargetingOptions of targeting
-// type TARGETING_TYPE_PROXIMITY_LOCATION_LIST or TARGETING_TYPE_CHANNEL
+// can be combined by the logical operator `OR`. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: * `targetingType` *
+// `inheritance` Examples: * `AssignedTargetingOption` resources of
+// targeting type `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` or
+// `TARGETING_TYPE_CHANNEL`:
 // `targetingType="TARGETING_TYPE_PROXIMITY_LOCATION_LIST" OR
-// targetingType="TARGETING_TYPE_CHANNEL" * AssignedTargetingOptions
-// with inheritance status of NOT_INHERITED or INHERITED_FROM_PARTNER
-// `inheritance="NOT_INHERITED" OR inheritance="INHERITED_FROM_PARTNER"
-// The length of this field should be no more than 500 characters.
+// targetingType="TARGETING_TYPE_CHANNEL" * `AssignedTargetingOption`
+// resources with inheritance status of `NOT_INHERITED` or
+// `INHERITED_FROM_PARTNER`: `inheritance="NOT_INHERITED" OR
+// inheritance="INHERITED_FROM_PARTNER" The length of this field should
+// be no more than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersLineItemsBulkListLineItemAssignedTargetingOptionsCall) Filter(filter string) *AdvertisersLineItemsBulkListLineItemAssignedTargetingOptionsCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -24555,7 +24779,7 @@ func (c *AdvertisersLineItemsBulkListLineItemAssignedTargetingOptionsCall) Order
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
 // The size must be an integer between `1` and `5000`. If unspecified,
-// the default is '5000'. Returns error code `INVALID_ARGUMENT` if an
+// the default is `5000`. Returns error code `INVALID_ARGUMENT` if an
 // invalid value is specified.
 func (c *AdvertisersLineItemsBulkListLineItemAssignedTargetingOptionsCall) PageSize(pageSize int64) *AdvertisersLineItemsBulkListLineItemAssignedTargetingOptionsCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
@@ -24650,17 +24874,17 @@ func (c *AdvertisersLineItemsBulkListLineItemAssignedTargetingOptionsCall) Do(op
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkListLineItemAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -24692,7 +24916,7 @@ func (c *AdvertisersLineItemsBulkListLineItemAssignedTargetingOptionsCall) Do(op
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by assigned targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR` on the same field. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `targetingType` - `inheritance` Examples: * AssignedTargetingOptions of targeting type TARGETING_TYPE_PROXIMITY_LOCATION_LIST or TARGETING_TYPE_CHANNEL `targetingType=\"TARGETING_TYPE_PROXIMITY_LOCATION_LIST\" OR targetingType=\"TARGETING_TYPE_CHANNEL\"` * AssignedTargetingOptions with inheritance status of NOT_INHERITED or INHERITED_FROM_PARTNER `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `targetingType` * `inheritance` Examples: * `AssignedTargetingOption` resources of targeting type `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` or `TARGETING_TYPE_CHANNEL`: `targetingType=\"TARGETING_TYPE_PROXIMITY_LOCATION_LIST\" OR targetingType=\"TARGETING_TYPE_CHANNEL\"` * `AssignedTargetingOption` resources with inheritance status of `NOT_INHERITED` or `INHERITED_FROM_PARTNER`: `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -24710,7 +24934,7 @@ func (c *AdvertisersLineItemsBulkListLineItemAssignedTargetingOptionsCall) Do(op
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. The size must be an integer between `1` and `5000`. If unspecified, the default is '5000'. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. The size must be an integer between `1` and `5000`. If unspecified, the default is `5000`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -24765,7 +24989,8 @@ type AdvertisersLineItemsCreateCall struct {
 }
 
 // Create: Creates a new line item. Returns the newly created line item
-// if successful.
+// if successful. YouTube & Partners line items cannot be created or
+// updated using the API.
 //
 //   - advertiserId: Output only. The unique ID of the advertiser the line
 //     item belongs to.
@@ -24843,17 +25068,17 @@ func (c *AdvertisersLineItemsCreateCall) Do(opts ...googleapi.CallOption) (*Line
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LineItem{
 		ServerResponse: googleapi.ServerResponse{
@@ -24867,7 +25092,7 @@ func (c *AdvertisersLineItemsCreateCall) Do(opts ...googleapi.CallOption) (*Line
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new line item. Returns the newly created line item if successful.",
+	//   "description": "Creates a new line item. Returns the newly created line item if successful. YouTube \u0026 Partners line items cannot be created or updated using the API.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/lineItems",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.advertisers.lineItems.create",
@@ -24912,7 +25137,8 @@ type AdvertisersLineItemsDeleteCall struct {
 // Delete: Deletes a line item. Returns error code `NOT_FOUND` if the
 // line item does not exist. The line item should be archived first,
 // i.e. set entity_status to `ENTITY_STATUS_ARCHIVED`, to be able to
-// delete it.
+// delete it. YouTube & Partners line items cannot be created or updated
+// using the API.
 //
 // - advertiserId: The ID of the advertiser this line item belongs to.
 // - lineItemId: The ID of the line item to delete.
@@ -24986,17 +25212,17 @@ func (c *AdvertisersLineItemsDeleteCall) Do(opts ...googleapi.CallOption) (*Empt
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -25010,7 +25236,7 @@ func (c *AdvertisersLineItemsDeleteCall) Do(opts ...googleapi.CallOption) (*Empt
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes a line item. Returns error code `NOT_FOUND` if the line item does not exist. The line item should be archived first, i.e. set entity_status to `ENTITY_STATUS_ARCHIVED`, to be able to delete it.",
+	//   "description": "Deletes a line item. Returns error code `NOT_FOUND` if the line item does not exist. The line item should be archived first, i.e. set entity_status to `ENTITY_STATUS_ARCHIVED`, to be able to delete it. YouTube \u0026 Partners line items cannot be created or updated using the API.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/lineItems/{lineItemsId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "displayvideo.advertisers.lineItems.delete",
@@ -25063,7 +25289,8 @@ type AdvertisersLineItemsGenerateDefaultCall struct {
 // `ENTITY_STATUS_DRAFT` entity_status. Returns the newly created line
 // item if successful. There are default values based on the three
 // fields: * The insertion order's insertion_order_type * The insertion
-// order's automation_type * The given line_item_type
+// order's automation_type * The given line_item_type YouTube & Partners
+// line items cannot be created or updated using the API.
 //
 // - advertiserId: The ID of the advertiser this line item belongs to.
 func (r *AdvertisersLineItemsService) GenerateDefault(advertiserId int64, generatedefaultlineitemrequest *GenerateDefaultLineItemRequest) *AdvertisersLineItemsGenerateDefaultCall {
@@ -25140,17 +25367,17 @@ func (c *AdvertisersLineItemsGenerateDefaultCall) Do(opts ...googleapi.CallOptio
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LineItem{
 		ServerResponse: googleapi.ServerResponse{
@@ -25164,7 +25391,7 @@ func (c *AdvertisersLineItemsGenerateDefaultCall) Do(opts ...googleapi.CallOptio
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new line item with settings (including targeting) inherited from the insertion order and an `ENTITY_STATUS_DRAFT` entity_status. Returns the newly created line item if successful. There are default values based on the three fields: * The insertion order's insertion_order_type * The insertion order's automation_type * The given line_item_type",
+	//   "description": "Creates a new line item with settings (including targeting) inherited from the insertion order and an `ENTITY_STATUS_DRAFT` entity_status. Returns the newly created line item if successful. There are default values based on the three fields: * The insertion order's insertion_order_type * The insertion order's automation_type * The given line_item_type YouTube \u0026 Partners line items cannot be created or updated using the API.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/lineItems:generateDefault",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.advertisers.lineItems.generateDefault",
@@ -25294,17 +25521,17 @@ func (c *AdvertisersLineItemsGetCall) Do(opts ...googleapi.CallOption) (*LineIte
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LineItem{
 		ServerResponse: googleapi.ServerResponse{
@@ -25379,38 +25606,28 @@ func (r *AdvertisersLineItemsService) List(advertiserId int64) *AdvertisersLineI
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by line
-// item properties. Supported syntax: * Filter expressions are made up
-// of one or more restrictions. * Restrictions can be combined by `AND`
-// or `OR` logical operators. A sequence of restrictions implicitly uses
+// item fields. Supported syntax: * Filter expressions are made up of
+// one or more restrictions. * Restrictions can be combined by `AND` or
+// `OR` logical operators. A sequence of restrictions implicitly uses
 // `AND`. * A restriction has the form of `{field} {operator} {value}`.
-// * The operator used on `flight.dateRange.endDate` must be LESS THAN
-// (<). * The operator used on `updateTime` must be `GREATER THAN OR
-// EQUAL TO (>=)` or `LESS THAN OR EQUAL TO (<=)`. * The operator used
-// on `warningMessages` must be `HAS (:)`. * The operators used on all
-// other fields must be `EQUALS (=)`. * Supported properties: -
-// `campaignId` - `displayName` - `insertionOrderId` - `entityStatus` -
-// `lineItemId` - `lineItemType` - `flight.dateRange.endDate` (input
-// formatted as YYYY-MM-DD) - `warningMessages` - `flight.triggerId` -
-// `updateTime` (input in ISO 8601 format, or YYYY-MM-DDTHH:MM:SSZ) -
-// `targetedChannelId` - `targetedNegativeKeywordListId` Examples: * All
-// line items under an insertion order: `insertionOrderId="1234" * All
-// `ENTITY_STATUS_ACTIVE` or `ENTITY_STATUS_PAUSED` and
-// `LINE_ITEM_TYPE_DISPLAY_DEFAULT` line items under an advertiser:
-// `(entityStatus="ENTITY_STATUS_ACTIVE" OR
+// * The `updateTime` field must use the `GREATER THAN OR EQUAL TO (>=)`
+// or `LESS THAN OR EQUAL TO (<=)` operators. * All other fields must
+// use the `EQUALS (=)` operator. Supported fields: * `campaignId` *
+// `displayName` * `entityStatus` * `insertionOrderId` * `lineItemId` *
+// `lineItemType` * `updateTime` (input in ISO 8601 format, or
+// `YYYY-MM-DDTHH:MM:SSZ`) Examples: * All line items under an insertion
+// order: `insertionOrderId="1234" * All `ENTITY_STATUS_ACTIVE` or
+// `ENTITY_STATUS_PAUSED` and `LINE_ITEM_TYPE_DISPLAY_DEFAULT` line
+// items under an advertiser: `(entityStatus="ENTITY_STATUS_ACTIVE" OR
 // entityStatus="ENTITY_STATUS_PAUSED") AND
-// lineItemType="LINE_ITEM_TYPE_DISPLAY_DEFAULT" * All line items whose
-// flight dates end before March 28, 2019:
-// `flight.dateRange.endDate<"2019-03-28" * All line items that have
-// `NO_VALID_CREATIVE` in `warningMessages`:
-// `warningMessages:"NO_VALID_CREATIVE" * All line items with an update
-// time less than or equal to `2020-11-04T18:54:47Z (format of ISO
-// 8601)`: `updateTime<="2020-11-04T18:54:47Z" * All line items with an
-// update time greater than or equal to `2020-11-04T18:54:47Z (format of
-// ISO 8601)`: `updateTime>="2020-11-04T18:54:47Z" * All line items
-// that are using both the specified channel and specified negative
-// keyword list in their targeting: `targetedNegativeKeywordListId=789
-// AND targetedChannelId=12345` The length of this field should be no
-// more than 500 characters.
+// lineItemType="LINE_ITEM_TYPE_DISPLAY_DEFAULT" * All line items with
+// an update time less than or equal to 2020-11-04T18:54:47Z (format of
+// ISO 8601): `updateTime<="2020-11-04T18:54:47Z" * All line items with
+// an update time greater than or equal to 2020-11-04T18:54:47Z (format
+// of ISO 8601): `updateTime>="2020-11-04T18:54:47Z" The length of this
+// field should be no more than 500 characters. Reference our filter
+// `LIST` requests (/display-video/api/guides/how-tos/filters) guide for
+// more information.
 func (c *AdvertisersLineItemsListCall) Filter(filter string) *AdvertisersLineItemsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -25418,17 +25635,16 @@ func (c *AdvertisersLineItemsListCall) Filter(filter string) *AdvertisersLineIte
 
 // OrderBy sets the optional parameter "orderBy": Field by which to sort
 // the list. Acceptable values are: * `displayName` (default) *
-// `entityStatus` * `flight.dateRange.endDate` * `updateTime` The
-// default sorting order is ascending. To specify descending order for a
-// field, a suffix "desc" should be added to the field name. Example:
-// `displayName desc`.
+// `entityStatus` * `updateTime` The default sorting order is ascending.
+// To specify descending order for a field, a suffix "desc" should be
+// added to the field name. Example: `displayName desc`.
 func (c *AdvertisersLineItemsListCall) OrderBy(orderBy string) *AdvertisersLineItemsListCall {
 	c.urlParams_.Set("orderBy", orderBy)
 	return c
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *AdvertisersLineItemsListCall) PageSize(pageSize int64) *AdvertisersLineItemsListCall {
@@ -25521,17 +25737,17 @@ func (c *AdvertisersLineItemsListCall) Do(opts ...googleapi.CallOption) (*ListLi
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListLineItemsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -25562,17 +25778,17 @@ func (c *AdvertisersLineItemsListCall) Do(opts ...googleapi.CallOption) (*ListLi
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by line item properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator used on `flight.dateRange.endDate` must be LESS THAN (\u003c). * The operator used on `updateTime` must be `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)`. * The operator used on `warningMessages` must be `HAS (:)`. * The operators used on all other fields must be `EQUALS (=)`. * Supported properties: - `campaignId` - `displayName` - `insertionOrderId` - `entityStatus` - `lineItemId` - `lineItemType` - `flight.dateRange.endDate` (input formatted as YYYY-MM-DD) - `warningMessages` - `flight.triggerId` - `updateTime` (input in ISO 8601 format, or YYYY-MM-DDTHH:MM:SSZ) - `targetedChannelId` - `targetedNegativeKeywordListId` Examples: * All line items under an insertion order: `insertionOrderId=\"1234\"` * All `ENTITY_STATUS_ACTIVE` or `ENTITY_STATUS_PAUSED` and `LINE_ITEM_TYPE_DISPLAY_DEFAULT` line items under an advertiser: `(entityStatus=\"ENTITY_STATUS_ACTIVE\" OR entityStatus=\"ENTITY_STATUS_PAUSED\") AND lineItemType=\"LINE_ITEM_TYPE_DISPLAY_DEFAULT\"` * All line items whose flight dates end before March 28, 2019: `flight.dateRange.endDate\u003c\"2019-03-28\"` * All line items that have `NO_VALID_CREATIVE` in `warningMessages`: `warningMessages:\"NO_VALID_CREATIVE\"` * All line items with an update time less than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`: `updateTime\u003c=\"2020-11-04T18:54:47Z\"` * All line items with an update time greater than or equal to `2020-11-04T18:54:47Z (format of ISO 8601)`: `updateTime\u003e=\"2020-11-04T18:54:47Z\"` * All line items that are using both the specified channel and specified negative keyword list in their targeting: `targetedNegativeKeywordListId=789 AND targetedChannelId=12345` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by line item fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The `updateTime` field must use the `GREATER THAN OR EQUAL TO (\u003e=)` or `LESS THAN OR EQUAL TO (\u003c=)` operators. * All other fields must use the `EQUALS (=)` operator. Supported fields: * `campaignId` * `displayName` * `entityStatus` * `insertionOrderId` * `lineItemId` * `lineItemType` * `updateTime` (input in ISO 8601 format, or `YYYY-MM-DDTHH:MM:SSZ`) Examples: * All line items under an insertion order: `insertionOrderId=\"1234\"` * All `ENTITY_STATUS_ACTIVE` or `ENTITY_STATUS_PAUSED` and `LINE_ITEM_TYPE_DISPLAY_DEFAULT` line items under an advertiser: `(entityStatus=\"ENTITY_STATUS_ACTIVE\" OR entityStatus=\"ENTITY_STATUS_PAUSED\") AND lineItemType=\"LINE_ITEM_TYPE_DISPLAY_DEFAULT\"` * All line items with an update time less than or equal to 2020-11-04T18:54:47Z (format of ISO 8601): `updateTime\u003c=\"2020-11-04T18:54:47Z\"` * All line items with an update time greater than or equal to 2020-11-04T18:54:47Z (format of ISO 8601): `updateTime\u003e=\"2020-11-04T18:54:47Z\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "orderBy": {
-	//       "description": "Field by which to sort the list. Acceptable values are: * `displayName` (default) * `entityStatus` * `flight.dateRange.endDate` * `updateTime` The default sorting order is ascending. To specify descending order for a field, a suffix \"desc\" should be added to the field name. Example: `displayName desc`.",
+	//       "description": "Field by which to sort the list. Acceptable values are: * `displayName` (default) * `entityStatus` * `updateTime` The default sorting order is ascending. To specify descending order for a field, a suffix \"desc\" should be added to the field name. Example: `displayName desc`.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -25630,9 +25846,10 @@ type AdvertisersLineItemsPatchCall struct {
 // Patch: Updates an existing line item. Returns the updated line item
 // if successful. Requests to this endpoint cannot be made concurrently
 // with the following requests updating the same line item: *
-// BulkEditLineItemAssignedTargetingOptions * UpdateLineItem *
-// CreateLineItemAssignedTargetingOption *
-// DeleteLineItemAssignedTargetingOption
+// BulkEditAssignedTargetingOptions * BulkUpdateLineItems *
+// assignedTargetingOptions.create * assignedTargetingOptions.delete
+// YouTube & Partners line items cannot be created or updated using the
+// API.
 //
 //   - advertiserId: Output only. The unique ID of the advertiser the line
 //     item belongs to.
@@ -25721,17 +25938,17 @@ func (c *AdvertisersLineItemsPatchCall) Do(opts ...googleapi.CallOption) (*LineI
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LineItem{
 		ServerResponse: googleapi.ServerResponse{
@@ -25745,7 +25962,7 @@ func (c *AdvertisersLineItemsPatchCall) Do(opts ...googleapi.CallOption) (*LineI
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates an existing line item. Returns the updated line item if successful. Requests to this endpoint cannot be made concurrently with the following requests updating the same line item: * BulkEditLineItemAssignedTargetingOptions * UpdateLineItem * CreateLineItemAssignedTargetingOption * DeleteLineItemAssignedTargetingOption",
+	//   "description": "Updates an existing line item. Returns the updated line item if successful. Requests to this endpoint cannot be made concurrently with the following requests updating the same line item: * BulkEditAssignedTargetingOptions * BulkUpdateLineItems * assignedTargetingOptions.create * assignedTargetingOptions.delete YouTube \u0026 Partners line items cannot be created or updated using the API.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/lineItems/{lineItemsId}",
 	//   "httpMethod": "PATCH",
 	//   "id": "displayvideo.advertisers.lineItems.patch",
@@ -25807,15 +26024,48 @@ type AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsCreateCall struct
 // Create: Assigns a targeting option to a line item. Returns the
 // assigned targeting option if successful. Requests to this endpoint
 // cannot be made concurrently with the following requests updating the
-// same line item: * BulkEditLineItemAssignedTargetingOptions *
-// UpdateLineItem * CreateLineItemAssignedTargetingOption *
-// DeleteLineItemAssignedTargetingOption
+// same line item: * lineItems.bulkEditAssignedTargetingOptions *
+// lineItems.bulkUpdate * lineItems.patch *
+// DeleteLineItemAssignedTargetingOption YouTube & Partners line items
+// cannot be created or updated using the API.
 //
 //   - advertiserId: The ID of the advertiser the line item belongs to.
 //   - lineItemId: The ID of the line item the assigned targeting option
 //     will belong to.
 //   - targetingType: Identifies the type of this assigned targeting
-//     option.
+//     option. Supported targeting types include: *
+//     `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` *
+//     `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` *
+//     `TARGETING_TYPE_AUDIO_CONTENT_TYPE` *
+//     `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` *
+//     `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` *
+//     `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` *
+//     `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` *
+//     `TARGETING_TYPE_CONTENT_GENRE` *
+//     `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_STREAM_TYPE` *
+//     `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL`
+//   - `TARGETING_TYPE_DEVICE_TYPE` *
+//     `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` *
+//     `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` *
+//     `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` *
+//     `TARGETING_TYPE_HOUSEHOLD_INCOME` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD`
+//   - `TARGETING_TYPE_LANGUAGE` *
+//     `TARGETING_TYPE_NATIVE_CONTENT_POSITION` *
+//     `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` *
+//     `TARGETING_TYPE_ON_SCREEN_POSITION` *
+//     `TARGETING_TYPE_OPERATING_SYSTEM` *
+//     `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` *
+//     `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` *
+//     `TARGETING_TYPE_REGIONAL_LOCATION_LIST` *
+//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` *
+//     `TARGETING_TYPE_SUB_EXCHANGE` *
+//     `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` *
+//     `TARGETING_TYPE_USER_REWARDED_CONTENT` *
+//     `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY`.
 func (r *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsService) Create(advertiserId int64, lineItemId int64, targetingType string, assignedtargetingoption *AssignedTargetingOption) *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsCreateCall {
 	c := &AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.advertiserId = advertiserId
@@ -25894,17 +26144,17 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsCreateCall) D
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedTargetingOption{
 		ServerResponse: googleapi.ServerResponse{
@@ -25918,7 +26168,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsCreateCall) D
 	}
 	return ret, nil
 	// {
-	//   "description": "Assigns a targeting option to a line item. Returns the assigned targeting option if successful. Requests to this endpoint cannot be made concurrently with the following requests updating the same line item: * BulkEditLineItemAssignedTargetingOptions * UpdateLineItem * CreateLineItemAssignedTargetingOption * DeleteLineItemAssignedTargetingOption",
+	//   "description": "Assigns a targeting option to a line item. Returns the assigned targeting option if successful. Requests to this endpoint cannot be made concurrently with the following requests updating the same line item: * lineItems.bulkEditAssignedTargetingOptions * lineItems.bulkUpdate * lineItems.patch * DeleteLineItemAssignedTargetingOption YouTube \u0026 Partners line items cannot be created or updated using the API.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/lineItems/{lineItemsId}/targetingTypes/{targetingTypesId}/assignedTargetingOptions",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.advertisers.lineItems.targetingTypes.assignedTargetingOptions.create",
@@ -25945,7 +26195,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsCreateCall) D
 	//       "type": "string"
 	//     },
 	//     "targetingType": {
-	//       "description": "Required. Identifies the type of this assigned targeting option.",
+	//       "description": "Required. Identifies the type of this assigned targeting option. Supported targeting types include: * `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` * `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` * `TARGETING_TYPE_AUDIO_CONTENT_TYPE` * `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` * `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` * `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` * `TARGETING_TYPE_CONTENT_GENRE` * `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_STREAM_TYPE` * `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL` * `TARGETING_TYPE_DEVICE_TYPE` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` * `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` * `TARGETING_TYPE_HOUSEHOLD_INCOME` * `TARGETING_TYPE_INVENTORY_SOURCE` * `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD` * `TARGETING_TYPE_LANGUAGE` * `TARGETING_TYPE_NATIVE_CONTENT_POSITION` * `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_ON_SCREEN_POSITION` * `TARGETING_TYPE_OPERATING_SYSTEM` * `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` * `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` * `TARGETING_TYPE_REGIONAL_LOCATION_LIST` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` * `TARGETING_TYPE_SUB_EXCHANGE` * `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` * `TARGETING_TYPE_USER_REWARDED_CONTENT` * `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY`",
 	//       "enum": [
 	//         "TARGETING_TYPE_UNSPECIFIED",
 	//         "TARGETING_TYPE_CHANNEL",
@@ -26028,7 +26278,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsCreateCall) D
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -26078,9 +26328,9 @@ type AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsDeleteCall struct
 // Delete: Deletes an assigned targeting option from a line item.
 // Requests to this endpoint cannot be made concurrently with the
 // following requests updating the same line item: *
-// BulkEditLineItemAssignedTargetingOptions * UpdateLineItem *
-// CreateLineItemAssignedTargetingOption *
-// DeleteLineItemAssignedTargetingOption
+// lineItems.bulkEditAssignedTargetingOptions * lineItems.bulkUpdate *
+// lineItems.patch * CreateLineItemAssignedTargetingOption YouTube &
+// Partners line items cannot be created or updated using the API.
 //
 //   - advertiserId: The ID of the advertiser the line item belongs to.
 //   - assignedTargetingOptionId: The ID of the assigned targeting option
@@ -26088,7 +26338,39 @@ type AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsDeleteCall struct
 //   - lineItemId: The ID of the line item the assigned targeting option
 //     belongs to.
 //   - targetingType: Identifies the type of this assigned targeting
-//     option.
+//     option. Supported targeting types include: *
+//     `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` *
+//     `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` *
+//     `TARGETING_TYPE_AUDIO_CONTENT_TYPE` *
+//     `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` *
+//     `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` *
+//     `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` *
+//     `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` *
+//     `TARGETING_TYPE_CONTENT_GENRE` *
+//     `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_STREAM_TYPE` *
+//     `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL`
+//   - `TARGETING_TYPE_DEVICE_TYPE` *
+//     `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` *
+//     `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` *
+//     `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` *
+//     `TARGETING_TYPE_HOUSEHOLD_INCOME` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD`
+//   - `TARGETING_TYPE_LANGUAGE` *
+//     `TARGETING_TYPE_NATIVE_CONTENT_POSITION` *
+//     `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` *
+//     `TARGETING_TYPE_ON_SCREEN_POSITION` *
+//     `TARGETING_TYPE_OPERATING_SYSTEM` *
+//     `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` *
+//     `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` *
+//     `TARGETING_TYPE_REGIONAL_LOCATION_LIST` *
+//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` *
+//     `TARGETING_TYPE_SUB_EXCHANGE` *
+//     `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` *
+//     `TARGETING_TYPE_USER_REWARDED_CONTENT` *
+//     `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY`.
 func (r *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsService) Delete(advertiserId int64, lineItemId int64, targetingType string, assignedTargetingOptionId string) *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsDeleteCall {
 	c := &AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.advertiserId = advertiserId
@@ -26163,17 +26445,17 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsDeleteCall) D
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -26187,7 +26469,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsDeleteCall) D
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes an assigned targeting option from a line item. Requests to this endpoint cannot be made concurrently with the following requests updating the same line item: * BulkEditLineItemAssignedTargetingOptions * UpdateLineItem * CreateLineItemAssignedTargetingOption * DeleteLineItemAssignedTargetingOption",
+	//   "description": "Deletes an assigned targeting option from a line item. Requests to this endpoint cannot be made concurrently with the following requests updating the same line item: * lineItems.bulkEditAssignedTargetingOptions * lineItems.bulkUpdate * lineItems.patch * CreateLineItemAssignedTargetingOption YouTube \u0026 Partners line items cannot be created or updated using the API.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/lineItems/{lineItemsId}/targetingTypes/{targetingTypesId}/assignedTargetingOptions/{assignedTargetingOptionsId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "displayvideo.advertisers.lineItems.targetingTypes.assignedTargetingOptions.delete",
@@ -26222,7 +26504,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsDeleteCall) D
 	//       "type": "string"
 	//     },
 	//     "targetingType": {
-	//       "description": "Required. Identifies the type of this assigned targeting option.",
+	//       "description": "Required. Identifies the type of this assigned targeting option. Supported targeting types include: * `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` * `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` * `TARGETING_TYPE_AUDIO_CONTENT_TYPE` * `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` * `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` * `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` * `TARGETING_TYPE_CONTENT_GENRE` * `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_STREAM_TYPE` * `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL` * `TARGETING_TYPE_DEVICE_TYPE` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` * `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` * `TARGETING_TYPE_HOUSEHOLD_INCOME` * `TARGETING_TYPE_INVENTORY_SOURCE` * `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD` * `TARGETING_TYPE_LANGUAGE` * `TARGETING_TYPE_NATIVE_CONTENT_POSITION` * `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_ON_SCREEN_POSITION` * `TARGETING_TYPE_OPERATING_SYSTEM` * `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` * `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` * `TARGETING_TYPE_REGIONAL_LOCATION_LIST` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` * `TARGETING_TYPE_SUB_EXCHANGE` * `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` * `TARGETING_TYPE_USER_REWARDED_CONTENT` * `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY`",
 	//       "enum": [
 	//         "TARGETING_TYPE_UNSPECIFIED",
 	//         "TARGETING_TYPE_CHANNEL",
@@ -26305,7 +26587,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsDeleteCall) D
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -26359,7 +26641,43 @@ type AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsGetCall struct {
 //   - lineItemId: The ID of the line item the assigned targeting option
 //     belongs to.
 //   - targetingType: Identifies the type of this assigned targeting
-//     option.
+//     option. Supported targeting types include: *
+//     `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` *
+//     `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` *
+//     `TARGETING_TYPE_AUDIO_CONTENT_TYPE` *
+//     `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` *
+//     `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` *
+//     `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` *
+//     `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` *
+//     `TARGETING_TYPE_CONTENT_GENRE` *
+//     `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_STREAM_TYPE` *
+//     `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL`
+//   - `TARGETING_TYPE_DEVICE_TYPE` *
+//     `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` *
+//     `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` *
+//     `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` *
+//     `TARGETING_TYPE_HOUSEHOLD_INCOME` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD`
+//   - `TARGETING_TYPE_LANGUAGE` *
+//     `TARGETING_TYPE_NATIVE_CONTENT_POSITION` *
+//     `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` *
+//     `TARGETING_TYPE_ON_SCREEN_POSITION` *
+//     `TARGETING_TYPE_OPERATING_SYSTEM` *
+//     `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` *
+//     `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` *
+//     `TARGETING_TYPE_REGIONAL_LOCATION_LIST` *
+//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` *
+//     `TARGETING_TYPE_SUB_EXCHANGE` *
+//     `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` *
+//     `TARGETING_TYPE_USER_REWARDED_CONTENT` *
+//     `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY` *
+//     `TARGETING_TYPE_YOUTUBE_CHANNEL` (only for
+//     `LINE_ITEM_TYPE_YOUTUBE_AND_PARTNERS_VIDEO_SEQUENCE` line items) *
+//     `TARGETING_TYPE_YOUTUBE_VIDEO` (only for
+//     `LINE_ITEM_TYPE_YOUTUBE_AND_PARTNERS_VIDEO_SEQUENCE` line items).
 func (r *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsService) Get(advertiserId int64, lineItemId int64, targetingType string, assignedTargetingOptionId string) *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsGetCall {
 	c := &AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.advertiserId = advertiserId
@@ -26447,17 +26765,17 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsGetCall) Do(o
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedTargetingOption{
 		ServerResponse: googleapi.ServerResponse{
@@ -26506,7 +26824,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsGetCall) Do(o
 	//       "type": "string"
 	//     },
 	//     "targetingType": {
-	//       "description": "Required. Identifies the type of this assigned targeting option.",
+	//       "description": "Required. Identifies the type of this assigned targeting option. Supported targeting types include: * `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` * `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` * `TARGETING_TYPE_AUDIO_CONTENT_TYPE` * `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` * `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` * `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` * `TARGETING_TYPE_CONTENT_GENRE` * `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_STREAM_TYPE` * `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL` * `TARGETING_TYPE_DEVICE_TYPE` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` * `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` * `TARGETING_TYPE_HOUSEHOLD_INCOME` * `TARGETING_TYPE_INVENTORY_SOURCE` * `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD` * `TARGETING_TYPE_LANGUAGE` * `TARGETING_TYPE_NATIVE_CONTENT_POSITION` * `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_ON_SCREEN_POSITION` * `TARGETING_TYPE_OPERATING_SYSTEM` * `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` * `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` * `TARGETING_TYPE_REGIONAL_LOCATION_LIST` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` * `TARGETING_TYPE_SUB_EXCHANGE` * `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` * `TARGETING_TYPE_USER_REWARDED_CONTENT` * `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY` * `TARGETING_TYPE_YOUTUBE_CHANNEL` (only for `LINE_ITEM_TYPE_YOUTUBE_AND_PARTNERS_VIDEO_SEQUENCE` line items) * `TARGETING_TYPE_YOUTUBE_VIDEO` (only for `LINE_ITEM_TYPE_YOUTUBE_AND_PARTNERS_VIDEO_SEQUENCE` line items)",
 	//       "enum": [
 	//         "TARGETING_TYPE_UNSPECIFIED",
 	//         "TARGETING_TYPE_CHANNEL",
@@ -26589,7 +26907,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsGetCall) Do(o
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -26639,7 +26957,43 @@ type AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsListCall struct {
 //   - lineItemId: The ID of the line item to list assigned targeting
 //     options for.
 //   - targetingType: Identifies the type of assigned targeting options to
-//     list.
+//     list. Supported targeting types include: *
+//     `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` *
+//     `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` *
+//     `TARGETING_TYPE_AUDIO_CONTENT_TYPE` *
+//     `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` *
+//     `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` *
+//     `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` *
+//     `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` *
+//     `TARGETING_TYPE_CONTENT_GENRE` *
+//     `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` *
+//     `TARGETING_TYPE_CONTENT_STREAM_TYPE` *
+//     `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL`
+//   - `TARGETING_TYPE_DEVICE_TYPE` *
+//     `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` *
+//     `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` *
+//     `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` *
+//     `TARGETING_TYPE_HOUSEHOLD_INCOME` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE` *
+//     `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD`
+//   - `TARGETING_TYPE_LANGUAGE` *
+//     `TARGETING_TYPE_NATIVE_CONTENT_POSITION` *
+//     `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` *
+//     `TARGETING_TYPE_ON_SCREEN_POSITION` *
+//     `TARGETING_TYPE_OPERATING_SYSTEM` *
+//     `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` *
+//     `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` *
+//     `TARGETING_TYPE_REGIONAL_LOCATION_LIST` *
+//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` *
+//     `TARGETING_TYPE_SUB_EXCHANGE` *
+//     `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` *
+//     `TARGETING_TYPE_USER_REWARDED_CONTENT` *
+//     `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY` *
+//     `TARGETING_TYPE_YOUTUBE_CHANNEL` (only for
+//     `LINE_ITEM_TYPE_YOUTUBE_AND_PARTNERS_VIDEO_SEQUENCE` line items) *
+//     `TARGETING_TYPE_YOUTUBE_VIDEO` (only for
+//     `LINE_ITEM_TYPE_YOUTUBE_AND_PARTNERS_VIDEO_SEQUENCE` line items).
 func (r *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsService) List(advertiserId int64, lineItemId int64, targetingType string) *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsListCall {
 	c := &AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.advertiserId = advertiserId
@@ -26649,17 +27003,21 @@ func (r *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsService) List
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// assigned targeting option properties. Supported syntax: * Filter
+// assigned targeting option fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
 // can be combined by the logical operator `OR`. * A restriction has the
-// form of `{field} {operator} {value}`. * The operator must be `EQUALS
-// (=)`. * Supported fields: - `assignedTargetingOptionId` -
-// `inheritance` Examples: * AssignedTargetingOptions with ID 1 or 2
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: *
+// `assignedTargetingOptionId` * `inheritance` Examples: *
+// `AssignedTargetingOption` resources with ID 1 or 2:
 // `assignedTargetingOptionId="1" OR assignedTargetingOptionId="2" *
-// AssignedTargetingOptions with inheritance status of NOT_INHERITED or
-// INHERITED_FROM_PARTNER `inheritance="NOT_INHERITED" OR
-// inheritance="INHERITED_FROM_PARTNER" The length of this field should
-// be no more than 500 characters.
+// `AssignedTargetingOption` resources with inheritance status of
+// `NOT_INHERITED` or `INHERITED_FROM_PARTNER`:
+// `inheritance="NOT_INHERITED" OR inheritance="INHERITED_FROM_PARTNER"
+// The length of this field should be no more than 500 characters.
+// Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsListCall) Filter(filter string) *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -26773,17 +27131,17 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsListCall) Do(
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListLineItemAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -26816,7 +27174,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsListCall) Do(
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by assigned targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `assignedTargetingOptionId` - `inheritance` Examples: * AssignedTargetingOptions with ID 1 or 2 `assignedTargetingOptionId=\"1\" OR assignedTargetingOptionId=\"2\"` * AssignedTargetingOptions with inheritance status of NOT_INHERITED or INHERITED_FROM_PARTNER `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `assignedTargetingOptionId` * `inheritance` Examples: * `AssignedTargetingOption` resources with ID 1 or 2: `assignedTargetingOptionId=\"1\" OR assignedTargetingOptionId=\"2\"` * `AssignedTargetingOption` resources with inheritance status of `NOT_INHERITED` or `INHERITED_FROM_PARTNER`: `inheritance=\"NOT_INHERITED\" OR inheritance=\"INHERITED_FROM_PARTNER\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -26845,7 +27203,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsListCall) Do(
 	//       "type": "string"
 	//     },
 	//     "targetingType": {
-	//       "description": "Required. Identifies the type of assigned targeting options to list.",
+	//       "description": "Required. Identifies the type of assigned targeting options to list. Supported targeting types include: * `TARGETING_TYPE_AGE_RANGE` * `TARGETING_TYPE_APP` * `TARGETING_TYPE_APP_CATEGORY` * `TARGETING_TYPE_AUDIENCE_GROUP` * `TARGETING_TYPE_AUDIO_CONTENT_TYPE` * `TARGETING_TYPE_AUTHORIZED_SELLER_STATUS` * `TARGETING_TYPE_BROWSER` * `TARGETING_TYPE_BUSINESS_CHAIN` * `TARGETING_TYPE_CARRIER_AND_ISP` * `TARGETING_TYPE_CATEGORY` * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_CONTENT_DURATION` * `TARGETING_TYPE_CONTENT_GENRE` * `TARGETING_TYPE_CONTENT_INSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_OUTSTREAM_POSITION` * `TARGETING_TYPE_CONTENT_STREAM_TYPE` * `TARGETING_TYPE_DAY_AND_TIME` * `TARGETING_TYPE_DEVICE_MAKE_MODEL` * `TARGETING_TYPE_DEVICE_TYPE` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_ENVIRONMENT` * `TARGETING_TYPE_EXCHANGE` * `TARGETING_TYPE_GENDER` * `TARGETING_TYPE_GEO_REGION` * `TARGETING_TYPE_HOUSEHOLD_INCOME` * `TARGETING_TYPE_INVENTORY_SOURCE` * `TARGETING_TYPE_INVENTORY_SOURCE_GROUP` * `TARGETING_TYPE_KEYWORD` * `TARGETING_TYPE_LANGUAGE` * `TARGETING_TYPE_NATIVE_CONTENT_POSITION` * `TARGETING_TYPE_NEGATIVE_KEYWORD_LIST` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_ON_SCREEN_POSITION` * `TARGETING_TYPE_OPERATING_SYSTEM` * `TARGETING_TYPE_PARENTAL_STATUS` * `TARGETING_TYPE_POI` * `TARGETING_TYPE_PROXIMITY_LOCATION_LIST` * `TARGETING_TYPE_REGIONAL_LOCATION_LIST` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` * `TARGETING_TYPE_SUB_EXCHANGE` * `TARGETING_TYPE_THIRD_PARTY_VERIFIER` * `TARGETING_TYPE_URL` * `TARGETING_TYPE_USER_REWARDED_CONTENT` * `TARGETING_TYPE_VIDEO_PLAYER_SIZE` * `TARGETING_TYPE_VIEWABILITY` * `TARGETING_TYPE_YOUTUBE_CHANNEL` (only for `LINE_ITEM_TYPE_YOUTUBE_AND_PARTNERS_VIDEO_SEQUENCE` line items) * `TARGETING_TYPE_YOUTUBE_VIDEO` (only for `LINE_ITEM_TYPE_YOUTUBE_AND_PARTNERS_VIDEO_SEQUENCE` line items)",
 	//       "enum": [
 	//         "TARGETING_TYPE_UNSPECIFIED",
 	//         "TARGETING_TYPE_CHANNEL",
@@ -26928,7 +27286,7 @@ func (c *AdvertisersLineItemsTargetingTypesAssignedTargetingOptionsListCall) Do(
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -27070,17 +27428,17 @@ func (c *AdvertisersLocationListsCreateCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LocationList{
 		ServerResponse: googleapi.ServerResponse{
@@ -27225,17 +27583,17 @@ func (c *AdvertisersLocationListsGetCall) Do(opts ...googleapi.CallOption) (*Loc
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LocationList{
 		ServerResponse: googleapi.ServerResponse{
@@ -27312,10 +27670,14 @@ func (r *AdvertisersLocationListsService) List(advertiserId int64) *AdvertisersL
 // up of one or more restrictions. * Restrictions can be combined by
 // `AND` or `OR` logical operators. A sequence of restrictions
 // implicitly uses `AND`. * A restriction has the form of `{field}
-// {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported
-// fields: - `locationType` Examples: * All regional location list:
-// `locationType="TARGETING_LOCATION_TYPE_REGIONAL" * All proximity
-// location list: `locationType="TARGETING_LOCATION_TYPE_PROXIMITY"
+// {operator} {value}`. * All fields must use the `EQUALS (=)` operator.
+// Supported fields: * `locationType` Examples: * All regional location
+// list: `locationType="TARGETING_LOCATION_TYPE_REGIONAL" * All
+// proximity location list:
+// `locationType="TARGETING_LOCATION_TYPE_PROXIMITY" The length of this
+// field should be no more than 500 characters. Reference our filter
+// `LIST` requests (/display-video/api/guides/how-tos/filters) guide for
+// more information.
 func (c *AdvertisersLocationListsListCall) Filter(filter string) *AdvertisersLocationListsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -27332,7 +27694,7 @@ func (c *AdvertisersLocationListsListCall) OrderBy(orderBy string) *AdvertisersL
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. Defaults to `100` if not set. Returns
+// Must be between `1` and `200`. Defaults to `100` if not set. Returns
 // error code `INVALID_ARGUMENT` if an invalid value is specified.
 func (c *AdvertisersLocationListsListCall) PageSize(pageSize int64) *AdvertisersLocationListsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
@@ -27424,17 +27786,17 @@ func (c *AdvertisersLocationListsListCall) Do(opts ...googleapi.CallOption) (*Li
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListLocationListsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -27465,7 +27827,7 @@ func (c *AdvertisersLocationListsListCall) Do(opts ...googleapi.CallOption) (*Li
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by location list fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `locationType` Examples: * All regional location list: `locationType=\"TARGETING_LOCATION_TYPE_REGIONAL\"` * All proximity location list: `locationType=\"TARGETING_LOCATION_TYPE_PROXIMITY\"`",
+	//       "description": "Allows filtering by location list fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `locationType` Examples: * All regional location list: `locationType=\"TARGETING_LOCATION_TYPE_REGIONAL\"` * All proximity location list: `locationType=\"TARGETING_LOCATION_TYPE_PROXIMITY\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -27475,7 +27837,7 @@ func (c *AdvertisersLocationListsListCall) Do(opts ...googleapi.CallOption) (*Li
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. Defaults to `100` if not set. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. Defaults to `100` if not set. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -27620,17 +27982,17 @@ func (c *AdvertisersLocationListsPatchCall) Do(opts ...googleapi.CallOption) (*L
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &LocationList{
 		ServerResponse: googleapi.ServerResponse{
@@ -27703,10 +28065,8 @@ type AdvertisersLocationListsAssignedLocationsBulkEditCall struct {
 
 // BulkEdit: Bulk edits multiple assignments between locations and a
 // single location list. The operation will delete the assigned
-// locations provided in
-// BulkEditAssignedLocationsRequest.deleted_assigned_locations and then
-// create the assigned locations provided in
-// BulkEditAssignedLocationsRequest.created_assigned_locations.
+// locations provided in deletedAssignedLocations and then create the
+// assigned locations provided in createdAssignedLocations.
 //
 //   - advertiserId: The ID of the DV360 advertiser to which the location
 //     list belongs.
@@ -27789,17 +28149,17 @@ func (c *AdvertisersLocationListsAssignedLocationsBulkEditCall) Do(opts ...googl
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkEditAssignedLocationsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -27813,7 +28173,7 @@ func (c *AdvertisersLocationListsAssignedLocationsBulkEditCall) Do(opts ...googl
 	}
 	return ret, nil
 	// {
-	//   "description": "Bulk edits multiple assignments between locations and a single location list. The operation will delete the assigned locations provided in BulkEditAssignedLocationsRequest.deleted_assigned_locations and then create the assigned locations provided in BulkEditAssignedLocationsRequest.created_assigned_locations.",
+	//   "description": "Bulk edits multiple assignments between locations and a single location list. The operation will delete the assigned locations provided in deletedAssignedLocations and then create the assigned locations provided in createdAssignedLocations.",
 	//   "flatPath": "v1/advertisers/{advertiserId}/locationLists/{locationListsId}/assignedLocations:bulkEdit",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.advertisers.locationLists.assignedLocations.bulkEdit",
@@ -27946,17 +28306,17 @@ func (c *AdvertisersLocationListsAssignedLocationsCreateCall) Do(opts ...googlea
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedLocation{
 		ServerResponse: googleapi.ServerResponse{
@@ -28100,17 +28460,17 @@ func (c *AdvertisersLocationListsAssignedLocationsDeleteCall) Do(opts ...googlea
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -28196,10 +28556,13 @@ func (r *AdvertisersLocationListsAssignedLocationsService) List(advertiserId int
 // Filter sets the optional parameter "filter": Allows filtering by
 // location list assignment fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
-// can be combined by the logical operator `OR`. * A restriction has the
-// form of `{field} {operator} {value}`. * The operator must be `EQUALS
-// (=)`. * Supported fields: - `assignedLocationId` The length of this
-// field should be no more than 500 characters.
+// can be combined by the `OR` logical operator. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: * `assignedLocationId` The
+// length of this field should be no more than 500 characters. Reference
+// our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *AdvertisersLocationListsAssignedLocationsListCall) Filter(filter string) *AdvertisersLocationListsAssignedLocationsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -28216,7 +28579,7 @@ func (c *AdvertisersLocationListsAssignedLocationsListCall) OrderBy(orderBy stri
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *AdvertisersLocationListsAssignedLocationsListCall) PageSize(pageSize int64) *AdvertisersLocationListsAssignedLocationsListCall {
@@ -28310,17 +28673,17 @@ func (c *AdvertisersLocationListsAssignedLocationsListCall) Do(opts ...googleapi
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListAssignedLocationsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -28351,7 +28714,7 @@ func (c *AdvertisersLocationListsAssignedLocationsListCall) Do(opts ...googleapi
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by location list assignment fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `assignedLocationId` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by location list assignment fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the `OR` logical operator. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `assignedLocationId` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -28368,7 +28731,7 @@ func (c *AdvertisersLocationListsAssignedLocationsListCall) Do(opts ...googleapi
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -28425,7 +28788,11 @@ type AdvertisersManualTriggersActivateCall struct {
 
 // Activate: Activates a manual trigger. Each activation of the manual
 // trigger must be at least 5 minutes apart, otherwise an error will be
-// returned.
+// returned. **Warning:** Line Items using manual triggers no longer
+// serve in Display & Video 360. This method will sunset on August 1,
+// 2023. Read our feature deprecation announcement
+// (/display-video/api/deprecations#features.manual_triggers) for more
+// information.
 //
 //   - advertiserId: The ID of the advertiser that the manual trigger
 //     belongs.
@@ -28506,17 +28873,17 @@ func (c *AdvertisersManualTriggersActivateCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ManualTrigger{
 		ServerResponse: googleapi.ServerResponse{
@@ -28530,7 +28897,7 @@ func (c *AdvertisersManualTriggersActivateCall) Do(opts ...googleapi.CallOption)
 	}
 	return ret, nil
 	// {
-	//   "description": "Activates a manual trigger. Each activation of the manual trigger must be at least 5 minutes apart, otherwise an error will be returned.",
+	//   "description": "Activates a manual trigger. Each activation of the manual trigger must be at least 5 minutes apart, otherwise an error will be returned. **Warning:** Line Items using manual triggers no longer serve in Display \u0026 Video 360. This method will sunset on August 1, 2023. Read our [feature deprecation announcement](/display-video/api/deprecations#features.manual_triggers) for more information.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/manualTriggers/{manualTriggersId}:activate",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.advertisers.manualTriggers.activate",
@@ -28582,7 +28949,11 @@ type AdvertisersManualTriggersCreateCall struct {
 }
 
 // Create: Creates a new manual trigger. Returns the newly created
-// manual trigger if successful.
+// manual trigger if successful. **Warning:** Line Items using manual
+// triggers no longer serve in Display & Video 360. This method will
+// sunset on August 1, 2023. Read our feature deprecation announcement
+// (/display-video/api/deprecations#features.manual_triggers) for more
+// information.
 //
 //   - advertiserId: Immutable. The unique ID of the advertiser that the
 //     manual trigger belongs to.
@@ -28660,17 +29031,17 @@ func (c *AdvertisersManualTriggersCreateCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ManualTrigger{
 		ServerResponse: googleapi.ServerResponse{
@@ -28684,7 +29055,7 @@ func (c *AdvertisersManualTriggersCreateCall) Do(opts ...googleapi.CallOption) (
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new manual trigger. Returns the newly created manual trigger if successful.",
+	//   "description": "Creates a new manual trigger. Returns the newly created manual trigger if successful. **Warning:** Line Items using manual triggers no longer serve in Display \u0026 Video 360. This method will sunset on August 1, 2023. Read our [feature deprecation announcement](/display-video/api/deprecations#features.manual_triggers) for more information.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/manualTriggers",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.advertisers.manualTriggers.create",
@@ -28727,7 +29098,12 @@ type AdvertisersManualTriggersDeactivateCall struct {
 	header_                        http.Header
 }
 
-// Deactivate: Deactivates a manual trigger.
+// Deactivate: Deactivates a manual trigger. **Warning:** Line Items
+// using manual triggers no longer serve in Display & Video 360. This
+// method will sunset on August 1, 2023. Read our feature deprecation
+// announcement
+// (/display-video/api/deprecations#features.manual_triggers) for more
+// information.
 //
 //   - advertiserId: The ID of the advertiser that the manual trigger
 //     belongs.
@@ -28808,17 +29184,17 @@ func (c *AdvertisersManualTriggersDeactivateCall) Do(opts ...googleapi.CallOptio
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ManualTrigger{
 		ServerResponse: googleapi.ServerResponse{
@@ -28832,7 +29208,7 @@ func (c *AdvertisersManualTriggersDeactivateCall) Do(opts ...googleapi.CallOptio
 	}
 	return ret, nil
 	// {
-	//   "description": "Deactivates a manual trigger.",
+	//   "description": "Deactivates a manual trigger. **Warning:** Line Items using manual triggers no longer serve in Display \u0026 Video 360. This method will sunset on August 1, 2023. Read our [feature deprecation announcement](/display-video/api/deprecations#features.manual_triggers) for more information.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/manualTriggers/{manualTriggersId}:deactivate",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.advertisers.manualTriggers.deactivate",
@@ -28884,7 +29260,11 @@ type AdvertisersManualTriggersGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets a manual trigger.
+// Get: Gets a manual trigger. **Warning:** Line Items using manual
+// triggers no longer serve in Display & Video 360. This method will
+// sunset on August 1, 2023. Read our feature deprecation announcement
+// (/display-video/api/deprecations#features.manual_triggers) for more
+// information.
 //
 //   - advertiserId: The ID of the advertiser this manual trigger belongs
 //     to.
@@ -28972,17 +29352,17 @@ func (c *AdvertisersManualTriggersGetCall) Do(opts ...googleapi.CallOption) (*Ma
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ManualTrigger{
 		ServerResponse: googleapi.ServerResponse{
@@ -28996,7 +29376,7 @@ func (c *AdvertisersManualTriggersGetCall) Do(opts ...googleapi.CallOption) (*Ma
 	}
 	return ret, nil
 	// {
-	//   "description": "Gets a manual trigger.",
+	//   "description": "Gets a manual trigger. **Warning:** Line Items using manual triggers no longer serve in Display \u0026 Video 360. This method will sunset on August 1, 2023. Read our [feature deprecation announcement](/display-video/api/deprecations#features.manual_triggers) for more information.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/manualTriggers/{manualTriggersId}",
 	//   "httpMethod": "GET",
 	//   "id": "displayvideo.advertisers.manualTriggers.get",
@@ -29046,7 +29426,12 @@ type AdvertisersManualTriggersListCall struct {
 
 // List: Lists manual triggers that are accessible to the current user
 // for a given advertiser ID. The order is defined by the order_by
-// parameter. A single advertiser_id is required.
+// parameter. A single advertiser_id is required. **Warning:** Line
+// Items using manual triggers no longer serve in Display & Video 360.
+// This method will sunset on August 1, 2023. Read our feature
+// deprecation announcement
+// (/display-video/api/deprecations#features.manual_triggers) for more
+// information.
 //
 //   - advertiserId: The ID of the advertiser that the fetched manual
 //     triggers belong to.
@@ -29057,14 +29442,16 @@ func (r *AdvertisersManualTriggersService) List(advertiserId int64) *Advertisers
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// manual trigger properties. Supported syntax: * Filter expressions are
+// manual trigger fields. Supported syntax: * Filter expressions are
 // made up of one or more restrictions. * Restrictions can be combined
 // by `AND` or `OR` logical operators. A sequence of restrictions
 // implicitly uses `AND`. * A restriction has the form of `{field}
-// {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported
-// fields: - `displayName` - `state` Examples: * All active manual
-// triggers under an advertiser: `state="ACTIVE" The length of this
-// field should be no more than 500 characters.
+// {operator} {value}`. * All fields must use the `EQUALS (=)` operator.
+// Supported fields: * `displayName` * `state` Examples: * All active
+// manual triggers under an advertiser: `state="ACTIVE" The length of
+// this field should be no more than 500 characters. Reference our
+// filter `LIST` requests (/display-video/api/guides/how-tos/filters)
+// guide for more information.
 func (c *AdvertisersManualTriggersListCall) Filter(filter string) *AdvertisersManualTriggersListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -29081,7 +29468,7 @@ func (c *AdvertisersManualTriggersListCall) OrderBy(orderBy string) *Advertisers
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 func (c *AdvertisersManualTriggersListCall) PageSize(pageSize int64) *AdvertisersManualTriggersListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -29172,17 +29559,17 @@ func (c *AdvertisersManualTriggersListCall) Do(opts ...googleapi.CallOption) (*L
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListManualTriggersResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -29196,7 +29583,7 @@ func (c *AdvertisersManualTriggersListCall) Do(opts ...googleapi.CallOption) (*L
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists manual triggers that are accessible to the current user for a given advertiser ID. The order is defined by the order_by parameter. A single advertiser_id is required.",
+	//   "description": "Lists manual triggers that are accessible to the current user for a given advertiser ID. The order is defined by the order_by parameter. A single advertiser_id is required. **Warning:** Line Items using manual triggers no longer serve in Display \u0026 Video 360. This method will sunset on August 1, 2023. Read our [feature deprecation announcement](/display-video/api/deprecations#features.manual_triggers) for more information.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/manualTriggers",
 	//   "httpMethod": "GET",
 	//   "id": "displayvideo.advertisers.manualTriggers.list",
@@ -29213,7 +29600,7 @@ func (c *AdvertisersManualTriggersListCall) Do(opts ...googleapi.CallOption) (*L
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by manual trigger properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `displayName` - `state` Examples: * All active manual triggers under an advertiser: `state=\"ACTIVE\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by manual trigger fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `displayName` * `state` Examples: * All active manual triggers under an advertiser: `state=\"ACTIVE\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -29223,7 +29610,7 @@ func (c *AdvertisersManualTriggersListCall) Do(opts ...googleapi.CallOption) (*L
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -29279,7 +29666,11 @@ type AdvertisersManualTriggersPatchCall struct {
 }
 
 // Patch: Updates a manual trigger. Returns the updated manual trigger
-// if successful.
+// if successful. **Warning:** Line Items using manual triggers no
+// longer serve in Display & Video 360. This method will sunset on
+// August 1, 2023. Read our feature deprecation announcement
+// (/display-video/api/deprecations#features.manual_triggers) for more
+// information.
 //
 //   - advertiserId: Immutable. The unique ID of the advertiser that the
 //     manual trigger belongs to.
@@ -29367,17 +29758,17 @@ func (c *AdvertisersManualTriggersPatchCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ManualTrigger{
 		ServerResponse: googleapi.ServerResponse{
@@ -29391,7 +29782,7 @@ func (c *AdvertisersManualTriggersPatchCall) Do(opts ...googleapi.CallOption) (*
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates a manual trigger. Returns the updated manual trigger if successful.",
+	//   "description": "Updates a manual trigger. Returns the updated manual trigger if successful. **Warning:** Line Items using manual triggers no longer serve in Display \u0026 Video 360. This method will sunset on August 1, 2023. Read our [feature deprecation announcement](/display-video/api/deprecations#features.manual_triggers) for more information.",
 	//   "flatPath": "v1/advertisers/{advertisersId}/manualTriggers/{manualTriggersId}",
 	//   "httpMethod": "PATCH",
 	//   "id": "displayvideo.advertisers.manualTriggers.patch",
@@ -29527,17 +29918,17 @@ func (c *AdvertisersNegativeKeywordListsCreateCall) Do(opts ...googleapi.CallOpt
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &NegativeKeywordList{
 		ServerResponse: googleapi.ServerResponse{
@@ -29670,17 +30061,17 @@ func (c *AdvertisersNegativeKeywordListsDeleteCall) Do(opts ...googleapi.CallOpt
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -29833,17 +30224,17 @@ func (c *AdvertisersNegativeKeywordListsGetCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &NegativeKeywordList{
 		ServerResponse: googleapi.ServerResponse{
@@ -29916,7 +30307,7 @@ func (r *AdvertisersNegativeKeywordListsService) List(advertiserId int64) *Adver
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. Defaults to `100` if not set. Returns
+// Must be between `1` and `200`. Defaults to `100` if not set. Returns
 // error code `INVALID_ARGUMENT` if an invalid value is specified.
 func (c *AdvertisersNegativeKeywordListsListCall) PageSize(pageSize int64) *AdvertisersNegativeKeywordListsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
@@ -30008,17 +30399,17 @@ func (c *AdvertisersNegativeKeywordListsListCall) Do(opts ...googleapi.CallOptio
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListNegativeKeywordListsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -30049,7 +30440,7 @@ func (c *AdvertisersNegativeKeywordListsListCall) Do(opts ...googleapi.CallOptio
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. Defaults to `100` if not set. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. Defaults to `100` if not set. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -30194,17 +30585,17 @@ func (c *AdvertisersNegativeKeywordListsPatchCall) Do(opts ...googleapi.CallOpti
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &NegativeKeywordList{
 		ServerResponse: googleapi.ServerResponse{
@@ -30363,17 +30754,17 @@ func (c *AdvertisersNegativeKeywordListsNegativeKeywordsBulkEditCall) Do(opts ..
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkEditNegativeKeywordsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -30520,17 +30911,17 @@ func (c *AdvertisersNegativeKeywordListsNegativeKeywordsCreateCall) Do(opts ...g
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &NegativeKeyword{
 		ServerResponse: googleapi.ServerResponse{
@@ -30674,17 +31065,17 @@ func (c *AdvertisersNegativeKeywordListsNegativeKeywordsDeleteCall) Do(opts ...g
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -30769,11 +31160,14 @@ func (r *AdvertisersNegativeKeywordListsNegativeKeywordsService) List(advertiser
 
 // Filter sets the optional parameter "filter": Allows filtering by
 // negative keyword fields. Supported syntax: * Filter expressions for
-// negative keyword currently can only contain at most one *
-// restriction. * A restriction has the form of `{field} {operator}
-// {value}`. * The operator must be `CONTAINS (:)`. * Supported fields:
-// - `keywordValue` Examples: * All negative keywords for which the
-// keyword value contains "google": `keywordValue : "google"
+// negative keywords can only contain at most one restriction. * A
+// restriction has the form of `{field} {operator} {value}`. * All
+// fields must use the `HAS (:)` operator. Supported fields: *
+// `keywordValue` Examples: * All negative keywords for which the
+// keyword value contains "google": `keywordValue : "google" The length
+// of this field should be no more than 500 characters. Reference our
+// filter `LIST` requests (/display-video/api/guides/how-tos/filters)
+// guide for more information.
 func (c *AdvertisersNegativeKeywordListsNegativeKeywordsListCall) Filter(filter string) *AdvertisersNegativeKeywordListsNegativeKeywordsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -30884,17 +31278,17 @@ func (c *AdvertisersNegativeKeywordListsNegativeKeywordsListCall) Do(opts ...goo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListNegativeKeywordsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -30926,7 +31320,7 @@ func (c *AdvertisersNegativeKeywordListsNegativeKeywordsListCall) Do(opts ...goo
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by negative keyword fields. Supported syntax: * Filter expressions for negative keyword currently can only contain at most one * restriction. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`. * Supported fields: - `keywordValue` Examples: * All negative keywords for which the keyword value contains \"google\": `keywordValue : \"google\"`",
+	//       "description": "Allows filtering by negative keyword fields. Supported syntax: * Filter expressions for negative keywords can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `HAS (:)` operator. Supported fields: * `keywordValue` Examples: * All negative keywords for which the keyword value contains \"google\": `keywordValue : \"google\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -31084,17 +31478,17 @@ func (c *AdvertisersNegativeKeywordListsNegativeKeywordsReplaceCall) Do(opts ...
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ReplaceNegativeKeywordsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -31244,17 +31638,17 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsCreateCall) Do(opts ..
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedTargetingOption{
 		ServerResponse: googleapi.ServerResponse{
@@ -31369,7 +31763,7 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsCreateCall) Do(opts ..
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -31497,17 +31891,17 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsDeleteCall) Do(opts ..
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -31630,7 +32024,7 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsDeleteCall) Do(opts ..
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -31684,7 +32078,8 @@ type AdvertisersTargetingTypesAssignedTargetingOptionsGetCall struct {
 //     option. Supported targeting types: * `TARGETING_TYPE_CHANNEL` *
 //     `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` *
 //     `TARGETING_TYPE_OMID` *
-//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION`.
+//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` *
+//     `TARGETING_TYPE_YOUTUBE_VIDEO` * `TARGETING_TYPE_YOUTUBE_CHANNEL`.
 func (r *AdvertisersTargetingTypesAssignedTargetingOptionsService) Get(advertiserId int64, targetingType string, assignedTargetingOptionId string) *AdvertisersTargetingTypesAssignedTargetingOptionsGetCall {
 	c := &AdvertisersTargetingTypesAssignedTargetingOptionsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.advertiserId = advertiserId
@@ -31770,17 +32165,17 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsGetCall) Do(opts ...go
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedTargetingOption{
 		ServerResponse: googleapi.ServerResponse{
@@ -31820,7 +32215,7 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsGetCall) Do(opts ...go
 	//       "type": "string"
 	//     },
 	//     "targetingType": {
-	//       "description": "Required. Identifies the type of this assigned targeting option. Supported targeting types: * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION`",
+	//       "description": "Required. Identifies the type of this assigned targeting option. Supported targeting types: * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` * `TARGETING_TYPE_YOUTUBE_VIDEO` * `TARGETING_TYPE_YOUTUBE_CHANNEL`",
 	//       "enum": [
 	//         "TARGETING_TYPE_UNSPECIFIED",
 	//         "TARGETING_TYPE_CHANNEL",
@@ -31903,7 +32298,7 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsGetCall) Do(opts ...go
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -31953,7 +32348,8 @@ type AdvertisersTargetingTypesAssignedTargetingOptionsListCall struct {
 //     list. Supported targeting types: * `TARGETING_TYPE_CHANNEL` *
 //     `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` *
 //     `TARGETING_TYPE_OMID` *
-//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION`.
+//     `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` *
+//     `TARGETING_TYPE_YOUTUBE_VIDEO` * `TARGETING_TYPE_YOUTUBE_CHANNEL`.
 func (r *AdvertisersTargetingTypesAssignedTargetingOptionsService) List(advertiserId int64, targetingType string) *AdvertisersTargetingTypesAssignedTargetingOptionsListCall {
 	c := &AdvertisersTargetingTypesAssignedTargetingOptionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.advertiserId = advertiserId
@@ -31962,14 +32358,16 @@ func (r *AdvertisersTargetingTypesAssignedTargetingOptionsService) List(advertis
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// assigned targeting option properties. Supported syntax: * Filter
+// assigned targeting option fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
-// can be combined by the logical operator `OR`. * A restriction has the
-// form of `{field} {operator} {value}`. * The operator must be `EQUALS
-// (=)`. * Supported fields: - `assignedTargetingOptionId` Examples: *
-// AssignedTargetingOption with ID 123456
-// `assignedTargetingOptionId="123456" The length of this field should
-// be no more than 500 characters.
+// can be combined by the `OR` logical operator. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: *
+// `assignedTargetingOptionId` Examples: * `AssignedTargetingOption`
+// with ID 123456: `assignedTargetingOptionId="123456" The length of
+// this field should be no more than 500 characters. Reference our
+// filter `LIST` requests (/display-video/api/guides/how-tos/filters)
+// guide for more information.
 func (c *AdvertisersTargetingTypesAssignedTargetingOptionsListCall) Filter(filter string) *AdvertisersTargetingTypesAssignedTargetingOptionsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -32082,17 +32480,17 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsListCall) Do(opts ...g
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListAdvertiserAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -32124,7 +32522,7 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsListCall) Do(opts ...g
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by assigned targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `assignedTargetingOptionId` Examples: * AssignedTargetingOption with ID 123456 `assignedTargetingOptionId=\"123456\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the `OR` logical operator. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `assignedTargetingOptionId` Examples: * `AssignedTargetingOption` with ID 123456: `assignedTargetingOptionId=\"123456\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -32145,7 +32543,7 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsListCall) Do(opts ...g
 	//       "type": "string"
 	//     },
 	//     "targetingType": {
-	//       "description": "Required. Identifies the type of assigned targeting options to list. Supported targeting types: * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION`",
+	//       "description": "Required. Identifies the type of assigned targeting options to list. Supported targeting types: * `TARGETING_TYPE_CHANNEL` * `TARGETING_TYPE_DIGITAL_CONTENT_LABEL_EXCLUSION` * `TARGETING_TYPE_OMID` * `TARGETING_TYPE_SENSITIVE_CATEGORY_EXCLUSION` * `TARGETING_TYPE_YOUTUBE_VIDEO` * `TARGETING_TYPE_YOUTUBE_CHANNEL`",
 	//       "enum": [
 	//         "TARGETING_TYPE_UNSPECIFIED",
 	//         "TARGETING_TYPE_CHANNEL",
@@ -32228,7 +32626,7 @@ func (c *AdvertisersTargetingTypesAssignedTargetingOptionsListCall) Do(opts ...g
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -32389,17 +32787,17 @@ func (c *CombinedAudiencesGetCall) Do(opts ...googleapi.CallOption) (*CombinedAu
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CombinedAudience{
 		ServerResponse: googleapi.ServerResponse{
@@ -32479,12 +32877,14 @@ func (c *CombinedAudiencesListCall) AdvertiserId(advertiserId int64) *CombinedAu
 
 // Filter sets the optional parameter "filter": Allows filtering by
 // combined audience fields. Supported syntax: * Filter expressions for
-// combined audiences currently can only contain at most one
-// restriction. * A restriction has the form of `{field} {operator}
-// {value}`. * The operator must be `CONTAINS (:)`. * Supported fields:
-// - `displayName` Examples: * All combined audiences for which the
+// combined audiences can only contain at most one restriction. * A
+// restriction has the form of `{field} {operator} {value}`. * All
+// fields must use the `HAS (:)` operator. Supported fields: *
+// `displayName` Examples: * All combined audiences for which the
 // display name contains "Google": `displayName : "Google". The length
-// of this field should be no more than 500 characters.
+// of this field should be no more than 500 characters. Reference our
+// filter `LIST` requests (/display-video/api/guides/how-tos/filters)
+// guide for more information.
 func (c *CombinedAudiencesListCall) Filter(filter string) *CombinedAudiencesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -32501,7 +32901,7 @@ func (c *CombinedAudiencesListCall) OrderBy(orderBy string) *CombinedAudiencesLi
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *CombinedAudiencesListCall) PageSize(pageSize int64) *CombinedAudiencesListCall {
@@ -32598,17 +32998,17 @@ func (c *CombinedAudiencesListCall) Do(opts ...googleapi.CallOption) (*ListCombi
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListCombinedAudiencesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -32635,7 +33035,7 @@ func (c *CombinedAudiencesListCall) Do(opts ...googleapi.CallOption) (*ListCombi
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by combined audience fields. Supported syntax: * Filter expressions for combined audiences currently can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`. * Supported fields: - `displayName` Examples: * All combined audiences for which the display name contains \"Google\": `displayName : \"Google\"`. The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by combined audience fields. Supported syntax: * Filter expressions for combined audiences can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `HAS (:)` operator. Supported fields: * `displayName` Examples: * All combined audiences for which the display name contains \"Google\": `displayName : \"Google\"`. The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -32645,7 +33045,7 @@ func (c *CombinedAudiencesListCall) Do(opts ...googleapi.CallOption) (*ListCombi
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -32776,17 +33176,17 @@ func (c *CustomBiddingAlgorithmsCreateCall) Do(opts ...googleapi.CallOption) (*C
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CustomBiddingAlgorithm{
 		ServerResponse: googleapi.ServerResponse{
@@ -32930,17 +33330,17 @@ func (c *CustomBiddingAlgorithmsGetCall) Do(opts ...googleapi.CallOption) (*Cust
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CustomBiddingAlgorithm{
 		ServerResponse: googleapi.ServerResponse{
@@ -33022,21 +33422,18 @@ func (c *CustomBiddingAlgorithmsListCall) AdvertiserId(advertiserId int64) *Cust
 // Filter sets the optional parameter "filter": Allows filtering by
 // custom bidding algorithm fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
-// can be combined by `AND`. A sequence of restrictions * implicitly
-// uses `AND`. * A restriction has the form of `{field} {operator}
-// {value}`. * The operator must be `CONTAINS (:)` or `EQUALS (=)`. *
-// The operator must be `CONTAINS (:)` for the following field: -
-// `displayName` * The operator must be `EQUALS (=)` for the following
-// field: - `customBiddingAlgorithmType` * For `displayName`, the value
-// is a string. We return all custom bidding algorithms whose
-// display_name contains such string. * For
-// `customBiddingAlgorithmType`, the value is a string. We return all
-// algorithms whose custom_bidding_algorithm_type is equal to the given
-// type. Examples: * All custom bidding algorithms for which the display
-// name contains "politics": `displayName:politics`. * All custom
-// bidding algorithms for which the type is "SCRIPT_BASED":
+// can be combined by `AND`. A sequence of restrictions implicitly uses
+// `AND`. * A restriction has the form of `{field} {operator} {value}`.
+// * The `customBiddingAlgorithmType` field must use the `EQUALS (=)`
+// operator. * The `displayName` field must use the `HAS (:)` operator.
+// Supported fields: * `customBiddingAlgorithmType` * `displayName`
+// Examples: * All custom bidding algorithms for which the display name
+// contains "politics": `displayName:"politics". * All custom bidding
+// algorithms for which the type is "SCRIPT_BASED":
 // `customBiddingAlgorithmType=SCRIPT_BASED` The length of this field
-// should be no more than 500 characters.
+// should be no more than 500 characters. Reference our filter `LIST`
+// requests (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *CustomBiddingAlgorithmsListCall) Filter(filter string) *CustomBiddingAlgorithmsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -33053,7 +33450,7 @@ func (c *CustomBiddingAlgorithmsListCall) OrderBy(orderBy string) *CustomBidding
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *CustomBiddingAlgorithmsListCall) PageSize(pageSize int64) *CustomBiddingAlgorithmsListCall {
@@ -33151,17 +33548,17 @@ func (c *CustomBiddingAlgorithmsListCall) Do(opts ...googleapi.CallOption) (*Lis
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListCustomBiddingAlgorithmsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -33188,7 +33585,7 @@ func (c *CustomBiddingAlgorithmsListCall) Do(opts ...googleapi.CallOption) (*Lis
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by custom bidding algorithm fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND`. A sequence of restrictions * implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)` or `EQUALS (=)`. * The operator must be `CONTAINS (:)` for the following field: - `displayName` * The operator must be `EQUALS (=)` for the following field: - `customBiddingAlgorithmType` * For `displayName`, the value is a string. We return all custom bidding algorithms whose display_name contains such string. * For `customBiddingAlgorithmType`, the value is a string. We return all algorithms whose custom_bidding_algorithm_type is equal to the given type. Examples: * All custom bidding algorithms for which the display name contains \"politics\": `displayName:politics`. * All custom bidding algorithms for which the type is \"SCRIPT_BASED\": `customBiddingAlgorithmType=SCRIPT_BASED` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by custom bidding algorithm fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND`. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The `customBiddingAlgorithmType` field must use the `EQUALS (=)` operator. * The `displayName` field must use the `HAS (:)` operator. Supported fields: * `customBiddingAlgorithmType` * `displayName` Examples: * All custom bidding algorithms for which the display name contains \"politics\": `displayName:\"politics\"`. * All custom bidding algorithms for which the type is \"SCRIPT_BASED\": `customBiddingAlgorithmType=SCRIPT_BASED` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -33198,7 +33595,7 @@ func (c *CustomBiddingAlgorithmsListCall) Do(opts ...googleapi.CallOption) (*Lis
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -33344,17 +33741,17 @@ func (c *CustomBiddingAlgorithmsPatchCall) Do(opts ...googleapi.CallOption) (*Cu
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CustomBiddingAlgorithm{
 		ServerResponse: googleapi.ServerResponse{
@@ -33520,17 +33917,17 @@ func (c *CustomBiddingAlgorithmsUploadScriptCall) Do(opts ...googleapi.CallOptio
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CustomBiddingScriptRef{
 		ServerResponse: googleapi.ServerResponse{
@@ -33689,17 +34086,17 @@ func (c *CustomBiddingAlgorithmsScriptsCreateCall) Do(opts ...googleapi.CallOpti
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CustomBiddingScript{
 		ServerResponse: googleapi.ServerResponse{
@@ -33872,17 +34269,17 @@ func (c *CustomBiddingAlgorithmsScriptsGetCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CustomBiddingScript{
 		ServerResponse: googleapi.ServerResponse{
@@ -33984,7 +34381,7 @@ func (c *CustomBiddingAlgorithmsScriptsListCall) OrderBy(orderBy string) *Custom
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *CustomBiddingAlgorithmsScriptsListCall) PageSize(pageSize int64) *CustomBiddingAlgorithmsScriptsListCall {
@@ -34085,17 +34482,17 @@ func (c *CustomBiddingAlgorithmsScriptsListCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListCustomBiddingScriptsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -34137,7 +34534,7 @@ func (c *CustomBiddingAlgorithmsScriptsListCall) Do(opts ...googleapi.CallOption
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -34288,17 +34685,17 @@ func (c *CustomListsGetCall) Do(opts ...googleapi.CallOption) (*CustomList, erro
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CustomList{
 		ServerResponse: googleapi.ServerResponse{
@@ -34372,12 +34769,14 @@ func (c *CustomListsListCall) AdvertiserId(advertiserId int64) *CustomListsListC
 
 // Filter sets the optional parameter "filter": Allows filtering by
 // custom list fields. Supported syntax: * Filter expressions for custom
-// lists currently can only contain at most one restriction. * A
-// restriction has the form of `{field} {operator} {value}`. * The
-// operator must be `CONTAINS (:)`. * Supported fields: - `displayName`
-// Examples: * All custom lists for which the display name contains
-// "Google": `displayName : "Google". The length of this field should
-// be no more than 500 characters.
+// lists can only contain at most one restriction. * A restriction has
+// the form of `{field} {operator} {value}`. * All fields must use the
+// `HAS (:)` operator. Supported fields: * `displayName` Examples: * All
+// custom lists for which the display name contains "Google":
+// `displayName:"Google". The length of this field should be no more
+// than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *CustomListsListCall) Filter(filter string) *CustomListsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -34394,7 +34793,7 @@ func (c *CustomListsListCall) OrderBy(orderBy string) *CustomListsListCall {
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *CustomListsListCall) PageSize(pageSize int64) *CustomListsListCall {
@@ -34484,17 +34883,17 @@ func (c *CustomListsListCall) Do(opts ...googleapi.CallOption) (*ListCustomLists
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListCustomListsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -34521,7 +34920,7 @@ func (c *CustomListsListCall) Do(opts ...googleapi.CallOption) (*ListCustomLists
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by custom list fields. Supported syntax: * Filter expressions for custom lists currently can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`. * Supported fields: - `displayName` Examples: * All custom lists for which the display name contains \"Google\": `displayName : \"Google\"`. The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by custom list fields. Supported syntax: * Filter expressions for custom lists can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `HAS (:)` operator. Supported fields: * `displayName` Examples: * All custom lists for which the display name contains \"Google\": `displayName:\"Google\"`. The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -34531,7 +34930,7 @@ func (c *CustomListsListCall) Do(opts ...googleapi.CallOption) (*ListCustomLists
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -34665,17 +35064,17 @@ func (c *FirstAndThirdPartyAudiencesCreateCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &FirstAndThirdPartyAudience{
 		ServerResponse: googleapi.ServerResponse{
@@ -34807,17 +35206,17 @@ func (c *FirstAndThirdPartyAudiencesEditCustomerMatchMembersCall) Do(opts ...goo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &EditCustomerMatchMembersResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -34974,17 +35373,17 @@ func (c *FirstAndThirdPartyAudiencesGetCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &FirstAndThirdPartyAudience{
 		ServerResponse: googleapi.ServerResponse{
@@ -35065,13 +35464,15 @@ func (c *FirstAndThirdPartyAudiencesListCall) AdvertiserId(advertiserId int64) *
 
 // Filter sets the optional parameter "filter": Allows filtering by
 // first and third party audience fields. Supported syntax: * Filter
-// expressions for first and third party audiences currently can only
-// contain at most one restriction. * A restriction has the form of
-// `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`.
-// * Supported fields: - `displayName` Examples: * All first and third
+// expressions for first and third party audiences can only contain at
+// most one restriction. * A restriction has the form of `{field}
+// {operator} {value}`. * All fields must use the `HAS (:)` operator.
+// Supported fields: * `displayName` Examples: * All first and third
 // party audiences for which the display name contains "Google":
-// `displayName : "Google". The length of this field should be no more
-// than 500 characters.
+// `displayName:"Google". The length of this field should be no more
+// than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *FirstAndThirdPartyAudiencesListCall) Filter(filter string) *FirstAndThirdPartyAudiencesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -35088,7 +35489,7 @@ func (c *FirstAndThirdPartyAudiencesListCall) OrderBy(orderBy string) *FirstAndT
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *FirstAndThirdPartyAudiencesListCall) PageSize(pageSize int64) *FirstAndThirdPartyAudiencesListCall {
@@ -35187,17 +35588,17 @@ func (c *FirstAndThirdPartyAudiencesListCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListFirstAndThirdPartyAudiencesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -35224,7 +35625,7 @@ func (c *FirstAndThirdPartyAudiencesListCall) Do(opts ...googleapi.CallOption) (
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by first and third party audience fields. Supported syntax: * Filter expressions for first and third party audiences currently can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`. * Supported fields: - `displayName` Examples: * All first and third party audiences for which the display name contains \"Google\": `displayName : \"Google\"`. The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by first and third party audience fields. Supported syntax: * Filter expressions for first and third party audiences can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `HAS (:)` operator. Supported fields: * `displayName` Examples: * All first and third party audiences for which the display name contains \"Google\": `displayName:\"Google\"`. The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -35234,7 +35635,7 @@ func (c *FirstAndThirdPartyAudiencesListCall) Do(opts ...googleapi.CallOption) (
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -35391,17 +35792,17 @@ func (c *FirstAndThirdPartyAudiencesPatchCall) Do(opts ...googleapi.CallOption) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &FirstAndThirdPartyAudience{
 		ServerResponse: googleapi.ServerResponse{
@@ -35560,17 +35961,17 @@ func (c *FloodlightGroupsGetCall) Do(opts ...googleapi.CallOption) (*FloodlightG
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &FloodlightGroup{
 		ServerResponse: googleapi.ServerResponse{
@@ -35722,17 +36123,17 @@ func (c *FloodlightGroupsPatchCall) Do(opts ...googleapi.CallOption) (*Floodligh
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &FloodlightGroup{
 		ServerResponse: googleapi.ServerResponse{
@@ -35897,17 +36298,17 @@ func (c *GoogleAudiencesGetCall) Do(opts ...googleapi.CallOption) (*GoogleAudien
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleAudience{
 		ServerResponse: googleapi.ServerResponse{
@@ -35987,12 +36388,14 @@ func (c *GoogleAudiencesListCall) AdvertiserId(advertiserId int64) *GoogleAudien
 
 // Filter sets the optional parameter "filter": Allows filtering by
 // Google audience fields. Supported syntax: * Filter expressions for
-// Google audiences currently can only contain at most one restriction.
-// * A restriction has the form of `{field} {operator} {value}`. * The
-// operator must be `CONTAINS (:)`. * Supported fields: - `displayName`
-// Examples: * All Google audiences for which the display name contains
-// "Google": `displayName : "Google". The length of this field should
-// be no more than 500 characters.
+// Google audiences can only contain at most one restriction. * A
+// restriction has the form of `{field} {operator} {value}`. * All
+// fields must use the `HAS (:)` operator. Supported fields: *
+// `displayName` Examples: * All Google audiences for which the display
+// name contains "Google": `displayName:"Google". The length of this
+// field should be no more than 500 characters. Reference our filter
+// `LIST` requests (/display-video/api/guides/how-tos/filters) guide for
+// more information.
 func (c *GoogleAudiencesListCall) Filter(filter string) *GoogleAudiencesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -36009,7 +36412,7 @@ func (c *GoogleAudiencesListCall) OrderBy(orderBy string) *GoogleAudiencesListCa
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *GoogleAudiencesListCall) PageSize(pageSize int64) *GoogleAudiencesListCall {
@@ -36106,17 +36509,17 @@ func (c *GoogleAudiencesListCall) Do(opts ...googleapi.CallOption) (*ListGoogleA
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListGoogleAudiencesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -36143,7 +36546,7 @@ func (c *GoogleAudiencesListCall) Do(opts ...googleapi.CallOption) (*ListGoogleA
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by Google audience fields. Supported syntax: * Filter expressions for Google audiences currently can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`. * Supported fields: - `displayName` Examples: * All Google audiences for which the display name contains \"Google\": `displayName : \"Google\"`. The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by Google audience fields. Supported syntax: * Filter expressions for Google audiences can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `HAS (:)` operator. Supported fields: * `displayName` Examples: * All Google audiences for which the display name contains \"Google\": `displayName:\"Google\"`. The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -36153,7 +36556,7 @@ func (c *GoogleAudiencesListCall) Do(opts ...googleapi.CallOption) (*ListGoogleA
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -36298,17 +36701,17 @@ func (c *GuaranteedOrdersCreateCall) Do(opts ...googleapi.CallOption) (*Guarante
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GuaranteedOrder{
 		ServerResponse: googleapi.ServerResponse{
@@ -36447,17 +36850,17 @@ func (c *GuaranteedOrdersEditGuaranteedOrderReadAccessorsCall) Do(opts ...google
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &EditGuaranteedOrderReadAccessorsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -36611,17 +37014,17 @@ func (c *GuaranteedOrdersGetCall) Do(opts ...googleapi.CallOption) (*GuaranteedO
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GuaranteedOrder{
 		ServerResponse: googleapi.ServerResponse{
@@ -36701,18 +37104,20 @@ func (c *GuaranteedOrdersListCall) AdvertiserId(advertiserId int64) *GuaranteedO
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// guaranteed order properties. * Filter expressions are made up of one
-// or more restrictions. * Restrictions can be combined by `AND` or `OR`
+// guaranteed order fields. * Filter expressions are made up of one or
+// more restrictions. * Restrictions can be combined by `AND` or `OR`
 // logical operators. A sequence of restrictions implicitly uses `AND`.
-// * A restriction has the form of `{field} {operator} {value}`. * The
-// operator must be `EQUALS (=)`. * Supported fields: -
-// `guaranteed_order_id` - `exchange` - `display_name` -
+// * A restriction has the form of `{field} {operator} {value}`. * All
+// fields must use the `EQUALS (=)` operator. Supported fields: *
+// `guaranteed_order_id` * `exchange` * `display_name` *
 // `status.entityStatus` Examples: * All active guaranteed orders:
 // `status.entityStatus="ENTITY_STATUS_ACTIVE" * Guaranteed orders
 // belonging to Google Ad Manager or Rubicon exchanges:
 // `exchange="EXCHANGE_GOOGLE_AD_MANAGER" OR
 // exchange="EXCHANGE_RUBICON" The length of this field should be no
-// more than 500 characters.
+// more than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *GuaranteedOrdersListCall) Filter(filter string) *GuaranteedOrdersListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -36729,8 +37134,7 @@ func (c *GuaranteedOrdersListCall) OrderBy(orderBy string) *GuaranteedOrdersList
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified or greater than `100`
-// will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 func (c *GuaranteedOrdersListCall) PageSize(pageSize int64) *GuaranteedOrdersListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -36825,17 +37229,17 @@ func (c *GuaranteedOrdersListCall) Do(opts ...googleapi.CallOption) (*ListGuaran
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListGuaranteedOrdersResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -36862,7 +37266,7 @@ func (c *GuaranteedOrdersListCall) Do(opts ...googleapi.CallOption) (*ListGuaran
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by guaranteed order properties. * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `guaranteed_order_id` - `exchange` - `display_name` - `status.entityStatus` Examples: * All active guaranteed orders: `status.entityStatus=\"ENTITY_STATUS_ACTIVE\"` * Guaranteed orders belonging to Google Ad Manager or Rubicon exchanges: `exchange=\"EXCHANGE_GOOGLE_AD_MANAGER\" OR exchange=\"EXCHANGE_RUBICON\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by guaranteed order fields. * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `guaranteed_order_id` * `exchange` * `display_name` * `status.entityStatus` Examples: * All active guaranteed orders: `status.entityStatus=\"ENTITY_STATUS_ACTIVE\"` * Guaranteed orders belonging to Google Ad Manager or Rubicon exchanges: `exchange=\"EXCHANGE_GOOGLE_AD_MANAGER\" OR exchange=\"EXCHANGE_RUBICON\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -36872,7 +37276,7 @@ func (c *GuaranteedOrdersListCall) Do(opts ...googleapi.CallOption) (*ListGuaran
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified or greater than `100` will default to `100`.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -37033,17 +37437,17 @@ func (c *GuaranteedOrdersPatchCall) Do(opts ...googleapi.CallOption) (*Guarantee
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GuaranteedOrder{
 		ServerResponse: googleapi.ServerResponse{
@@ -37204,17 +37608,17 @@ func (c *InventorySourceGroupsCreateCall) Do(opts ...googleapi.CallOption) (*Inv
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InventorySourceGroup{
 		ServerResponse: googleapi.ServerResponse{
@@ -37359,17 +37763,17 @@ func (c *InventorySourceGroupsDeleteCall) Do(opts ...googleapi.CallOption) (*Emp
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -37536,17 +37940,17 @@ func (c *InventorySourceGroupsGetCall) Do(opts ...googleapi.CallOption) (*Invent
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InventorySourceGroup{
 		ServerResponse: googleapi.ServerResponse{
@@ -37627,12 +38031,15 @@ func (c *InventorySourceGroupsListCall) AdvertiserId(advertiserId int64) *Invent
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// inventory source group properties. Supported syntax: * Filter
-// expressions are made up of one or more restrictions. * Restrictions
-// can be combined by the logical operator `OR`. * A restriction has the
-// form of `{field} {operator} {value}`. * The operator must be `EQUALS
-// (=)`. * Supported fields: - `inventorySourceGroupId` The length of
-// this field should be no more than 500 characters.
+// inventory source group fields. Supported syntax: * Filter expressions
+// are made up of one or more restrictions. * Restrictions can be
+// combined by the logical operator `OR`. * A restriction has the form
+// of `{field} {operator} {value}`. * All fields must use the `EQUALS
+// (=)` operator. Supported fields: * `inventorySourceGroupId` The
+// length of this field should be no more than 500 characters. Reference
+// our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *InventorySourceGroupsListCall) Filter(filter string) *InventorySourceGroupsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -37649,7 +38056,7 @@ func (c *InventorySourceGroupsListCall) OrderBy(orderBy string) *InventorySource
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 func (c *InventorySourceGroupsListCall) PageSize(pageSize int64) *InventorySourceGroupsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -37746,17 +38153,17 @@ func (c *InventorySourceGroupsListCall) Do(opts ...googleapi.CallOption) (*ListI
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListInventorySourceGroupsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -37783,7 +38190,7 @@ func (c *InventorySourceGroupsListCall) Do(opts ...googleapi.CallOption) (*ListI
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by inventory source group properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `inventorySourceGroupId` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by inventory source group fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `inventorySourceGroupId` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -37793,7 +38200,7 @@ func (c *InventorySourceGroupsListCall) Do(opts ...googleapi.CallOption) (*ListI
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -37955,17 +38362,17 @@ func (c *InventorySourceGroupsPatchCall) Do(opts ...googleapi.CallOption) (*Inve
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InventorySourceGroup{
 		ServerResponse: googleapi.ServerResponse{
@@ -38124,17 +38531,17 @@ func (c *InventorySourceGroupsAssignedInventorySourcesBulkEditCall) Do(opts ...g
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkEditAssignedInventorySourcesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -38286,17 +38693,17 @@ func (c *InventorySourceGroupsAssignedInventorySourcesCreateCall) Do(opts ...goo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedInventorySource{
 		ServerResponse: googleapi.ServerResponse{
@@ -38458,17 +38865,17 @@ func (c *InventorySourceGroupsAssignedInventorySourcesDeleteCall) Do(opts ...goo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -38565,10 +38972,13 @@ func (c *InventorySourceGroupsAssignedInventorySourcesListCall) AdvertiserId(adv
 // Filter sets the optional parameter "filter": Allows filtering by
 // assigned inventory source fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
-// can be combined by the logical operator `OR`. * A restriction has the
-// form of `{field} {operator} {value}`. * The operator must be `EQUALS
-// (=)`. * Supported fields: - `assignedInventorySourceId` The length of
-// this field should be no more than 500 characters.
+// can be combined by the `OR` logical operator. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: *
+// `assignedInventorySourceId` The length of this field should be no
+// more than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *InventorySourceGroupsAssignedInventorySourcesListCall) Filter(filter string) *InventorySourceGroupsAssignedInventorySourcesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -38688,17 +39098,17 @@ func (c *InventorySourceGroupsAssignedInventorySourcesListCall) Do(opts ...googl
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListAssignedInventorySourcesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -38727,7 +39137,7 @@ func (c *InventorySourceGroupsAssignedInventorySourcesListCall) Do(opts ...googl
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by assigned inventory source fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `assignedInventorySourceId` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned inventory source fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the `OR` logical operator. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `assignedInventorySourceId` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -38890,17 +39300,17 @@ func (c *InventorySourcesCreateCall) Do(opts ...googleapi.CallOption) (*Inventor
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InventorySource{
 		ServerResponse: googleapi.ServerResponse{
@@ -39037,17 +39447,17 @@ func (c *InventorySourcesEditInventorySourceReadWriteAccessorsCall) Do(opts ...g
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InventorySourceAccessors{
 		ServerResponse: googleapi.ServerResponse{
@@ -39195,17 +39605,17 @@ func (c *InventorySourcesGetCall) Do(opts ...googleapi.CallOption) (*InventorySo
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InventorySource{
 		ServerResponse: googleapi.ServerResponse{
@@ -39280,19 +39690,21 @@ func (c *InventorySourcesListCall) AdvertiserId(advertiserId int64) *InventorySo
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// inventory source properties. Supported syntax: * Filter expressions
-// are made up of one or more restrictions. * Restrictions can be
-// combined by `AND` or `OR` logical operators. A sequence of
-// restrictions implicitly uses `AND`. * A restriction has the form of
-// `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. *
-// Supported fields: - `status.entityStatus` - `commitment` -
-// `deliveryMethod` - `rateDetails.rateType` - `exchange` Examples: *
+// inventory source fields. Supported syntax: * Filter expressions are
+// made up of one or more restrictions. * Restrictions can be combined
+// by `AND` or `OR` logical operators. A sequence of restrictions
+// implicitly uses `AND`. * A restriction has the form of `{field}
+// {operator} {value}`. * All fields must use the `EQUALS (=)` operator.
+// Supported fields: * `status.entityStatus` * `commitment` *
+// `deliveryMethod` * `rateDetails.rateType` * `exchange` Examples: *
 // All active inventory sources:
 // `status.entityStatus="ENTITY_STATUS_ACTIVE" * Inventory sources
 // belonging to Google Ad Manager or Rubicon exchanges:
 // `exchange="EXCHANGE_GOOGLE_AD_MANAGER" OR
 // exchange="EXCHANGE_RUBICON" The length of this field should be no
-// more than 500 characters.
+// more than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *InventorySourcesListCall) Filter(filter string) *InventorySourcesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -39309,7 +39721,7 @@ func (c *InventorySourcesListCall) OrderBy(orderBy string) *InventorySourcesList
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 func (c *InventorySourcesListCall) PageSize(pageSize int64) *InventorySourcesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -39404,17 +39816,17 @@ func (c *InventorySourcesListCall) Do(opts ...googleapi.CallOption) (*ListInvent
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListInventorySourcesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -39441,7 +39853,7 @@ func (c *InventorySourcesListCall) Do(opts ...googleapi.CallOption) (*ListInvent
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by inventory source properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `status.entityStatus` - `commitment` - `deliveryMethod` - `rateDetails.rateType` - `exchange` Examples: * All active inventory sources: `status.entityStatus=\"ENTITY_STATUS_ACTIVE\"` * Inventory sources belonging to Google Ad Manager or Rubicon exchanges: `exchange=\"EXCHANGE_GOOGLE_AD_MANAGER\" OR exchange=\"EXCHANGE_RUBICON\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by inventory source fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `status.entityStatus` * `commitment` * `deliveryMethod` * `rateDetails.rateType` * `exchange` Examples: * All active inventory sources: `status.entityStatus=\"ENTITY_STATUS_ACTIVE\"` * Inventory sources belonging to Google Ad Manager or Rubicon exchanges: `exchange=\"EXCHANGE_GOOGLE_AD_MANAGER\" OR exchange=\"EXCHANGE_RUBICON\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -39451,7 +39863,7 @@ func (c *InventorySourcesListCall) Do(opts ...googleapi.CallOption) (*ListInvent
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -39611,17 +40023,17 @@ func (c *InventorySourcesPatchCall) Do(opts ...googleapi.CallOption) (*Inventory
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &InventorySource{
 		ServerResponse: googleapi.ServerResponse{
@@ -39779,7 +40191,7 @@ func (c *MediaDownloadCall) Download(opts ...googleapi.CallOption) (*http.Respon
 	}
 	if err := googleapi.CheckResponse(res); err != nil {
 		res.Body.Close()
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	return res, nil
 }
@@ -39798,17 +40210,17 @@ func (c *MediaDownloadCall) Do(opts ...googleapi.CallOption) (*GoogleBytestreamM
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GoogleBytestreamMedia{
 		ServerResponse: googleapi.ServerResponse{
@@ -39994,17 +40406,17 @@ func (c *MediaUploadCall) Do(opts ...googleapi.CallOption) (*GoogleBytestreamMed
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -40020,7 +40432,7 @@ func (c *MediaUploadCall) Do(opts ...googleapi.CallOption) (*GoogleBytestreamMed
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &GoogleBytestreamMedia{
@@ -40175,17 +40587,17 @@ func (c *PartnersBulkEditPartnerAssignedTargetingOptionsCall) Do(opts ...googlea
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkEditPartnerAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -40325,17 +40737,17 @@ func (c *PartnersGetCall) Do(opts ...googleapi.CallOption) (*Partner, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Partner{
 		ServerResponse: googleapi.ServerResponse{
@@ -40395,14 +40807,16 @@ func (r *PartnersService) List() *PartnersListCall {
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// partner properties. Supported syntax: * Filter expressions are made
-// up of one or more restrictions. * Restrictions can be combined by
-// `AND` or `OR` logical operators. A sequence of restrictions
-// implicitly uses `AND`. * A restriction has the form of `{field}
-// {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported
-// fields: - `entityStatus` Examples: * All active partners:
+// partner fields. Supported syntax: * Filter expressions are made up of
+// one or more restrictions. * Restrictions can be combined by `AND` or
+// `OR` logical operators. A sequence of restrictions implicitly uses
+// `AND`. * A restriction has the form of `{field} {operator} {value}`.
+// * All fields must use the `EQUALS (=)` operator. Supported fields: *
+// `entityStatus` Examples: * All active partners:
 // `entityStatus="ENTITY_STATUS_ACTIVE" The length of this field should
-// be no more than 500 characters.
+// be no more than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *PartnersListCall) Filter(filter string) *PartnersListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -40419,7 +40833,7 @@ func (c *PartnersListCall) OrderBy(orderBy string) *PartnersListCall {
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 func (c *PartnersListCall) PageSize(pageSize int64) *PartnersListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -40507,17 +40921,17 @@ func (c *PartnersListCall) Do(opts ...googleapi.CallOption) (*ListPartnersRespon
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListPartnersResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -40538,7 +40952,7 @@ func (c *PartnersListCall) Do(opts ...googleapi.CallOption) (*ListPartnersRespon
 	//   "parameterOrder": [],
 	//   "parameters": {
 	//     "filter": {
-	//       "description": "Allows filtering by partner properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `entityStatus` Examples: * All active partners: `entityStatus=\"ENTITY_STATUS_ACTIVE\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by partner fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `AND` or `OR` logical operators. A sequence of restrictions implicitly uses `AND`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `entityStatus` Examples: * All active partners: `entityStatus=\"ENTITY_STATUS_ACTIVE\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -40548,7 +40962,7 @@ func (c *PartnersListCall) Do(opts ...googleapi.CallOption) (*ListPartnersRespon
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -40687,17 +41101,17 @@ func (c *PartnersChannelsCreateCall) Do(opts ...googleapi.CallOption) (*Channel,
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -40854,17 +41268,17 @@ func (c *PartnersChannelsGetCall) Do(opts ...googleapi.CallOption) (*Channel, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -40950,12 +41364,14 @@ func (c *PartnersChannelsListCall) AdvertiserId(advertiserId int64) *PartnersCha
 
 // Filter sets the optional parameter "filter": Allows filtering by
 // channel fields. Supported syntax: * Filter expressions for channel
-// currently can only contain at most one * restriction. * A restriction
-// has the form of `{field} {operator} {value}`. * The operator must be
-// `CONTAINS (:)`. * Supported fields: - `displayName` Examples: * All
+// can only contain at most one restriction. * A restriction has the
+// form of `{field} {operator} {value}`. * All fields must use the `HAS
+// (:)` operator. Supported fields: * `displayName` Examples: * All
 // channels for which the display name contains "google": `displayName :
 // "google". The length of this field should be no more than 500
-// characters.
+// characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *PartnersChannelsListCall) Filter(filter string) *PartnersChannelsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -40972,7 +41388,7 @@ func (c *PartnersChannelsListCall) OrderBy(orderBy string) *PartnersChannelsList
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *PartnersChannelsListCall) PageSize(pageSize int64) *PartnersChannelsListCall {
@@ -41065,17 +41481,17 @@ func (c *PartnersChannelsListCall) Do(opts ...googleapi.CallOption) (*ListChanne
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListChannelsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -41104,7 +41520,7 @@ func (c *PartnersChannelsListCall) Do(opts ...googleapi.CallOption) (*ListChanne
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by channel fields. Supported syntax: * Filter expressions for channel currently can only contain at most one * restriction. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`. * Supported fields: - `displayName` Examples: * All channels for which the display name contains \"google\": `displayName : \"google\"`. The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by channel fields. Supported syntax: * Filter expressions for channel can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `HAS (:)` operator. Supported fields: * `displayName` Examples: * All channels for which the display name contains \"google\": `displayName : \"google\"`. The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -41114,7 +41530,7 @@ func (c *PartnersChannelsListCall) Do(opts ...googleapi.CallOption) (*ListChanne
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -41272,17 +41688,17 @@ func (c *PartnersChannelsPatchCall) Do(opts ...googleapi.CallOption) (*Channel, 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -41441,17 +41857,17 @@ func (c *PartnersChannelsSitesBulkEditCall) Do(opts ...googleapi.CallOption) (*B
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkEditSitesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -41604,17 +42020,17 @@ func (c *PartnersChannelsSitesCreateCall) Do(opts ...googleapi.CallOption) (*Sit
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Site{
 		ServerResponse: googleapi.ServerResponse{
@@ -41769,17 +42185,17 @@ func (c *PartnersChannelsSitesDeleteCall) Do(opts ...googleapi.CallOption) (*Emp
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -41875,11 +42291,15 @@ func (c *PartnersChannelsSitesListCall) AdvertiserId(advertiserId int64) *Partne
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by site
-// fields. Supported syntax: * Filter expressions for site currently can
-// only contain at most one * restriction. * A restriction has the form
-// of `{field} {operator} {value}`. * The operator must be `CONTAINS
-// (:)`. * Supported fields: - `urlOrAppId` Examples: * All sites for
+// fields. Supported syntax: * Filter expressions for site retrieval can
+// only contain at most one restriction. * A restriction has the form of
+// `{field} {operator} {value}`. * All fields must use the `HAS (:)`
+// operator. Supported fields: * `urlOrAppId` Examples: * All sites for
 // which the URL or app ID contains "google": `urlOrAppId : "google"
+// The length of this field should be no more than 500 characters.
+// Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *PartnersChannelsSitesListCall) Filter(filter string) *PartnersChannelsSitesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -41990,17 +42410,17 @@ func (c *PartnersChannelsSitesListCall) Do(opts ...googleapi.CallOption) (*ListS
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListSitesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -42038,7 +42458,7 @@ func (c *PartnersChannelsSitesListCall) Do(opts ...googleapi.CallOption) (*ListS
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by site fields. Supported syntax: * Filter expressions for site currently can only contain at most one * restriction. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)`. * Supported fields: - `urlOrAppId` Examples: * All sites for which the URL or app ID contains \"google\": `urlOrAppId : \"google\"`",
+	//       "description": "Allows filtering by site fields. Supported syntax: * Filter expressions for site retrieval can only contain at most one restriction. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `HAS (:)` operator. Supported fields: * `urlOrAppId` Examples: * All sites for which the URL or app ID contains \"google\": `urlOrAppId : \"google\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -42194,17 +42614,17 @@ func (c *PartnersChannelsSitesReplaceCall) Do(opts ...googleapi.CallOption) (*Re
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ReplaceSitesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -42351,17 +42771,17 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsCreateCall) Do(opts ...go
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedTargetingOption{
 		ServerResponse: googleapi.ServerResponse{
@@ -42476,7 +42896,7 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsCreateCall) Do(opts ...go
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -42601,17 +43021,17 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsDeleteCall) Do(opts ...go
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -42734,7 +43154,7 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsDeleteCall) Do(opts ...go
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -42871,17 +43291,17 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsGetCall) Do(opts ...googl
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AssignedTargetingOption{
 		ServerResponse: googleapi.ServerResponse{
@@ -43004,7 +43424,7 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsGetCall) Do(opts ...googl
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -43060,14 +43480,17 @@ func (r *PartnersTargetingTypesAssignedTargetingOptionsService) List(partnerId i
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// assigned targeting option properties. Supported syntax: * Filter
+// assigned targeting option fields. Supported syntax: * Filter
 // expressions are made up of one or more restrictions. * Restrictions
 // can be combined by the logical operator `OR`. * A restriction has the
-// form of `{field} {operator} {value}`. * The operator must be `EQUALS
-// (=)`. * Supported fields: - `assignedTargetingOptionId` Examples: *
-// AssignedTargetingOption with ID 123456
-// `assignedTargetingOptionId="123456" The length of this field should
-// be no more than 500 characters.
+// form of `{field} {operator} {value}`. * All fields must use the
+// `EQUALS (=)` operator. Supported fields: *
+// `assignedTargetingOptionId` Examples: * `AssignedTargetingOption`
+// resource with ID 123456: `assignedTargetingOptionId="123456" The
+// length of this field should be no more than 500 characters. Reference
+// our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *PartnersTargetingTypesAssignedTargetingOptionsListCall) Filter(filter string) *PartnersTargetingTypesAssignedTargetingOptionsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -43084,7 +43507,7 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsListCall) OrderBy(orderBy
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *PartnersTargetingTypesAssignedTargetingOptionsListCall) PageSize(pageSize int64) *PartnersTargetingTypesAssignedTargetingOptionsListCall {
@@ -43180,17 +43603,17 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsListCall) Do(opts ...goog
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListPartnerAssignedTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -43214,7 +43637,7 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsListCall) Do(opts ...goog
 	//   ],
 	//   "parameters": {
 	//     "filter": {
-	//       "description": "Allows filtering by assigned targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `EQUALS (=)`. * Supported fields: - `assignedTargetingOptionId` Examples: * AssignedTargetingOption with ID 123456 `assignedTargetingOptionId=\"123456\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by assigned targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `OR`. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `assignedTargetingOptionId` Examples: * `AssignedTargetingOption` resource with ID 123456: `assignedTargetingOptionId=\"123456\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -43224,7 +43647,7 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsListCall) Do(opts ...goog
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -43326,7 +43749,7 @@ func (c *PartnersTargetingTypesAssignedTargetingOptionsListCall) Do(opts ...goog
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -43467,17 +43890,17 @@ func (c *SdfdownloadtasksCreateCall) Do(opts ...googleapi.CallOption) (*Operatio
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Operation{
 		ServerResponse: googleapi.ServerResponse{
@@ -43608,17 +44031,17 @@ func (c *SdfdownloadtasksOperationsGetCall) Do(opts ...googleapi.CallOption) (*O
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Operation{
 		ServerResponse: googleapi.ServerResponse{
@@ -43786,17 +44209,17 @@ func (c *TargetingTypesTargetingOptionsGetCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &TargetingOption{
 		ServerResponse: googleapi.ServerResponse{
@@ -43916,7 +44339,7 @@ func (c *TargetingTypesTargetingOptionsGetCall) Do(opts ...googleapi.CallOption)
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -43995,20 +44418,22 @@ func (c *TargetingTypesTargetingOptionsListCall) AdvertiserId(advertiserId int64
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by
-// targeting option properties. Supported syntax: * Filter expressions
-// are made up of one or more restrictions. * Restrictions can be
-// combined by `OR` logical operators. * A restriction has the form of
-// `{field} {operator} {value}`. * The operator must be "=" (equal
-// sign). * Supported fields: - `carrierAndIspDetails.type` -
-// `geoRegionDetails.geoRegionType` - `targetingOptionId` Examples: *
+// targeting option fields. Supported syntax: * Filter expressions are
+// made up of one or more restrictions. * Restrictions can be combined
+// by `OR` logical operators. * A restriction has the form of `{field}
+// {operator} {value}`. * All fields must use the `EQUALS (=)` operator.
+// Supported fields: * `carrierAndIspDetails.type` *
+// `geoRegionDetails.geoRegionType` * `targetingOptionId` Examples: *
 // All `GEO REGION` targeting options that belong to sub type
 // `GEO_REGION_TYPE_COUNTRY` or `GEO_REGION_TYPE_STATE`:
 // `geoRegionDetails.geoRegionType="GEO_REGION_TYPE_COUNTRY" OR
 // geoRegionDetails.geoRegionType="GEO_REGION_TYPE_STATE" * All
 // `CARRIER AND ISP` targeting options that belong to sub type
 // `CARRIER_AND_ISP_TYPE_CARRIER`:
-// `carrierAndIspDetails.type="CARRIER_AND_ISP_TYPE_CARRIER". The
-// length of this field should be no more than 500 characters.
+// `carrierAndIspDetails.type="CARRIER_AND_ISP_TYPE_CARRIER" The length
+// of this field should be no more than 500 characters. Reference our
+// filter `LIST` requests (/display-video/api/guides/how-tos/filters)
+// guide for more information.
 func (c *TargetingTypesTargetingOptionsListCall) Filter(filter string) *TargetingTypesTargetingOptionsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -44025,7 +44450,7 @@ func (c *TargetingTypesTargetingOptionsListCall) OrderBy(orderBy string) *Target
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 // Returns error code `INVALID_ARGUMENT` if an invalid value is
 // specified.
 func (c *TargetingTypesTargetingOptionsListCall) PageSize(pageSize int64) *TargetingTypesTargetingOptionsListCall {
@@ -44118,17 +44543,17 @@ func (c *TargetingTypesTargetingOptionsListCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -44157,7 +44582,7 @@ func (c *TargetingTypesTargetingOptionsListCall) Do(opts ...googleapi.CallOption
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Allows filtering by targeting option properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `OR` logical operators. * A restriction has the form of `{field} {operator} {value}`. * The operator must be \"=\" (equal sign). * Supported fields: - `carrierAndIspDetails.type` - `geoRegionDetails.geoRegionType` - `targetingOptionId` Examples: * All `GEO REGION` targeting options that belong to sub type `GEO_REGION_TYPE_COUNTRY` or `GEO_REGION_TYPE_STATE`: `geoRegionDetails.geoRegionType=\"GEO_REGION_TYPE_COUNTRY\" OR geoRegionDetails.geoRegionType=\"GEO_REGION_TYPE_STATE\"` * All `CARRIER AND ISP` targeting options that belong to sub type `CARRIER_AND_ISP_TYPE_CARRIER`: `carrierAndIspDetails.type=\"CARRIER_AND_ISP_TYPE_CARRIER\"`. The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by targeting option fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by `OR` logical operators. * A restriction has the form of `{field} {operator} {value}`. * All fields must use the `EQUALS (=)` operator. Supported fields: * `carrierAndIspDetails.type` * `geoRegionDetails.geoRegionType` * `targetingOptionId` Examples: * All `GEO REGION` targeting options that belong to sub type `GEO_REGION_TYPE_COUNTRY` or `GEO_REGION_TYPE_STATE`: `geoRegionDetails.geoRegionType=\"GEO_REGION_TYPE_COUNTRY\" OR geoRegionDetails.geoRegionType=\"GEO_REGION_TYPE_STATE\"` * All `CARRIER AND ISP` targeting options that belong to sub type `CARRIER_AND_ISP_TYPE_CARRIER`: `carrierAndIspDetails.type=\"CARRIER_AND_ISP_TYPE_CARRIER\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -44167,7 +44592,7 @@ func (c *TargetingTypesTargetingOptionsListCall) Do(opts ...googleapi.CallOption
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`. Returns error code `INVALID_ARGUMENT` if an invalid value is specified.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -44261,7 +44686,7 @@ func (c *TargetingTypesTargetingOptionsListCall) Do(opts ...googleapi.CallOption
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -44404,17 +44829,17 @@ func (c *TargetingTypesTargetingOptionsSearchCall) Do(opts ...googleapi.CallOpti
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &SearchTargetingOptionsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -44520,7 +44945,7 @@ func (c *TargetingTypesTargetingOptionsSearchCall) Do(opts ...googleapi.CallOpti
 	//         "Target ads to a specific content category (for example, arts \u0026 entertainment).",
 	//         "Purchase impressions from specific deals and auction packages.",
 	//         "Target ads to a specific language (for example, English or Japanese).",
-	//         "Target ads to ads.txt authorized sellers.",
+	//         "Target ads to ads.txt authorized sellers. If no targeting option of this type is assigned, the resource uses the \"Authorized Direct Sellers and Resellers\" option by default.",
 	//         "Target ads to a specific regional location (for example, a city or state).",
 	//         "Purchase impressions from a group of deals and auction packages.",
 	//         "Purchase impressions from specific exchanges.",
@@ -44590,7 +45015,12 @@ type UsersBulkEditAssignedUserRolesCall struct {
 // operation will delete the assigned user roles provided in
 // BulkEditAssignedUserRolesRequest.deletedAssignedUserRoles and then
 // assign the user roles provided in
-// BulkEditAssignedUserRolesRequest.createdAssignedUserRoles.
+// BulkEditAssignedUserRolesRequest.createdAssignedUserRoles. This
+// method has unique authentication requirements. Read the prerequisites
+// in our Managing Users guide
+// (/display-video/api/guides/users/overview#prerequisites) before using
+// this method. The "Try this method" feature does not work for this
+// method.
 //
 // - userId: The ID of the user to which the assigned user roles belong.
 func (r *UsersService) BulkEditAssignedUserRoles(userId int64, bulkeditassigneduserrolesrequest *BulkEditAssignedUserRolesRequest) *UsersBulkEditAssignedUserRolesCall {
@@ -44668,17 +45098,17 @@ func (c *UsersBulkEditAssignedUserRolesCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BulkEditAssignedUserRolesResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -44692,7 +45122,7 @@ func (c *UsersBulkEditAssignedUserRolesCall) Do(opts ...googleapi.CallOption) (*
 	}
 	return ret, nil
 	// {
-	//   "description": "Bulk edits user roles for a user. The operation will delete the assigned user roles provided in BulkEditAssignedUserRolesRequest.deletedAssignedUserRoles and then assign the user roles provided in BulkEditAssignedUserRolesRequest.createdAssignedUserRoles.",
+	//   "description": "Bulk edits user roles for a user. The operation will delete the assigned user roles provided in BulkEditAssignedUserRolesRequest.deletedAssignedUserRoles and then assign the user roles provided in BulkEditAssignedUserRolesRequest.createdAssignedUserRoles. This method has unique authentication requirements. Read the prerequisites in our [Managing Users guide](/display-video/api/guides/users/overview#prerequisites) before using this method. The \"Try this method\" feature does not work for this method.",
 	//   "flatPath": "v1/users/{usersId}:bulkEditAssignedUserRoles",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.users.bulkEditAssignedUserRoles",
@@ -44734,7 +45164,11 @@ type UsersCreateCall struct {
 }
 
 // Create: Creates a new user. Returns the newly created user if
-// successful.
+// successful. This method has unique authentication requirements. Read
+// the prerequisites in our Managing Users guide
+// (/display-video/api/guides/users/overview#prerequisites) before using
+// this method. The "Try this method" feature does not work for this
+// method.
 func (r *UsersService) Create(user *User) *UsersCreateCall {
 	c := &UsersCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.user = user
@@ -44805,17 +45239,17 @@ func (c *UsersCreateCall) Do(opts ...googleapi.CallOption) (*User, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &User{
 		ServerResponse: googleapi.ServerResponse{
@@ -44829,7 +45263,7 @@ func (c *UsersCreateCall) Do(opts ...googleapi.CallOption) (*User, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new user. Returns the newly created user if successful.",
+	//   "description": "Creates a new user. Returns the newly created user if successful. This method has unique authentication requirements. Read the prerequisites in our [Managing Users guide](/display-video/api/guides/users/overview#prerequisites) before using this method. The \"Try this method\" feature does not work for this method.",
 	//   "flatPath": "v1/users",
 	//   "httpMethod": "POST",
 	//   "id": "displayvideo.users.create",
@@ -44859,7 +45293,11 @@ type UsersDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a user.
+// Delete: Deletes a user. This method has unique authentication
+// requirements. Read the prerequisites in our Managing Users guide
+// (/display-video/api/guides/users/overview#prerequisites) before using
+// this method. The "Try this method" feature does not work for this
+// method.
 //
 // - userId: The ID of the user to delete.
 func (r *UsersService) Delete(userId int64) *UsersDeleteCall {
@@ -44930,17 +45368,17 @@ func (c *UsersDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -44954,7 +45392,7 @@ func (c *UsersDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes a user.",
+	//   "description": "Deletes a user. This method has unique authentication requirements. Read the prerequisites in our [Managing Users guide](/display-video/api/guides/users/overview#prerequisites) before using this method. The \"Try this method\" feature does not work for this method.",
 	//   "flatPath": "v1/users/{usersId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "displayvideo.users.delete",
@@ -44993,7 +45431,11 @@ type UsersGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets a user.
+// Get: Gets a user. This method has unique authentication requirements.
+// Read the prerequisites in our Managing Users guide
+// (/display-video/api/guides/users/overview#prerequisites) before using
+// this method. The "Try this method" feature does not work for this
+// method.
 //
 // - userId: The ID of the user to fetch.
 func (r *UsersService) Get(userId int64) *UsersGetCall {
@@ -45077,17 +45519,17 @@ func (c *UsersGetCall) Do(opts ...googleapi.CallOption) (*User, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &User{
 		ServerResponse: googleapi.ServerResponse{
@@ -45101,7 +45543,7 @@ func (c *UsersGetCall) Do(opts ...googleapi.CallOption) (*User, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Gets a user.",
+	//   "description": "Gets a user. This method has unique authentication requirements. Read the prerequisites in our [Managing Users guide](/display-video/api/guides/users/overview#prerequisites) before using this method. The \"Try this method\" feature does not work for this method.",
 	//   "flatPath": "v1/users/{usersId}",
 	//   "httpMethod": "GET",
 	//   "id": "displayvideo.users.get",
@@ -45141,37 +45583,44 @@ type UsersListCall struct {
 
 // List: Lists users that are accessible to the current user. If two
 // users have user roles on the same partner or advertiser, they can
-// access each other.
+// access each other. This method has unique authentication
+// requirements. Read the prerequisites in our Managing Users guide
+// (/display-video/api/guides/users/overview#prerequisites) before using
+// this method. The "Try this method" feature does not work for this
+// method.
 func (r *UsersService) List() *UsersListCall {
 	c := &UsersListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // Filter sets the optional parameter "filter": Allows filtering by user
-// properties. Supported syntax: * Filter expressions are made up of one
-// or more restrictions. * Restrictions can be combined by the logical
+// fields. Supported syntax: * Filter expressions are made up of one or
+// more restrictions. * Restrictions can be combined by the logical
 // operator `AND`. * A restriction has the form of `{field} {operator}
-// {value}`. * The operator must be `CONTAINS (:)` or `EQUALS (=)`. *
-// The operator must be `CONTAINS (:)` for the following fields: -
-// `displayName` - `email` * The operator must be `EQUALS (=)` for the
-// following fields: - `assignedUserRole.userRole` -
-// `assignedUserRole.partnerId` - `assignedUserRole.advertiserId` -
-// `assignedUserRole.entityType`: A synthetic field of AssignedUserRole
-// used for filtering. Identifies the type of entity to which the user
-// role is assigned. Valid values are `Partner` and `Advertiser`. -
-// `assignedUserRole.parentPartnerId`: A synthetic field of
-// AssignedUserRole used for filtering. Identifies the parent partner of
-// the entity to which the user role is assigned." Examples: * The user
-// with displayName containing `foo`: `displayName:"foo" * The user
-// with email containing `bar`: `email:"bar" * All users with standard
-// user roles: `assignedUserRole.userRole="STANDARD" * All users with
-// user roles for partner 123: `assignedUserRole.partnerId="123" * All
-// users with user roles for advertiser 123:
-// `assignedUserRole.advertiserId="123" * All users with partner level
-// user roles: `entityType="PARTNER" * All users with user roles for
-// partner 123 and advertisers under partner 123:
-// `parentPartnerId="123" The length of this field should be no more
-// than 500 characters.
+// {value}`. * The `budget.budget_segments.date_range.end_date` field
+// must use the `LESS THAN (<)` operator. * The `displayName and `email`
+// field must use the `HAS (:)` operator. * All other fields must use
+// the `EQUALS (=)` operator. Supported fields: *
+// `assignedUserRole.advertiserId` * `assignedUserRole.entityType` *
+// This is synthetic field of `AssignedUserRole` used for filtering.
+// Identifies the type of entity to which the user role is assigned.
+// Valid values are `Partner` and `Advertiser`. *
+// `assignedUserRole.parentPartnerId` * This is a synthetic field of
+// `AssignedUserRole` used for filtering. Identifies the parent partner
+// of the entity to which the user role is assigned. *
+// `assignedUserRole.partnerId` * `assignedUserRole.userRole` *
+// `displayName` * `email` Examples: * The user with `displayName`
+// containing "foo": `displayName:"foo" * The user with `email`
+// containing "bar": `email:"bar" * All users with standard user roles:
+// `assignedUserRole.userRole="STANDARD" * All users with user roles
+// for partner 123: `assignedUserRole.partnerId="123" * All users with
+// user roles for advertiser 123: `assignedUserRole.advertiserId="123"
+// * All users with partner level user roles: `entityType="PARTNER" *
+// All users with user roles for partner 123 and advertisers under
+// partner 123: `parentPartnerId="123" The length of this field should
+// be no more than 500 characters. Reference our filter `LIST` requests
+// (/display-video/api/guides/how-tos/filters) guide for more
+// information.
 func (c *UsersListCall) Filter(filter string) *UsersListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -45188,7 +45637,7 @@ func (c *UsersListCall) OrderBy(orderBy string) *UsersListCall {
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// Must be between `1` and `100`. If unspecified will default to `100`.
+// Must be between `1` and `200`. If unspecified will default to `100`.
 func (c *UsersListCall) PageSize(pageSize int64) *UsersListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -45276,17 +45725,17 @@ func (c *UsersListCall) Do(opts ...googleapi.CallOption) (*ListUsersResponse, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListUsersResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -45300,14 +45749,14 @@ func (c *UsersListCall) Do(opts ...googleapi.CallOption) (*ListUsersResponse, er
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists users that are accessible to the current user. If two users have user roles on the same partner or advertiser, they can access each other.",
+	//   "description": "Lists users that are accessible to the current user. If two users have user roles on the same partner or advertiser, they can access each other. This method has unique authentication requirements. Read the prerequisites in our [Managing Users guide](/display-video/api/guides/users/overview#prerequisites) before using this method. The \"Try this method\" feature does not work for this method.",
 	//   "flatPath": "v1/users",
 	//   "httpMethod": "GET",
 	//   "id": "displayvideo.users.list",
 	//   "parameterOrder": [],
 	//   "parameters": {
 	//     "filter": {
-	//       "description": "Allows filtering by user properties. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `AND`. * A restriction has the form of `{field} {operator} {value}`. * The operator must be `CONTAINS (:)` or `EQUALS (=)`. * The operator must be `CONTAINS (:)` for the following fields: - `displayName` - `email` * The operator must be `EQUALS (=)` for the following fields: - `assignedUserRole.userRole` - `assignedUserRole.partnerId` - `assignedUserRole.advertiserId` - `assignedUserRole.entityType`: A synthetic field of AssignedUserRole used for filtering. Identifies the type of entity to which the user role is assigned. Valid values are `Partner` and `Advertiser`. - `assignedUserRole.parentPartnerId`: A synthetic field of AssignedUserRole used for filtering. Identifies the parent partner of the entity to which the user role is assigned.\" Examples: * The user with displayName containing `foo`: `displayName:\"foo\"` * The user with email containing `bar`: `email:\"bar\"` * All users with standard user roles: `assignedUserRole.userRole=\"STANDARD\"` * All users with user roles for partner 123: `assignedUserRole.partnerId=\"123\"` * All users with user roles for advertiser 123: `assignedUserRole.advertiserId=\"123\"` * All users with partner level user roles: `entityType=\"PARTNER\"` * All users with user roles for partner 123 and advertisers under partner 123: `parentPartnerId=\"123\"` The length of this field should be no more than 500 characters.",
+	//       "description": "Allows filtering by user fields. Supported syntax: * Filter expressions are made up of one or more restrictions. * Restrictions can be combined by the logical operator `AND`. * A restriction has the form of `{field} {operator} {value}`. * The `budget.budget_segments.date_range.end_date` field must use the `LESS THAN (\u003c)` operator. * The `displayName and `email` field must use the `HAS (:)` operator. * All other fields must use the `EQUALS (=)` operator. Supported fields: * `assignedUserRole.advertiserId` * `assignedUserRole.entityType` * This is synthetic field of `AssignedUserRole` used for filtering. Identifies the type of entity to which the user role is assigned. Valid values are `Partner` and `Advertiser`. * `assignedUserRole.parentPartnerId` * This is a synthetic field of `AssignedUserRole` used for filtering. Identifies the parent partner of the entity to which the user role is assigned. * `assignedUserRole.partnerId` * `assignedUserRole.userRole` * `displayName` * `email` Examples: * The user with `displayName` containing \"foo\": `displayName:\"foo\"` * The user with `email` containing \"bar\": `email:\"bar\"` * All users with standard user roles: `assignedUserRole.userRole=\"STANDARD\"` * All users with user roles for partner 123: `assignedUserRole.partnerId=\"123\"` * All users with user roles for advertiser 123: `assignedUserRole.advertiserId=\"123\"` * All users with partner level user roles: `entityType=\"PARTNER\"` * All users with user roles for partner 123 and advertisers under partner 123: `parentPartnerId=\"123\"` The length of this field should be no more than 500 characters. Reference our [filter `LIST` requests](/display-video/api/guides/how-tos/filters) guide for more information.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -45317,7 +45766,7 @@ func (c *UsersListCall) Do(opts ...googleapi.CallOption) (*ListUsersResponse, er
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. Must be between `1` and `100`. If unspecified will default to `100`.",
+	//       "description": "Requested page size. Must be between `1` and `200`. If unspecified will default to `100`.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -45372,7 +45821,11 @@ type UsersPatchCall struct {
 }
 
 // Patch: Updates an existing user. Returns the updated user if
-// successful.
+// successful. This method has unique authentication requirements. Read
+// the prerequisites in our Managing Users guide
+// (/display-video/api/guides/users/overview#prerequisites) before using
+// this method. The "Try this method" feature does not work for this
+// method.
 //
 //   - userId: Output only. The unique ID of the user. Assigned by the
 //     system.
@@ -45457,17 +45910,17 @@ func (c *UsersPatchCall) Do(opts ...googleapi.CallOption) (*User, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &User{
 		ServerResponse: googleapi.ServerResponse{
@@ -45481,7 +45934,7 @@ func (c *UsersPatchCall) Do(opts ...googleapi.CallOption) (*User, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates an existing user. Returns the updated user if successful.",
+	//   "description": "Updates an existing user. Returns the updated user if successful. This method has unique authentication requirements. Read the prerequisites in our [Managing Users guide](/display-video/api/guides/users/overview#prerequisites) before using this method. The \"Try this method\" feature does not work for this method.",
 	//   "flatPath": "v1/users/{usersId}",
 	//   "httpMethod": "PATCH",
 	//   "id": "displayvideo.users.patch",

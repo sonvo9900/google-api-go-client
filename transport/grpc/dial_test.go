@@ -5,53 +5,34 @@
 package grpc
 
 import (
+	"bytes"
 	"context"
-	"errors"
-	"net"
+	"log"
+	"strings"
 	"testing"
-	"time"
 
-	"golang.org/x/oauth2"
-	"google.golang.org/api/option"
+	"cloud.google.com/go/compute/metadata"
+	"github.com/google/go-cmp/cmp"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/internal"
 	"google.golang.org/grpc"
 )
 
-// Check that user optioned grpc.WithDialer option overwrites App Engine dialer
-func TestGRPCHook(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	expected := false
-
-	appengineDialerHook = (func(ctx context.Context) grpc.DialOption {
-		return grpc.WithDialer(func(addr string, timeout time.Duration) (net.Conn, error) {
-			t.Error("did not expect a call to appengine dialer, got one")
-			cancel()
-			return nil, errors.New("not expected")
-		})
-	})
+func TestDial(t *testing.T) {
+	oldDialContext := dialContext
+	// Replace package var in order to assert DialContext args.
+	dialContext = func(ctxGot context.Context, target string, opts ...grpc.DialOption) (conn *grpc.ClientConn, err error) {
+		if len(opts) != 4 {
+			t.Fatalf("got: %d, want: 4", len(opts))
+		}
+		return nil, nil
+	}
 	defer func() {
-		appengineDialerHook = nil
+		dialContext = oldDialContext
 	}()
 
-	expectedDialer := grpc.WithDialer(func(addr string, timeout time.Duration) (net.Conn, error) {
-		expected = true
-		cancel()
-		return nil, errors.New("expected")
-	})
-
-	conn, err := Dial(ctx,
-		option.WithTokenSource(oauth2.StaticTokenSource(nil)), // No creds.
-		option.WithGRPCDialOption(expectedDialer),
-		option.WithGRPCDialOption(grpc.WithBlock()))
-	if err != context.Canceled {
-		t.Errorf("got %v, want %v", err, context.Canceled)
-	}
-	if conn != nil {
-		conn.Close()
-		t.Error("got valid conn, want nil")
-	}
-	if !expected {
-		t.Error("expected a call to expected dialer, didn't get one")
-	}
+	var o internal.DialSettings
+	dial(context.Background(), false, &o)
 }
 
 func TestCheckDirectPathEndPoint(t *testing.T) {
@@ -91,5 +72,103 @@ func TestCheckDirectPathEndPoint(t *testing.T) {
 				t.Fatalf("got %v, want %v", got, testcase.want)
 			}
 		})
+	}
+}
+
+func TestLogDirectPathMisconfigAttrempDirectPathNotSet(t *testing.T) {
+	o := &internal.DialSettings{}
+	o.EnableDirectPathXds = true
+
+	endpoint := "abc.googleapis.com"
+
+	creds, err := internal.Creds(context.Context(context.Background()), o)
+	if err != nil {
+		t.Fatalf("failed to create creds")
+	}
+
+	buf := bytes.Buffer{}
+	log.SetOutput(&buf)
+
+	logDirectPathMisconfig(endpoint, creds.TokenSource, o)
+
+	wantedLog := "WARNING: DirectPath is misconfigured. Please set the EnableDirectPath option along with the EnableDirectPathXds option."
+	if !strings.Contains(buf.String(), wantedLog) {
+		t.Fatalf("got: %v, want: %v", buf.String(), wantedLog)
+	}
+
+}
+
+func TestLogDirectPathMisconfigWrongCredential(t *testing.T) {
+	o := &internal.DialSettings{}
+	o.EnableDirectPath = true
+	o.EnableDirectPathXds = true
+
+	endpoint := "abc.googleapis.com"
+
+	creds := &google.Credentials{}
+
+	buf := bytes.Buffer{}
+	log.SetOutput(&buf)
+
+	logDirectPathMisconfig(endpoint, creds.TokenSource, o)
+
+	wantedLog := "WARNING: DirectPath is misconfigured. Please make sure the token source is fetched from GCE metadata server and the default service account is used."
+	if !strings.Contains(buf.String(), wantedLog) {
+		t.Fatalf("got: %v, want: %v", buf.String(), wantedLog)
+	}
+
+}
+
+func TestLogDirectPathMisconfigNotOnGCE(t *testing.T) {
+	o := &internal.DialSettings{}
+	o.EnableDirectPath = true
+	o.EnableDirectPathXds = true
+
+	endpoint := "abc.googleapis.com"
+
+	creds, err := internal.Creds(context.Context(context.Background()), o)
+	if err != nil {
+		t.Fatalf("failed to create creds")
+	}
+
+	buf := bytes.Buffer{}
+	log.SetOutput(&buf)
+
+	logDirectPathMisconfig(endpoint, creds.TokenSource, o)
+
+	if !metadata.OnGCE() {
+		wantedLog := "WARNING: DirectPath is misconfigured. DirectPath is only available in a GCE environment."
+		if !strings.Contains(buf.String(), wantedLog) {
+			t.Fatalf("got: %v, want: %v", buf.String(), wantedLog)
+		}
+	}
+
+}
+
+func TestGRPCAPIKey_GetRequestMetadata(t *testing.T) {
+	for _, test := range []struct {
+		apiKey string
+		reason string
+	}{
+		{
+			apiKey: "MY_API_KEY",
+			reason: "MY_REQUEST_REASON",
+		},
+	} {
+		ts := grpcAPIKey{
+			apiKey:        test.apiKey,
+			requestReason: test.reason,
+		}
+		got, err := ts.GetRequestMetadata(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := map[string]string{
+			"X-goog-api-key":        ts.apiKey,
+			"X-goog-request-reason": ts.requestReason,
+		}
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("mismatch (-want +got):\n%s", diff)
+		}
 	}
 }

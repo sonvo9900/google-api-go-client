@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2023 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -539,6 +539,35 @@ func (s *BatchCreateGitLabConnectedRepositoriesResponseMetadata) MarshalJSON() (
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// BatchCreateRepositoriesResponse: Message for response of creating
+// repositories in batch.
+type BatchCreateRepositoriesResponse struct {
+	// Repositories: Repository resources created.
+	Repositories []*Repository `json:"repositories,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Repositories") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Repositories") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BatchCreateRepositoriesResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod BatchCreateRepositoriesResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // BitbucketServerConnectedRepository: /
 // BitbucketServerConnectedRepository represents a connected Bitbucket
 // Server / repository.
@@ -872,7 +901,7 @@ type BuildOptions struct {
 	// operating system and build utilities. Also note that this is the
 	// minimum disk size that will be allocated for the build -- the build
 	// may run with a larger disk than requested. At present, the maximum
-	// disk size is 1000GB; builds that request more than the maximum are
+	// disk size is 2000GB; builds that request more than the maximum are
 	// rejected with an error.
 	DiskSizeGb int64 `json:"diskSizeGb,omitempty,string"`
 
@@ -2415,6 +2444,54 @@ func (s *RepoSource) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// Repository: A repository associated to a parent connection.
+type Repository struct {
+	// Annotations: Allows clients to store small amounts of arbitrary data.
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// CreateTime: Output only. Server assigned timestamp for when the
+	// connection was created.
+	CreateTime string `json:"createTime,omitempty"`
+
+	// Etag: This checksum is computed by the server based on the value of
+	// other fields, and may be sent on update and delete requests to ensure
+	// the client has an up-to-date value before proceeding.
+	Etag string `json:"etag,omitempty"`
+
+	// Name: Immutable. Resource name of the repository, in the format
+	// `projects/*/locations/*/connections/*/repositories/*`.
+	Name string `json:"name,omitempty"`
+
+	// RemoteUri: Required. Git Clone HTTPS URI.
+	RemoteUri string `json:"remoteUri,omitempty"`
+
+	// UpdateTime: Output only. Server assigned timestamp for when the
+	// connection was updated.
+	UpdateTime string `json:"updateTime,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Annotations") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Annotations") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Repository) MarshalJSON() ([]byte, error) {
+	type NoMethod Repository
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Results: Artifacts created by the build pipeline.
 type Results struct {
 	// ArtifactManifest: Path to the artifact manifest for non-container
@@ -3489,17 +3566,17 @@ func (c *ProjectsLocationsOperationsCancelCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Empty{
 		ServerResponse: googleapi.ServerResponse{
@@ -3640,17 +3717,17 @@ func (c *ProjectsLocationsOperationsGetCall) Do(opts ...googleapi.CallOption) (*
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Operation{
 		ServerResponse: googleapi.ServerResponse{
@@ -3791,17 +3868,17 @@ func (c *ProjectsLocationsWorkerPoolsCreateCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Operation{
 		ServerResponse: googleapi.ServerResponse{
@@ -3942,17 +4019,17 @@ func (c *ProjectsLocationsWorkerPoolsDeleteCall) Do(opts ...googleapi.CallOption
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Operation{
 		ServerResponse: googleapi.ServerResponse{
@@ -4094,17 +4171,17 @@ func (c *ProjectsLocationsWorkerPoolsGetCall) Do(opts ...googleapi.CallOption) (
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &WorkerPool{
 		ServerResponse: googleapi.ServerResponse{
@@ -4241,17 +4318,17 @@ func (c *ProjectsLocationsWorkerPoolsListCall) Do(opts ...googleapi.CallOption) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListWorkerPoolsResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -4393,17 +4470,17 @@ func (c *ProjectsLocationsWorkerPoolsPatchCall) Do(opts ...googleapi.CallOption)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Operation{
 		ServerResponse: googleapi.ServerResponse{
