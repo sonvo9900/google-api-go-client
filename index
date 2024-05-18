@@ -1,0 +1,221 @@
+<html lang="vi" class="translated-ltr"><head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script async="" src="https://cdn.ampproject.org/amp-story-player-v0.js"></script>
+  <script async="" src="https://000615502.deployed.codepen.website/main.js" type="module"></script>
+  <link href="https://cdn.ampproject.org/amp-story-player-v0.css" rel="stylesheet" type="text/css">
+
+  <link href="https://000615502.deployed.codepen.website/styles/main.css" rel="stylesheet" type="text/css">
+  <link href="https://000615502.deployed.codepen.website/styles/header.css" rel="stylesheet" type="text/css">
+  <link href="https://000615502.deployed.codepen.website/styles/hero.css" rel="stylesheet" type="text/css">
+  <link href="https://000615502.deployed.codepen.website/styles/cards.css" rel="stylesheet" type="text/css">
+  <link href="https://000615502.deployed.codepen.website/styles/carousel.css" rel="stylesheet" type="text/css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&amp;display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+  <title>Trình phát web</title>
+<link type="text/css" rel="stylesheet" charset="UTF-8" href="https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=AAM/d=0/rs=AN8SPfrUh4eQMB1I5qTj-4-oeXAO15kIQQ/m=el_main_css"></head>
+
+<body>
+
+  <!--   header  -->
+  <div class="header">
+    <div class="hamburger-menu"></div>
+    <div class="title"><span><font style="vertical-align: inherit;"></font></span><font style="vertical-align: inherit;"><span><font style="vertical-align: inherit;">TIN TỨC THẾ </font></span><span><font style="vertical-align: inherit;">GIỚI</font></span></font><span><font style="vertical-align: inherit;"></font></span></div>
+    <div class="user-icon"></div>
+  </div>
+
+  <!--hero -->
+  <div class="hero-section">
+    <img class="hero-img" src="https://assets.codepen.io/1780597/forest.png" alt="đường cao tốc trong rừng tuyết">
+    <div class="hero-text-section">
+      <div class="hero-text-container">
+        <span class="hero-text-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Xứ sở mùa đông vòng quanh thế giới</font></font></span>
+        <span class="hero-text-body"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Chúng ta có xu hướng liên tưởng mùa đông với bầu trời xám xịt, ảm đạm và sổ mũi, nhưng có một mặt đẹp của mùa thường bị bỏ qua.</font></font></span>
+        <span class="hero-text-author"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">CỦA Wade Warren</font></font></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- carousel -->
+  <div class="carousel-section">
+    <div class="carousel-container overflow-right">
+      <div class="carousel-header"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Xu hướng</font></font></div>
+      <div class="carousel-cards-container">
+        <div class="entry-points">
+          <div class="entry-point-card-container">
+            <div class="background-cards">
+              <div class="background-card-1"></div>
+              <div class="background-card-2"></div>
+            </div>
+            <img src="https://assets.codepen.io/1780597/pizza.jpg" class="entry-point-card-img" alt="Con mèo">
+            <div class="author-container">
+              <div class="logo-container">
+                <div class="logo-ring"></div>
+                <img class="entry-point-card-logo" src="https://assets.codepen.io/1780597/1pizza_logo.png" alt="Biểu tượng nhà xuất bản">
+              </div>
+              <span class="entry-point-card-subtitle"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Bởi John Wilson</font></font></span>
+            </div>
+
+            <div class="card-headline-container">
+              <span class="entry-point-card-headline"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Hương vị của lịch sử Pizza New York</font></font></span>
+            </div>
+          </div>
+
+          <div class="entry-point-card-container">
+            <div class="background-cards">
+              <div class="background-card-1"></div>
+              <div class="background-card-2"></div>
+            </div>
+            <img src="https://assets.codepen.io/1780597/music.jpg" class="entry-point-card-img" alt="Một người đàn ông đang hát">
+            <div class="author-container">
+              <div class="logo-container">
+                <div class="logo-ring"></div>
+                <img class="entry-point-card-logo" src="https://assets.codepen.io/1780597/3logo.png" alt="Biểu tượng nhà xuất bản">
+              </div>
+              <span class="entry-point-card-subtitle"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Bởi Jane Cooper</font></font></span>
+            </div>
+
+            <div class="card-headline-container">
+              <span class="entry-point-card-headline"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Hành trình âm nhạc kéo dài một ngày</font></font></span>
+            </div>
+          </div>
+
+          <div class="entry-point-card-container">
+            <div class="background-cards">
+              <div class="background-card-1"></div>
+              <div class="background-card-2"></div>
+            </div>
+            <img src="https://assets.codepen.io/1780597/homewarrior.jpg" class="entry-point-card-img" alt="Phim hoạt hình đeo mặt nạ">
+            <div class="author-container">
+              <div class="logo-container">
+                <div class="logo-ring"></div>
+                <img class="entry-point-card-logo" src="https://assets.codepen.io/1780597/2logo.png" alt="Biểu tượng nhà xuất bản">
+              </div>
+              <span class="entry-point-card-subtitle"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Bởi Sean Đông</font></font></span>
+            </div>
+
+            <div class="card-headline-container">
+              <span class="entry-point-card-headline"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Trang chủ Đại dịch đặc biệt</font></font></span>
+            </div>
+          </div>
+
+          <div class="entry-point-card-container">
+            <div class="background-cards">
+              <div class="background-card-1"></div>
+              <div class="background-card-2"></div>
+            </div>
+            <img src="https://assets.codepen.io/1780597/chicken.jpg" class="entry-point-card-img" alt="Một đĩa gà và rau">
+            <div class="author-container">
+              <div class="logo-container">
+                <div class="logo-ring"></div>
+                <img class="entry-point-card-logo" src="https://assets.codepen.io/1780597/4logo.png" alt="Biểu tượng nhà xuất bản">
+              </div>
+              <span class="entry-point-card-subtitle"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Bởi Jamie Leach</font></font></span>
+            </div>
+
+            <div class="card-headline-container">
+              <span class="entry-point-card-headline"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Đùi gà chiên giòn kèm rau củ</font></font></span>
+            </div>
+          </div>
+
+          <div class="entry-point-card-container">
+            <div class="background-cards">
+              <div class="background-card-1"></div>
+              <div class="background-card-2"></div>
+            </div>
+            <img src="https://assets.codepen.io/1780597/artquiz.jpg" class="entry-point-card-img" alt="Ảnh ghép của các nghệ sĩ">
+            <div class="author-container">
+              <div class="logo-container">
+                <div class="logo-ring"></div>
+                <img class="entry-point-card-logo" src="https://assets.codepen.io/1780597/5logo.png" alt="Biểu tượng nhà xuất bản">
+              </div>
+              <span class="entry-point-card-subtitle"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">của Hồng Vĩ</font></font></span>
+            </div>
+
+            <div class="card-headline-container">
+              <span class="entry-point-card-headline"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Câu đố nghệ thuật tối thượng</font></font></span>
+            </div>
+          </div>
+
+          <div class="entry-point-card-container">
+            <div class="background-cards">
+              <div class="background-card-1"></div>
+              <div class="background-card-2"></div>
+            </div>
+            <img src="https://assets.codepen.io/1780597/clay.jpg" class="entry-point-card-img" alt="Động vật hoạt hình">
+            <div class="author-container">
+              <div class="logo-container">
+                <div class="logo-ring"></div>
+                <img class="entry-point-card-logo" src="https://assets.codepen.io/1780597/6logo.png" alt="Biểu tượng nhà xuất bản">
+              </div>
+              <span class="entry-point-card-subtitle"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Bởi Jenny Wilson</font></font></span>
+            </div>
+
+            <div class="card-headline-container">
+              <span class="entry-point-card-headline"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Hướng dẫn tạo hình bằng đất sét</font></font></span>
+            </div>
+          </div>
+
+          <div class="entry-point-card-container">
+            <div class="background-cards">
+              <div class="background-card-1"></div>
+              <div class="background-card-2"></div>
+            </div>
+            <img src="https://assets.codepen.io/1780597/animalpoll.jpg" class="entry-point-card-img" alt="Động vật hoạt hình">
+            <div class="author-container">
+              <div class="logo-container">
+                <div class="logo-ring"></div>
+                <img class="entry-point-card-logo" src="https://assets.codepen.io/1780597/5logo.png" alt="Biểu tượng nhà xuất bản">
+              </div>
+              <span class="entry-point-card-subtitle"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">của Hồng Vĩ</font></font></span>
+            </div>
+
+            <div class="card-headline-container">
+              <span class="entry-point-card-headline"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Bạn là con vật gì?</font></font></span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Carousel arrows -->
+        <button class="entry-point-left-arrow entry-point-arrow"></button>
+        <button class="entry-point-right-arrow entry-point-arrow visible"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox and player -->
+  <div class="lightbox closed">
+    <amp-story-player class="my-player i-amphtml-story-player-loaded">
+      <script type="application/json">
+        {
+          "behavior": {
+            "pageScroll": false,
+            "autoplay": false
+          },
+          "controls": [{
+              "name": "close",
+              "position": "start"
+            },
+            {
+              "name": "skip-to-next"
+            }
+          ]
+        }
+      </script>
+      <a href="https://wp.stories.google/stories/a-taste-of-new-york-pizza-history/"></a>
+      <a href="https://wp.stories.google/stories/a-day-in-the-life-of-dap-the-contract/"></a>
+      <a href="https://wsdemos.uc.r.appspot.com/homewarrior"></a>
+      <a href="https://wsdemos.uc.r.appspot.com/kitchen"></a>
+      <a href="https://wsdemos.uc.r.appspot.com/art-quiz"></a>
+      <a href="https://wp.stories.google/stories/a-guide-to-shaping-clay/"></a>
+      <a href="https://wsdemos.uc.r.appspot.com/animal-poll"></a>
+
+    <div class="i-amphtml-fill-content i-amphtml-story-player-shadow-root-intermediary"></div></amp-story-player>
+  </div><div id="goog-gt-tt" class="VIpgJd-yAWNEb-L7lbkb skiptranslate" style="border-radius: 12px; margin: 0 0 0 -23px; padding: 0; font-family: 'Google Sans', Arial, sans-serif;" data-id=""><div id="goog-gt-vt" class="VIpgJd-yAWNEb-hvhgNd"><div class=" VIpgJd-yAWNEb-hvhgNd-l4eHX-i3jM8c"><img src="https://fonts.gstatic.com/s/i/productlogos/translate/v14/24px.svg" width="24" height="24" alt=""></div><div class=" VIpgJd-yAWNEb-hvhgNd-k77Iif-i3jM8c"><div class="VIpgJd-yAWNEb-hvhgNd-IuizWc" dir="ltr">Văn bản gốc</div><div id="goog-gt-original-text" class="VIpgJd-yAWNEb-nVMfcd-fmcmS VIpgJd-yAWNEb-hvhgNd-axAV1"></div></div><div class="VIpgJd-yAWNEb-hvhgNd-N7Eqid ltr"><div class="VIpgJd-yAWNEb-hvhgNd-N7Eqid-B7I4Od ltr" dir="ltr"><div class="VIpgJd-yAWNEb-hvhgNd-UTujCb">Đánh giá bản dịch này</div><div class="VIpgJd-yAWNEb-hvhgNd-eO9mKe">Ý kiến phản hồi của bạn sẽ được dùng để góp phần cải thiện Google Dịch</div></div><div class="VIpgJd-yAWNEb-hvhgNd-xgov5 ltr"><button id="goog-gt-thumbUpButton" type="button" class="VIpgJd-yAWNEb-hvhgNd-bgm6sf" title="Bản dịch tốt" aria-label="Bản dịch tốt" aria-pressed="false"><span id="goog-gt-thumbUpIcon"><svg width="24" height="24" viewBox="0 0 24 24" focusable="false" class="VIpgJd-yAWNEb-hvhgNd-THI6Vb NMm5M"><path d="M21 7h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 0S7.08 6.85 7 7H2v13h16c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73V9c0-1.1-.9-2-2-2zM7 18H4V9h3v9zm14-7l-3 7H9V8l4.34-4.34L12 9h9v2z"></path></svg></span><span id="goog-gt-thumbUpIconFilled"><svg width="24" height="24" viewBox="0 0 24 24" focusable="false" class="VIpgJd-yAWNEb-hvhgNd-THI6Vb NMm5M"><path d="M21 7h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 0S7.08 6.85 7 7v13h11c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73V9c0-1.1-.9-2-2-2zM5 7H1v13h4V7z"></path></svg></span></button><button id="goog-gt-thumbDownButton" type="button" class="VIpgJd-yAWNEb-hvhgNd-bgm6sf" title="Bản dịch kém" aria-label="Bản dịch kém" aria-pressed="false"><span id="goog-gt-thumbDownIcon"><svg width="24" height="24" viewBox="0 0 24 24" focusable="false" class="VIpgJd-yAWNEb-hvhgNd-THI6Vb NMm5M"><path d="M3 17h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 24s7.09-6.85 7.17-7h5V4H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2zM17 6h3v9h-3V6zM3 13l3-7h9v10l-4.34 4.34L12 15H3v-2z"></path></svg></span><span id="goog-gt-thumbDownIconFilled"><svg width="24" height="24" viewBox="0 0 24 24" focusable="false" class="VIpgJd-yAWNEb-hvhgNd-THI6Vb NMm5M"><path d="M3 17h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 24s7.09-6.85 7.17-7V4H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2zm16 0h4V4h-4v13z"></path></svg></span></button></div></div><div id="goog-gt-votingHiddenPane" class="VIpgJd-yAWNEb-hvhgNd-aXYTce"><form id="goog-gt-votingForm" action="//translate.googleapis.com/translate_voting?client=te_lib" method="post" target="votingFrame" class="VIpgJd-yAWNEb-hvhgNd-aXYTce"><input type="text" name="sl" id="goog-gt-votingInputSrcLang"><input type="text" name="tl" id="goog-gt-votingInputTrgLang"><input type="text" name="query" id="goog-gt-votingInputSrcText"><input type="text" name="gtrans" id="goog-gt-votingInputTrgText"><input type="text" name="vote" id="goog-gt-votingInputVote"></form><iframe name="votingFrame" frameborder="0"></iframe></div></div></div>
+
+
+
+
+</body></html>
